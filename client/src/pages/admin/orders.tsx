@@ -50,11 +50,13 @@ export default function OrdersPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Record<string, string | null> }) => {
+    mutationFn: async ({ id, data, label }: { id: number; data: Record<string, string | null>; label?: string }) => {
       await apiRequest("PATCH", `/api/my-store/orders/${id}`, data);
+      return label;
     },
-    onSuccess: () => {
+    onSuccess: (label) => {
       queryClient.invalidateQueries({ queryKey: ["/api/my-store/orders"] });
+      toast({ title: label || "Заказ обновлён" });
     },
     onError: () => {
       toast({ title: "Ошибка", description: "Не удалось обновить заказ", variant: "destructive" });
@@ -175,7 +177,10 @@ export default function OrdersPage() {
                       <td className="p-3" onClick={(e) => e.stopPropagation()}>
                         <Select
                           value={order.status}
-                          onValueChange={(val) => updateMutation.mutate({ id: order.id, data: { status: val } })}
+                          onValueChange={(val) => {
+                            const labels: Record<string, string> = { pending: "В ожидании", confirmed: "Подтверждён", completed: "Выполнен", cancelled: "Отменён" };
+                            updateMutation.mutate({ id: order.id, data: { status: val }, label: `Статус заказа #${order.orderNumber} изменён: ${labels[val] || val}` });
+                          }}
                         >
                           <SelectTrigger className="h-8 w-[140px] text-xs" data-testid={`select-status-${order.id}`}>
                             <SelectValue />
@@ -191,7 +196,10 @@ export default function OrdersPage() {
                       <td className="p-3" onClick={(e) => e.stopPropagation()}>
                         <Select
                           value={order.paymentStatus}
-                          onValueChange={(val) => updateMutation.mutate({ id: order.id, data: { paymentStatus: val } })}
+                          onValueChange={(val) => {
+                            const labels: Record<string, string> = { unpaid: "Неоплаченный", confirming: "Подтверждение", partially_paid: "Частично оплачен", paid: "Оплачено", refunded: "Возврат", voided: "Аннулирован" };
+                            updateMutation.mutate({ id: order.id, data: { paymentStatus: val }, label: `Оплата заказа #${order.orderNumber} изменена: ${labels[val] || val}` });
+                          }}
                         >
                           <SelectTrigger className="h-8 w-[150px] text-xs" data-testid={`select-payment-${order.id}`}>
                             <SelectValue />
@@ -209,7 +217,10 @@ export default function OrdersPage() {
                       <td className="p-3" onClick={(e) => e.stopPropagation()}>
                         <Select
                           value={order.fulfillmentStatus}
-                          onValueChange={(val) => updateMutation.mutate({ id: order.id, data: { fulfillmentStatus: val } })}
+                          onValueChange={(val) => {
+                            const labels: Record<string, string> = { unfulfilled: "Не выполнено", partially_fulfilled: "Частично", fulfilled: "Выполнено" };
+                            updateMutation.mutate({ id: order.id, data: { fulfillmentStatus: val }, label: `Выполнение заказа #${order.orderNumber} изменено: ${labels[val] || val}` });
+                          }}
                         >
                           <SelectTrigger className="h-8 w-[140px] text-xs" data-testid={`select-fulfillment-${order.id}`}>
                             <SelectValue />
@@ -247,7 +258,7 @@ export default function OrdersPage() {
         <OrderDetailPanel
           order={orders.find((o) => o.id === expandedOrder)!}
           onClose={() => setExpandedOrder(null)}
-          onUpdate={(id, data) => updateMutation.mutate({ id, data })}
+          onUpdate={(id, data, label) => updateMutation.mutate({ id, data, label })}
         />
       )}
     </div>
@@ -261,7 +272,7 @@ function OrderDetailPanel({
 }: {
   order: Order;
   onClose: () => void;
-  onUpdate: (id: number, data: Record<string, string | null>) => void;
+  onUpdate: (id: number, data: Record<string, string | null>, label?: string) => void;
 }) {
   const items = (order.items as OrderItem[]) || [];
   const [note, setNote] = useState(order.internalNote || "");
@@ -321,7 +332,7 @@ function OrderDetailPanel({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onUpdate(order.id, { internalNote: note || null })}
+            onClick={() => onUpdate(order.id, { internalNote: note || null }, `Примечание к заказу #${order.orderNumber} сохранено`)}
             data-testid="button-save-note"
           >
             Сохранить
