@@ -1,0 +1,199 @@
+Төменде Replit Agent/девке беруге болатын қысқа, нақты English PRD/TZ. Мақсат — Take.app сияқты 1:1, бірақ Kazakhstan аудиториясына, UI толық орыс тілінде, без онлайн-оплаты, тапсырыс WhatsApp-қа кетеді.
+
+⸻
+
+PRD / Technical Specification (EN) — “Take.app-like WhatsApp Storefront (RU UI)”
+
+1. Goal
+
+Build a multi-tenant SaaS platform that lets small businesses create a branded mobile storefront (catalog + cart) and receive orders via WhatsApp message (no online payments). The product must closely match Take.app user experience: simple store setup, branded storefront, product catalog, cart, checkout → WhatsApp.
+
+2. Target Market
+
+Kazakhstan SMBs selling through Instagram/WhatsApp. Platform UI language: Russian.
+
+3. Core User Roles
+	•	Platform Super Admin: manages companies, plans, limits, moderation, global settings.
+	•	Company Admin (Merchant): creates and manages their store (branding, catalog, orders settings).
+	•	Customer: browses storefront, adds to cart, submits order to WhatsApp.
+
+4. Key Requirements (MVP)
+
+4.1 Merchant Onboarding
+	•	Merchant can sign up / log in.
+	•	Create “Store” with:
+	•	Store name
+	•	Store slug (unique) for public URL
+	•	WhatsApp phone number (E.164 format preferred)
+	•	City (optional)
+	•	Business description (optional)
+
+4.2 Store Branding (Take.app-like)
+Merchant can customize storefront:
+	•	Upload logo
+	•	Choose primary brand color
+	•	Optional: cover image/banner
+	•	Toggle: show/hide prices (optional)
+	•	Store contact links: Instagram, phone (optional)
+
+All storefront styles must be applied per store (multi-tenant theme).
+
+4.3 Catalog Management
+Merchant admin panel (RU UI):
+	•	Categories
+	•	Create/edit/delete categories
+	•	Set category order (drag & drop optional)
+	•	Products
+	•	Create/edit/delete products
+	•	Fields:
+	•	Name (RU)
+	•	Description (RU)
+	•	Price (KZT)
+	•	Discount price (optional)
+	•	Images (1–5)
+	•	Category assignment
+	•	Availability toggle (in stock / out of stock)
+	•	Sort order (optional)
+	•	Product list with search + filters (category, availability)
+
+4.4 Customer Storefront (Public)
+	•	Mobile-first storefront page:
+	•	Header: logo, store name
+	•	Category tabs/sections
+	•	Product cards
+	•	Product details view
+	•	Add to cart
+	•	Cart:
+	•	Quantity adjustments
+	•	Total in KZT (₸)
+	•	Checkout (no payment):
+	•	Customer fields:
+	•	Name (required)
+	•	Phone (required)
+	•	Address (optional)
+	•	Comment (optional)
+	•	Button: “Оформить заказ в WhatsApp”
+	•	Opens WhatsApp with prefilled message via wa.me link.
+
+4.5 WhatsApp Order Message Template
+Merchant can configure a message template in admin:
+	•	Default template must include:
+	•	Store name
+	•	Customer info
+	•	Product lines (name, qty, price)
+	•	Total (KZT)
+	•	Template variables (examples):
+	•	{store_name}, {customer_name}, {customer_phone}, {address}, {comment}
+	•	{items} (rendered list)
+	•	{total}
+
+System must URL-encode the final message and open:
+https://wa.me/<phone>?text=<encoded_message>
+
+4.6 Analytics (Basic)
+Per store:
+	•	Visits count (daily)
+	•	“Checkout to WhatsApp” clicks count
+	•	Top products by add-to-cart (optional)
+
+5. Multi-Tenancy & URLs
+	•	Each store has a public URL:
+	•	Option A (simple MVP): https://domain.kz/s/<slug>
+	•	Option B (later): <slug>.domain.kz
+MVP should implement Option A.
+
+6. Admin Panel (RU UI)
+
+6.1 Merchant Admin
+Sections:
+	•	Dashboard (basic metrics)
+	•	Products
+	•	Categories
+	•	Branding
+	•	WhatsApp Settings (phone + template)
+	•	Store Settings
+	•	Team (optional later)
+
+6.2 Super Admin
+	•	List of stores/companies
+	•	Create/disable stores
+	•	Plan/limit configuration:
+	•	max products
+	•	max categories
+	•	custom domain toggle (future)
+	•	Basic platform metrics
+
+7. Plans & Limits (Configurable)
+
+Implement limit checks (enforced server-side):
+	•	Free: up to 30 products
+	•	Pro: up to 300 products
+	•	Business: unlimited (or 2000)
+Plans can be stored per store; super admin can change.
+
+8. Non-Functional Requirements
+	•	Responsive, mobile-first UI
+	•	Fast load (optimize images, pagination/lazy loading)
+	•	SEO basics for storefront pages (meta title/description)
+	•	Security:
+	•	Auth protected admin routes
+	•	Input validation & sanitization
+	•	File uploads:
+	•	Store logo, banner, product images
+	•	Use object storage (S3-compatible) and store URLs in DB
+
+9. Tech Stack (Suggested)
+	•	Frontend + Backend: Next.js (App Router) or equivalent
+	•	Database: PostgreSQL
+	•	ORM: Prisma
+	•	Auth: NextAuth (email/password or magic link)
+	•	Storage: S3/R2
+	•	Hosting: Replit Deployments or VPS later
+
+10. Data Model (Minimum)
+
+Tables:
+	•	users (id, email, password_hash, role, created_at)
+	•	stores (id, owner_user_id, name, slug, whatsapp_phone, city, description, plan, is_active, created_at)
+	•	store_theme (store_id, primary_color, logo_url, banner_url, updated_at)
+	•	categories (id, store_id, name, sort_order, is_active)
+	•	products (id, store_id, category_id, name, description, price, discount_price, is_active, sort_order)
+	•	product_images (id, product_id, url, sort_order)
+	•	store_settings (store_id, show_prices, whatsapp_template, currency=“KZT”)
+
+Analytics:
+	•	store_events (id, store_id, event_type, created_at, meta_json)
+	•	event_type: visit, add_to_cart, checkout_click
+
+11. Key Pages (RU UI text)
+
+Public:
+	•	Storefront
+	•	Product details
+	•	Cart
+	•	Checkout (WhatsApp order)
+Admin:
+	•	Login/Register
+	•	Dashboard
+	•	Products CRUD
+	•	Categories CRUD
+	•	Branding settings
+	•	WhatsApp settings
+	•	Store settings
+
+12. Acceptance Criteria
+	•	Merchant can create a store, upload logo, set color, add products and categories.
+	•	Customer can browse, add items to cart, enter details, and click “Оформить заказ в WhatsApp”.
+	•	WhatsApp opens with a correctly formatted message including items and total in KZT.
+	•	Each store’s branding is applied only to that store.
+	•	Limits are enforced by plan.
+
+13. Out of Scope (MVP)
+	•	Online payments (Kaspi/Stripe)
+	•	Delivery tracking
+	•	Full order management inside platform (orders database)
+	•	Multi-language UI (only RU in MVP)
+
+⸻
+
+Егер сен қаласаң, мен осы ТЗ-ны тағы да “Replit Agent-ready” қылып тағы қысқартып, чек-лист/таск түрінде (milestones + user stories) жасап берем — кодерге одан да ыңғайлы болады.
