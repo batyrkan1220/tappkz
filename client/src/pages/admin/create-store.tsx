@@ -45,6 +45,10 @@ export default function CreateStorePage() {
       toast({ title: "Магазин создан!" });
     },
     onError: (e: Error) => {
+      if (e.message.includes("401")) {
+        window.location.href = "/api/login";
+        return;
+      }
       toast({ title: "Ошибка", description: e.message, variant: "destructive" });
     },
   });

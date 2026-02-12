@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import CreateStorePage from "./create-store";
+import { getQueryFn } from "@/lib/queryClient";
 import type { Store } from "@shared/schema";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -16,8 +17,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [authLoading, isAuthenticated]);
 
-  const { data: store, isLoading: storeLoading } = useQuery<Store>({
+  const { data: store, isLoading: storeLoading } = useQuery<Store | null>({
     queryKey: ["/api/my-store"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: isAuthenticated,
   });
 
