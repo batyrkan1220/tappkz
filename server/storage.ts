@@ -11,7 +11,7 @@ import {
   PLAN_LIMITS,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, sql, gte, count } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lte, count } from "drizzle-orm";
 
 export interface IStorage {
   getStoreByOwner(userId: string): Promise<Store | undefined>;
@@ -312,7 +312,7 @@ export class DatabaseStorage implements IStorage {
     const dailySales = (dailySalesRaw.rows as any[]).map(r => ({ date: r.day, total: r.total }));
 
     const [visitCount] = await db.select({ count: count() }).from(storeEvents)
-      .where(and(eq(storeEvents.storeId, storeId), eq(storeEvents.eventType, "visit"), gte(storeEvents.createdAt, from)));
+      .where(and(eq(storeEvents.storeId, storeId), eq(storeEvents.eventType, "visit"), gte(storeEvents.createdAt, from), lte(storeEvents.createdAt, to)));
 
     const [orderStats] = await db.execute(sql`
       SELECT COUNT(*)::int as cnt, COALESCE(SUM(total), 0)::int as total_sales
@@ -320,10 +320,10 @@ export class DatabaseStorage implements IStorage {
     `).then(r => r.rows as any[]);
 
     const [custCount] = await db.select({ count: count() }).from(customers)
-      .where(eq(customers.storeId, storeId));
+      .where(and(eq(customers.storeId, storeId), gte(customers.createdAt, from), lte(customers.createdAt, to)));
 
     const [newCustCount] = await db.select({ count: count() }).from(customers)
-      .where(and(eq(customers.storeId, storeId), gte(customers.createdAt, from)));
+      .where(and(eq(customers.storeId, storeId), gte(customers.createdAt, from), lte(customers.createdAt, to)));
 
     const topProductsRaw = await db.execute(sql`
       SELECT item->>'name' as name,
