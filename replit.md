@@ -24,6 +24,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `/admin/whatsapp` - Phone number + message template
 - `/admin/kaspi` - Kaspi payment settings (toggle, pay URL, recipient name)
 - `/admin/orders` - Orders management with status/payment/fulfillment controls
+- `/admin/customers` - Customer management (auto-created from orders, manual CRUD)
 - `/admin/settings` - Store info, contacts, display settings
 
 ### API
@@ -39,13 +40,14 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `GET /api/storefront/:slug` - Public store data
 - `GET /api/my-store/orders` - List all orders for store (auth)
 - `PATCH /api/my-store/orders/:id` - Update order status/payment/fulfillment/note (auth)
+- `GET/POST/PATCH/DELETE /api/my-store/customers` - Customers CRUD (auth)
 - `POST /api/storefront/:slug/order` - Create order (validated)
 - `GET /api/orders/:id` - Get order by ID (public)
 - `POST /api/storefront/:slug/event` - Track events (validated)
 - `POST /api/upload` - Image upload (auth required)
 
 ## Database Tables
-users, sessions, stores, store_themes, store_settings, categories, products, orders, store_events
+users, sessions, stores, store_themes, store_settings, categories, products, orders, customers, store_events
 
 ## Demo Store
 Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) with 8 products across 4 categories
@@ -56,6 +58,7 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Business: 2000 products
 
 ## Recent Changes
+- Added admin customers page at /admin/customers: table with search, filter tabs (Все/Неактивно/Первый заказ/Никогда не заказывал), add/edit/delete customers, auto-created from orders
 - Added admin orders page at /admin/orders: table with search, filter tabs (Все/Неоплаченный/Подтверждение/Оплачено), inline status/payment/fulfillment dropdowns, order detail panel with internal notes
 - Added order/invoice system: orders saved to DB on checkout, WhatsApp message includes "See invoice" link
 - Invoice page at /invoice/:id shows order number, items, totals, customer info, payment method

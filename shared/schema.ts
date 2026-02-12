@@ -81,6 +81,21 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  phone: varchar("phone", { length: 30 }),
+  email: varchar("email", { length: 200 }),
+  notes: text("notes"),
+  isActive: boolean("is_active").notNull().default(true),
+  totalOrders: integer("total_orders").notNull().default(0),
+  totalSpent: integer("total_spent").notNull().default(0),
+  firstOrderAt: timestamp("first_order_at"),
+  lastOrderAt: timestamp("last_order_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const storeEvents = pgTable("store_events", {
   id: serial("id").primaryKey(),
   storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
@@ -93,6 +108,10 @@ export const ordersRelations = relations(orders, ({ one }) => ({
   store: one(stores, { fields: [orders.storeId], references: [stores.id] }),
 }));
 
+export const customersRelations = relations(customers, ({ one }) => ({
+  store: one(stores, { fields: [customers.storeId], references: [stores.id] }),
+}));
+
 export const storesRelations = relations(stores, ({ many, one }) => ({
   theme: one(storeThemes, { fields: [stores.id], references: [storeThemes.storeId] }),
   settings: one(storeSettings, { fields: [stores.id], references: [storeSettings.storeId] }),
@@ -100,6 +119,7 @@ export const storesRelations = relations(stores, ({ many, one }) => ({
   products: many(products),
   events: many(storeEvents),
   orders: many(orders),
+  customers: many(customers),
 }));
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -131,6 +151,7 @@ export const insertStoreThemeSchema = createInsertSchema(storeThemes).omit({ id:
 export const insertStoreSettingsSchema = createInsertSchema(storeSettings).omit({ id: true });
 export const insertStoreEventSchema = createInsertSchema(storeEvents).omit({ id: true, createdAt: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
+export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true });
 
 export type Store = typeof stores.$inferSelect;
 export type InsertStore = z.infer<typeof insertStoreSchema>;
@@ -146,6 +167,8 @@ export type StoreEvent = typeof storeEvents.$inferSelect;
 export type InsertStoreEvent = z.infer<typeof insertStoreEventSchema>;
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Customer = typeof customers.$inferSelect;
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 
 export const PLAN_LIMITS: Record<string, number> = {
   free: 30,

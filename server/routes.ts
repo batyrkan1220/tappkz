@@ -542,6 +542,8 @@ export async function registerRoutes(
         status: "pending",
       });
 
+      await storage.upsertCustomerFromOrder(store.id, data.customerName, data.customerPhone, subtotal).catch(() => {});
+
       res.json(order);
     } catch (e: any) {
       if (e instanceof z.ZodError) {
@@ -563,6 +565,78 @@ export async function registerRoutes(
       const store = allStores.find(s => s.id === order.storeId);
 
       res.json({ order, storeName: store?.name, storeSlug: store?.slug });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  const createCustomerSchema = z.object({
+    name: z.string().min(1).max(200),
+    phone: z.string().max(30).nullable().optional(),
+    email: z.string().max(200).nullable().optional(),
+    notes: z.string().max(2000).nullable().optional(),
+  });
+
+  const updateCustomerSchema = createCustomerSchema.partial();
+
+  app.get("/api/my-store/customers", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const customersList = await storage.getCustomersByStore(store.id);
+      res.json(customersList);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/my-store/customers", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const data = validate(createCustomerSchema, req.body);
+      const customer = await storage.createCustomer({
+        ...data,
+        storeId: store.id,
+        phone: data.phone || null,
+        email: data.email || null,
+        notes: data.notes || null,
+      });
+      res.json(customer);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      }
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.patch("/api/my-store/customers/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const data = validate(updateCustomerSchema, req.body);
+      const customer = await storage.updateCustomer(parseInt(req.params.id), store.id, data);
+      if (!customer) return res.status(404).json({ message: "Клиент не найден" });
+      res.json(customer);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      }
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/my-store/customers/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      await storage.deleteCustomer(parseInt(req.params.id), store.id);
+      res.json({ ok: true });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }

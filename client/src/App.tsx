@@ -17,6 +17,7 @@ import WhatsAppPage from "@/pages/admin/whatsapp";
 import KaspiPage from "@/pages/admin/kaspi";
 import StoreSettingsPage from "@/pages/admin/store-settings";
 import OrdersPage from "@/pages/admin/orders";
+import CustomersPage from "@/pages/admin/customers";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/admin/whatsapp" component={() => <AdminRoute component={WhatsAppPage} />} />
       <Route path="/admin/kaspi" component={() => <AdminRoute component={KaspiPage} />} />
       <Route path="/admin/orders" component={() => <AdminRoute component={OrdersPage} />} />
+      <Route path="/admin/customers" component={() => <AdminRoute component={CustomersPage} />} />
       <Route path="/admin/settings" component={() => <AdminRoute component={StoreSettingsPage} />} />
       <Route path="/s/:slug" component={StorefrontPage} />
       <Route path="/invoice/:id" component={InvoicePage} />

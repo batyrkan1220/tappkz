@@ -1,5 +1,5 @@
 import {
-  stores, storeThemes, storeSettings, categories, products, storeEvents, orders,
+  stores, storeThemes, storeSettings, categories, products, storeEvents, orders, customers,
   type Store, type InsertStore,
   type StoreTheme, type InsertStoreTheme,
   type StoreSettings, type InsertStoreSettings,
@@ -7,6 +7,7 @@ import {
   type Product, type InsertProduct,
   type StoreEvent, type InsertStoreEvent,
   type Order, type InsertOrder,
+  type Customer, type InsertCustomer,
   PLAN_LIMITS,
 } from "@shared/schema";
 import { db } from "./db";
@@ -44,6 +45,13 @@ export interface IStorage {
   getNextOrderNumber(storeId: number): Promise<number>;
   getOrdersByStore(storeId: number): Promise<Order[]>;
   updateOrder(id: number, storeId: number, data: Partial<InsertOrder>): Promise<Order | undefined>;
+
+  getCustomersByStore(storeId: number): Promise<Customer[]>;
+  getCustomer(id: number, storeId: number): Promise<Customer | undefined>;
+  createCustomer(data: InsertCustomer): Promise<Customer>;
+  updateCustomer(id: number, storeId: number, data: Partial<InsertCustomer>): Promise<Customer | undefined>;
+  deleteCustomer(id: number, storeId: number): Promise<void>;
+  upsertCustomerFromOrder(storeId: number, name: string, phone: string, total: number): Promise<Customer>;
 
   getAllStores(): Promise<Store[]>;
 }
@@ -200,6 +208,53 @@ export class DatabaseStorage implements IStorage {
   async updateOrder(id: number, storeId: number, data: Partial<InsertOrder>): Promise<Order | undefined> {
     const [order] = await db.update(orders).set(data).where(and(eq(orders.id, id), eq(orders.storeId, storeId))).returning();
     return order;
+  }
+
+  async getCustomersByStore(storeId: number): Promise<Customer[]> {
+    return db.select().from(customers).where(eq(customers.storeId, storeId)).orderBy(desc(customers.createdAt));
+  }
+
+  async getCustomer(id: number, storeId: number): Promise<Customer | undefined> {
+    const [c] = await db.select().from(customers).where(and(eq(customers.id, id), eq(customers.storeId, storeId)));
+    return c;
+  }
+
+  async createCustomer(data: InsertCustomer): Promise<Customer> {
+    const [c] = await db.insert(customers).values(data).returning();
+    return c;
+  }
+
+  async updateCustomer(id: number, storeId: number, data: Partial<InsertCustomer>): Promise<Customer | undefined> {
+    const [c] = await db.update(customers).set(data).where(and(eq(customers.id, id), eq(customers.storeId, storeId))).returning();
+    return c;
+  }
+
+  async deleteCustomer(id: number, storeId: number): Promise<void> {
+    await db.delete(customers).where(and(eq(customers.id, id), eq(customers.storeId, storeId)));
+  }
+
+  async upsertCustomerFromOrder(storeId: number, name: string, phone: string, total: number): Promise<Customer> {
+    const now = new Date();
+    const [existing] = await db.select().from(customers).where(and(eq(customers.storeId, storeId), eq(customers.phone, phone)));
+    if (existing) {
+      const [updated] = await db.update(customers).set({
+        name,
+        totalOrders: (existing.totalOrders || 0) + 1,
+        totalSpent: (existing.totalSpent || 0) + total,
+        lastOrderAt: now,
+      }).where(eq(customers.id, existing.id)).returning();
+      return updated;
+    }
+    const [c] = await db.insert(customers).values({
+      storeId,
+      name,
+      phone,
+      totalOrders: 1,
+      totalSpent: total,
+      firstOrderAt: now,
+      lastOrderAt: now,
+    }).returning();
+    return c;
   }
 
   async getAllStores(): Promise<Store[]> {

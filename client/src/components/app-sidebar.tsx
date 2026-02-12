@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, CreditCard, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, CreditCard, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import type { Store } from "@shared/schema";
@@ -20,6 +20,7 @@ import type { Store } from "@shared/schema";
 const menuItems = [
   { title: "Панель", url: "/admin", icon: LayoutDashboard },
   { title: "Заказы", url: "/admin/orders", icon: ClipboardList },
+  { title: "Клиенты", url: "/admin/customers", icon: Users },
   { title: "Товары", url: "/admin/products", icon: Package },
   { title: "Категории", url: "/admin/categories", icon: FolderOpen },
   { title: "Брендирование", url: "/admin/branding", icon: Palette },
