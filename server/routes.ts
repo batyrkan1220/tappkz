@@ -478,6 +478,18 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/my-store/analytics/detailed", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const data = await storage.getDetailedAnalytics(store.id);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.get("/api/storefront/:slug", async (req, res) => {
     try {
       const store = await storage.getStoreBySlug(req.params.slug);

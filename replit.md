@@ -23,6 +23,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `/admin/branding` - Logo, banner, colors
 - `/admin/whatsapp` - Phone number + message template
 - `/admin/kaspi` - Kaspi payment settings (toggle, pay URL, recipient name)
+- `/admin/analytics` - Analytics with charts (Page views, Sales, Orders) and tab reports
 - `/admin/orders` - Orders management with status/payment/fulfillment controls
 - `/admin/customers` - Customer management (auto-created from orders, manual CRUD)
 - `/admin/settings` - Store info, contacts, display settings
@@ -38,6 +39,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `PUT /api/my-store/kaspi` - Kaspi payment settings (validated)
 - `GET /api/my-store/analytics` - Store analytics
 - `GET /api/storefront/:slug` - Public store data
+- `GET /api/my-store/analytics/detailed` - Detailed analytics with daily data (auth)
 - `GET /api/my-store/orders` - List all orders for store (auth)
 - `PATCH /api/my-store/orders/:id` - Update order status/payment/fulfillment/note (auth)
 - `GET/POST/PATCH/DELETE /api/my-store/customers` - Customers CRUD (auth)
@@ -58,6 +60,7 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Business: 2000 products
 
 ## Recent Changes
+- Added analytics page at /admin/analytics: line charts for page views/sales/orders, tab reports (Трафик/Заказы/Клиенты/Товары)
 - Added admin customers page at /admin/customers: table with search, filter tabs (Все/Неактивно/Первый заказ/Никогда не заказывал), add/edit/delete customers, auto-created from orders
 - Added admin orders page at /admin/orders: table with search, filter tabs (Все/Неоплаченный/Подтверждение/Оплачено), inline status/payment/fulfillment dropdowns, order detail panel with internal notes
 - Added order/invoice system: orders saved to DB on checkout, WhatsApp message includes "See invoice" link
