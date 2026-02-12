@@ -193,14 +193,14 @@ export default function AnalyticsPage() {
 
       <div className="flex gap-4 flex-wrap">
         <MiniChart
-          title="Page views"
+          title="Просмотры"
           value={String(analytics.totalVisits)}
           icon={Eye}
           data={visitsData}
           dataKey="count"
         />
         <MiniChart
-          title="Sales"
+          title="Продажи"
           value={formatPrice(analytics.totalSales)}
           icon={CircleDollarSign}
           data={salesData}
@@ -208,7 +208,7 @@ export default function AnalyticsPage() {
           formatValue={(v) => formatPrice(v)}
         />
         <MiniChart
-          title="Orders"
+          title="Заказы"
           value={String(analytics.totalOrders)}
           icon={ClipboardList}
           data={ordersData}
