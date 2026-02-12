@@ -46,6 +46,11 @@ function formatDateShort(dateStr: string) {
   return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "short" });
 }
 
+function toLocalDateStr(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 function fillDailyData<T extends { date: string }>(
   data: T[],
   defaultVal: Omit<T, "date">,
@@ -54,13 +59,13 @@ function fillDailyData<T extends { date: string }>(
 ): (T & { dateLabel: string })[] {
   const map = new Map<string, T>();
   for (const d of data) {
-    const key = new Date(d.date).toISOString().slice(0, 10);
+    const key = d.date.slice(0, 10);
     map.set(key, d);
   }
   const result: (T & { dateLabel: string })[] = [];
   const current = new Date(from);
   while (current <= to) {
-    const key = current.toISOString().slice(0, 10);
+    const key = toLocalDateStr(current);
     const existing = map.get(key);
     result.push({
       ...(existing || { date: key, ...defaultVal } as T),
@@ -150,8 +155,10 @@ export default function AnalyticsPage() {
 
   const queryParams = useMemo(() => {
     if (!dateRange.from) return "";
-    const from = dateRange.from.toISOString().slice(0, 10);
-    const to = (dateRange.to || dateRange.from).toISOString().slice(0, 10);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const toLocal = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const from = toLocal(dateRange.from);
+    const to = toLocal(dateRange.to || dateRange.from);
     return `?startDate=${from}&endDate=${to}`;
   }, [dateRange]);
 
