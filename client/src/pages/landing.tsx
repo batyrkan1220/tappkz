@@ -115,12 +115,12 @@ export default function LandingPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <a href="/api/login">
+            <a href="/login">
               <Button variant="ghost" className="font-semibold text-sm" data-testid="button-login-ghost">
                 Войти
               </Button>
             </a>
-            <a href="/api/login" className="hidden sm:block">
+            <a href="/register" className="hidden sm:block">
               <Button className="bg-foreground text-background rounded-full font-semibold" data-testid="button-login">
                 Начать бесплатно
               </Button>
@@ -170,7 +170,7 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a href="/api/login">
+              <a href="/register">
                 <Button size="lg" className="bg-foreground text-background rounded-full font-semibold" data-testid="button-hero-cta">
                   Создать магазин бесплатно
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -407,7 +407,7 @@ export default function LandingPage() {
 
                 <div className="mt-6">
                   {plan.name === "Старт" ? (
-                    <a href="/api/login" className="block">
+                    <a href="/register" className="block">
                       <Button className="w-full bg-foreground text-background rounded-full font-semibold" data-testid="button-pricing-start">
                         {plan.cta}
                       </Button>
@@ -434,7 +434,7 @@ export default function LandingPage() {
               Присоединяйтесь к сотням предпринимателей Казахстана, которые уже продают через TakeSale
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a href="/api/login">
+              <a href="/register">
                 <Button size="lg" className="bg-white text-green-700 rounded-full font-semibold" data-testid="button-cta-bottom">
                   Создать магазин
                   <ArrowRight className="ml-2 h-4 w-4" />

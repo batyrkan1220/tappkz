@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
+import LoginPage from "@/pages/auth/login";
+import RegisterPage from "@/pages/auth/register";
 import StorefrontPage from "@/pages/storefront";
 import InvoicePage from "@/pages/invoice";
 import AdminLayout from "@/pages/admin/admin-layout";
@@ -41,6 +43,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/login" component={LoginPage} />
+      <Route path="/register" component={RegisterPage} />
       <Route path="/admin" component={() => <AdminRoute component={Dashboard} />} />
       <Route path="/admin/products" component={() => <AdminRoute component={ProductsPage} />} />
       <Route path="/admin/categories" component={() => <AdminRoute component={CategoriesPage} />} />

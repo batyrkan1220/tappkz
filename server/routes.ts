@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { setupSession, registerAuthRoutes, isAuthenticated } from "./auth";
 import { PLAN_LIMITS, BUSINESS_TYPES } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -106,7 +106,7 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  await setupAuth(app);
+  setupSession(app);
   registerAuthRoutes(app);
 
   app.use("/uploads", (req, res, next) => {
@@ -119,7 +119,7 @@ export async function registerRoutes(
   });
 
   app.post("/api/upload", isAuthenticated, upload.array("images", 5), (req: any, res) => {
-    const userId = req.user.claims.sub;
+    const userId = req.session.userId;
     const files = req.files as Express.Multer.File[];
     const urls = files.map((f) => `/uploads/${f.filename}`);
     res.json({ urls });
@@ -127,7 +127,7 @@ export async function registerRoutes(
 
   app.post("/api/stores", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const data = validate(createStoreSchema, req.body);
       const existing = await storage.getStoreByOwner(userId);
       if (existing) {
@@ -159,7 +159,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       res.json(store);
@@ -170,7 +170,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/products", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const prods = await storage.getProducts(store.id);
@@ -182,7 +182,7 @@ export async function registerRoutes(
 
   app.post("/api/my-store/products", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
 
@@ -209,7 +209,7 @@ export async function registerRoutes(
 
   app.patch("/api/my-store/products/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
 
@@ -227,7 +227,7 @@ export async function registerRoutes(
 
   app.delete("/api/my-store/products/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       await storage.deleteProduct(parseInt(req.params.id), store.id);
@@ -239,7 +239,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/categories", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const cats = await storage.getCategories(store.id);
@@ -251,7 +251,7 @@ export async function registerRoutes(
 
   app.post("/api/my-store/categories", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const data = validate(createCategorySchema, req.body);
@@ -267,7 +267,7 @@ export async function registerRoutes(
 
   app.patch("/api/my-store/categories/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const data = validate(updateCategorySchema, req.body);
@@ -284,7 +284,7 @@ export async function registerRoutes(
 
   app.delete("/api/my-store/categories/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       await storage.deleteCategory(parseInt(req.params.id), store.id);
@@ -296,7 +296,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/theme", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const theme = await storage.getTheme(store.id);
@@ -308,7 +308,7 @@ export async function registerRoutes(
 
   app.put("/api/my-store/theme", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const data = validate(themeSchema, req.body);
@@ -324,7 +324,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/settings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const settings = await storage.getSettings(store.id);
@@ -336,7 +336,7 @@ export async function registerRoutes(
 
   app.put("/api/my-store/settings", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
 
@@ -379,7 +379,7 @@ export async function registerRoutes(
 
   app.put("/api/my-store/whatsapp", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
 
@@ -409,7 +409,7 @@ export async function registerRoutes(
 
   app.put("/api/my-store/kaspi", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
 
@@ -438,7 +438,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/orders", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const ordersList = await storage.getOrdersByStore(store.id);
@@ -457,7 +457,7 @@ export async function registerRoutes(
 
   app.patch("/api/my-store/orders/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
 
@@ -475,7 +475,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/analytics", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const analytics = await storage.getAnalytics(store.id);
@@ -487,7 +487,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/analytics/detailed", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
@@ -605,7 +605,7 @@ export async function registerRoutes(
 
   app.get("/api/my-store/customers", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const customersList = await storage.getCustomersByStore(store.id);
@@ -617,7 +617,7 @@ export async function registerRoutes(
 
   app.post("/api/my-store/customers", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const data = validate(createCustomerSchema, req.body);
@@ -639,7 +639,7 @@ export async function registerRoutes(
 
   app.patch("/api/my-store/customers/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const data = validate(updateCustomerSchema, req.body);
@@ -656,7 +656,7 @@ export async function registerRoutes(
 
   app.delete("/api/my-store/customers/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       await storage.deleteCustomer(parseInt(req.params.id), store.id);

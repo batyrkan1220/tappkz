@@ -46,7 +46,7 @@ export default function CreateStorePage() {
     },
     onError: (e: Error) => {
       if (e.message.includes("401")) {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
         return;
       }
       toast({ title: "Ошибка", description: e.message, variant: "destructive" });

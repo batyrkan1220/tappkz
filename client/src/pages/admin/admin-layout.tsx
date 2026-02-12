@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      window.location.href = "/api/login";
+      window.location.href = "/login";
     }
   }, [authLoading, isAuthenticated]);
 

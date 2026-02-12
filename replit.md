@@ -6,13 +6,15 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 ## Architecture
 - **Frontend**: React + Vite + Tailwind CSS + shadcn/ui + wouter routing
 - **Backend**: Express.js + Drizzle ORM + PostgreSQL
-- **Auth**: Replit Auth (OpenID Connect)
+- **Auth**: Email/password with bcrypt + express-session (PostgreSQL session store)
 - **File uploads**: Multer → local /uploads directory
 - **Validation**: Zod schemas on all API endpoints
 
 ## Key Routes
 ### Public
 - `/` - Landing page (logged out) / Admin dashboard (logged in)
+- `/login` - Login page (email/password)
+- `/register` - Registration page
 - `/s/:slug` - Public storefront for a store
 - `/invoice/:id` - Public invoice/order receipt page
 
@@ -27,6 +29,12 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `/admin/orders` - Orders management with status/payment/fulfillment controls
 - `/admin/customers` - Customer management (auto-created from orders, manual CRUD)
 - `/admin/settings` - Store info, contacts, display settings
+
+### Auth API
+- `POST /api/auth/register` - Register (email, password, firstName?)
+- `POST /api/auth/login` - Login (email, password)
+- `POST /api/auth/logout` - Logout (destroys session)
+- `GET /api/auth/user` - Get current user (auth required)
 
 ### API
 - `POST /api/stores` - Create store (validated)
@@ -72,6 +80,10 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Products page blocks adding items without categories, shows warning with link to categories page
 
 ## Recent Changes
+- Replaced Replit Auth (OIDC) with local email/password authentication (bcrypt + express-session)
+- Added /login and /register pages with Russian UI
+- Auth module: server/auth.ts (setupSession, registerAuthRoutes, isAuthenticated)
+- Users table: added password_hash column
 - Added business type selection to store registration (2-step flow: pick type → fill details)
 - Dynamic admin terminology based on business type (sidebar, products page, dashboard, categories)
 - Added onboarding guide to dashboard with step-by-step instructions
