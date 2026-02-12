@@ -483,7 +483,9 @@ export async function registerRoutes(
       const userId = req.user.claims.sub;
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
-      const data = await storage.getDetailedAnalytics(store.id);
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+      const data = await storage.getDetailedAnalytics(store.id, startDate, endDate);
       res.json(data);
     } catch (e: any) {
       res.status(500).json({ message: e.message });

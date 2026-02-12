@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, CircleDollarSign, ClipboardList, Calendar } from "lucide-react";
+import { Eye, CircleDollarSign, ClipboardList } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -13,6 +13,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { DateRangePicker } from "@/components/date-range-picker";
+import type { DateRange } from "react-day-picker";
 
 type AnalyticsData = {
   dailyVisits: { date: string; count: number }[];
@@ -47,7 +49,8 @@ function formatDateShort(dateStr: string) {
 function fillDailyData<T extends { date: string }>(
   data: T[],
   defaultVal: Omit<T, "date">,
-  days: number = 30
+  from: Date,
+  to: Date
 ): (T & { dateLabel: string })[] {
   const map = new Map<string, T>();
   for (const d of data) {
@@ -55,18 +58,25 @@ function fillDailyData<T extends { date: string }>(
     map.set(key, d);
   }
   const result: (T & { dateLabel: string })[] = [];
-  const now = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
+  const current = new Date(from);
+  while (current <= to) {
+    const key = current.toISOString().slice(0, 10);
     const existing = map.get(key);
     result.push({
       ...(existing || { date: key, ...defaultVal } as T),
       dateLabel: formatDateShort(key),
     });
+    current.setDate(current.getDate() + 1);
   }
   return result;
+}
+
+function getDefaultRange(): DateRange {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - 29);
+  from.setHours(0, 0, 0, 0);
+  return { from, to };
 }
 
 function MiniChart({
@@ -136,10 +146,21 @@ function MiniChart({
 
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState("traffic");
+  const [dateRange, setDateRange] = useState<DateRange>(getDefaultRange);
+
+  const queryParams = useMemo(() => {
+    if (!dateRange.from) return "";
+    const from = dateRange.from.toISOString().slice(0, 10);
+    const to = (dateRange.to || dateRange.from).toISOString().slice(0, 10);
+    return `?startDate=${from}&endDate=${to}`;
+  }, [dateRange]);
 
   const { data: analytics, isLoading } = useQuery<AnalyticsData>({
-    queryKey: ["/api/my-store/analytics/detailed"],
+    queryKey: [`/api/my-store/analytics/detailed${queryParams}`],
   });
+
+  const rangeFrom = dateRange.from || new Date();
+  const rangeTo = dateRange.to || rangeFrom;
 
   if (isLoading) {
     return (
@@ -156,27 +177,18 @@ export default function AnalyticsPage() {
 
   if (!analytics) return null;
 
-  const visitsData = fillDailyData(analytics.dailyVisits, { count: 0 });
-  const salesData = fillDailyData(analytics.dailySales, { total: 0 });
-  const ordersData = fillDailyData(analytics.dailyOrders, { count: 0 });
-
-  const now = new Date();
-  const thirtyAgo = new Date();
-  thirtyAgo.setDate(thirtyAgo.getDate() - 30);
-  const dateRangeLabel = `${thirtyAgo.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} – ${now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
+  const visitsData = fillDailyData(analytics.dailyVisits, { count: 0 }, rangeFrom, rangeTo);
+  const salesData = fillDailyData(analytics.dailySales, { total: 0 }, rangeFrom, rangeTo);
+  const ordersData = fillDailyData(analytics.dailyOrders, { count: 0 }, rangeFrom, rangeTo);
 
   return (
     <div className="p-6 space-y-5">
-      <h1 className="text-xl font-bold" data-testid="text-analytics-title">Аналитика</h1>
-
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
-          <span className="bg-muted px-3 py-1 rounded text-xs font-medium" data-testid="text-date-range">
-            {dateRangeLabel}
-          </span>
-        </div>
-        <p className="text-xs text-muted-foreground">Требуется Premium Plan или выше, чтобы изменить диапазон дат</p>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <h1 className="text-xl font-bold" data-testid="text-analytics-title">Аналитика</h1>
+        <DateRangePicker
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+        />
       </div>
 
       <div className="flex gap-4 flex-wrap">

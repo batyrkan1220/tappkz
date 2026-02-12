@@ -53,7 +53,7 @@ export interface IStorage {
   deleteCustomer(id: number, storeId: number): Promise<void>;
   upsertCustomerFromOrder(storeId: number, name: string, phone: string, total: number): Promise<Customer>;
 
-  getDetailedAnalytics(storeId: number): Promise<{
+  getDetailedAnalytics(storeId: number, startDate?: Date, endDate?: Date): Promise<{
     dailyVisits: { date: string; count: number }[];
     dailySales: { date: string; total: number }[];
     dailyOrders: { date: string; count: number }[];
@@ -271,7 +271,7 @@ export class DatabaseStorage implements IStorage {
     return c;
   }
 
-  async getDetailedAnalytics(storeId: number): Promise<{
+  async getDetailedAnalytics(storeId: number, startDate?: Date, endDate?: Date): Promise<{
     dailyVisits: { date: string; count: number }[];
     dailySales: { date: string; total: number }[];
     dailyOrders: { date: string; count: number }[];
@@ -284,13 +284,13 @@ export class DatabaseStorage implements IStorage {
     ordersByPayment: { method: string; count: number }[];
     customersByOrders: { name: string; phone: string | null; orders: number; spent: number }[];
   }> {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const from = startDate || (() => { const d = new Date(); d.setDate(d.getDate() - 30); return d; })();
+    const to = endDate || new Date();
 
     const dailyVisitsRaw = await db.execute(sql`
       SELECT DATE(created_at) as day, COUNT(*)::int as cnt
       FROM store_events
-      WHERE store_id = ${storeId} AND event_type = 'visit' AND created_at >= ${thirtyDaysAgo}
+      WHERE store_id = ${storeId} AND event_type = 'visit' AND created_at >= ${from} AND created_at <= ${to}
       GROUP BY DATE(created_at) ORDER BY day
     `);
     const dailyVisits = (dailyVisitsRaw.rows as any[]).map(r => ({ date: r.day, count: r.cnt }));
@@ -298,7 +298,7 @@ export class DatabaseStorage implements IStorage {
     const dailyOrdersRaw = await db.execute(sql`
       SELECT DATE(created_at) as day, COUNT(*)::int as cnt
       FROM orders
-      WHERE store_id = ${storeId} AND created_at >= ${thirtyDaysAgo}
+      WHERE store_id = ${storeId} AND created_at >= ${from} AND created_at <= ${to}
       GROUP BY DATE(created_at) ORDER BY day
     `);
     const dailyOrders = (dailyOrdersRaw.rows as any[]).map(r => ({ date: r.day, count: r.cnt }));
@@ -306,38 +306,38 @@ export class DatabaseStorage implements IStorage {
     const dailySalesRaw = await db.execute(sql`
       SELECT DATE(created_at) as day, COALESCE(SUM(total), 0)::int as total
       FROM orders
-      WHERE store_id = ${storeId} AND created_at >= ${thirtyDaysAgo}
+      WHERE store_id = ${storeId} AND created_at >= ${from} AND created_at <= ${to}
       GROUP BY DATE(created_at) ORDER BY day
     `);
     const dailySales = (dailySalesRaw.rows as any[]).map(r => ({ date: r.day, total: r.total }));
 
     const [visitCount] = await db.select({ count: count() }).from(storeEvents)
-      .where(and(eq(storeEvents.storeId, storeId), eq(storeEvents.eventType, "visit"), gte(storeEvents.createdAt, thirtyDaysAgo)));
+      .where(and(eq(storeEvents.storeId, storeId), eq(storeEvents.eventType, "visit"), gte(storeEvents.createdAt, from)));
 
     const [orderStats] = await db.execute(sql`
       SELECT COUNT(*)::int as cnt, COALESCE(SUM(total), 0)::int as total_sales
-      FROM orders WHERE store_id = ${storeId} AND created_at >= ${thirtyDaysAgo}
+      FROM orders WHERE store_id = ${storeId} AND created_at >= ${from} AND created_at <= ${to}
     `).then(r => r.rows as any[]);
 
     const [custCount] = await db.select({ count: count() }).from(customers)
       .where(eq(customers.storeId, storeId));
 
     const [newCustCount] = await db.select({ count: count() }).from(customers)
-      .where(and(eq(customers.storeId, storeId), gte(customers.createdAt, thirtyDaysAgo)));
+      .where(and(eq(customers.storeId, storeId), gte(customers.createdAt, from)));
 
     const topProductsRaw = await db.execute(sql`
       SELECT item->>'name' as name,
              SUM((item->>'quantity')::int)::int as quantity,
              SUM((item->>'price')::int * (item->>'quantity')::int)::int as revenue
       FROM orders, jsonb_array_elements(items) as item
-      WHERE store_id = ${storeId} AND created_at >= ${thirtyDaysAgo}
+      WHERE store_id = ${storeId} AND created_at >= ${from} AND created_at <= ${to}
       GROUP BY item->>'name' ORDER BY quantity DESC LIMIT 10
     `);
     const topProducts = (topProductsRaw.rows as any[]).map(r => ({ name: r.name, quantity: r.quantity, revenue: r.revenue }));
 
     const paymentRaw = await db.execute(sql`
       SELECT COALESCE(payment_method, 'whatsapp') as method, COUNT(*)::int as cnt
-      FROM orders WHERE store_id = ${storeId} AND created_at >= ${thirtyDaysAgo}
+      FROM orders WHERE store_id = ${storeId} AND created_at >= ${from} AND created_at <= ${to}
       GROUP BY COALESCE(payment_method, 'whatsapp')
     `);
     const ordersByPayment = (paymentRaw.rows as any[]).map(r => ({ method: r.method, count: r.cnt }));
