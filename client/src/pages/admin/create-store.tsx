@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { SiWhatsapp } from "react-icons/si";
+import { ShoppingBag } from "lucide-react";
 
 export default function CreateStorePage() {
   const { toast } = useToast();
@@ -44,43 +44,43 @@ export default function CreateStorePage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center p-4 bg-white dark:bg-background">
       <Card className="w-full max-w-md space-y-5 p-6">
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-md bg-primary">
-            <SiWhatsapp className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center">
+            <ShoppingBag className="h-8 w-8 text-foreground" />
           </div>
-          <h1 className="text-xl font-bold">Создайте ваш магазин</h1>
-          <p className="text-sm text-muted-foreground">Заполните информацию для начала работы</p>
+          <h1 className="text-xl font-extrabold tracking-tight">Создайте ваш магазин</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Заполните информацию для начала работы</p>
         </div>
 
         <div className="space-y-4">
           <div>
-            <Label>Название магазина *</Label>
+            <Label className="font-semibold">Название магазина *</Label>
             <Input value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Мой магазин" data-testid="input-create-store-name" />
           </div>
           <div>
-            <Label>URL магазина *</Label>
+            <Label className="font-semibold">URL магазина *</Label>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <span className="shrink-0">/s/</span>
               <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-store" data-testid="input-create-store-slug" />
             </div>
           </div>
           <div>
-            <Label>Номер WhatsApp *</Label>
+            <Label className="font-semibold">Номер WhatsApp *</Label>
             <Input value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} placeholder="77771234567" data-testid="input-create-store-phone" />
           </div>
           <div>
-            <Label>Город</Label>
+            <Label className="font-semibold">Город</Label>
             <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-create-store-city" />
           </div>
           <div>
-            <Label>Описание</Label>
+            <Label className="font-semibold">Описание</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Расскажите о вашем бизнесе" data-testid="input-create-store-desc" />
           </div>
 
           <Button
-            className="w-full"
+            className="w-full bg-foreground text-background rounded-full font-semibold"
             onClick={() => createMutation.mutate()}
             disabled={!name || !slug || !whatsappPhone || createMutation.isPending}
             data-testid="button-create-store"

@@ -71,38 +71,38 @@ export default function StoreSettingsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Настройки магазина</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">Настройки магазина</h1>
 
       <Card className="space-y-4 p-5">
         <div>
-          <Label>Название магазина *</Label>
+          <Label className="font-semibold">Название магазина *</Label>
           <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-store-name" />
         </div>
         <div>
-          <Label>URL (slug) *</Label>
+          <Label className="font-semibold">URL (slug) *</Label>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <span>{window.location.origin}/s/</span>
             <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} className="flex-1" data-testid="input-store-slug" />
           </div>
         </div>
         <div>
-          <Label>Город</Label>
+          <Label className="font-semibold">Город</Label>
           <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-store-city" />
         </div>
         <div>
-          <Label>Описание</Label>
+          <Label className="font-semibold">Описание</Label>
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Расскажите о вашем бизнесе" data-testid="input-store-description" />
         </div>
 
         <div className="border-t pt-4">
-          <h3 className="mb-3 font-semibold">Контакты</h3>
+          <h3 className="mb-3 font-extrabold tracking-tight">Контакты</h3>
           <div className="space-y-3">
             <div>
-              <Label>Instagram</Label>
+              <Label className="font-semibold">Instagram</Label>
               <Input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="@username" data-testid="input-store-instagram" />
             </div>
             <div>
-              <Label>Телефон для связи</Label>
+              <Label className="font-semibold">Телефон для связи</Label>
               <Input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+7 777 123 45 67" data-testid="input-store-phone" />
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function StoreSettingsPage() {
         <div className="border-t pt-4">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="font-medium">Показывать цены</p>
+              <p className="font-semibold">Показывать цены</p>
               <p className="text-sm text-muted-foreground">Отключите, чтобы скрыть цены на витрине</p>
             </div>
             <Switch checked={showPrices} onCheckedChange={setShowPrices} data-testid="switch-show-prices" />
@@ -121,6 +121,7 @@ export default function StoreSettingsPage() {
         <Button
           onClick={() => saveMutation.mutate()}
           disabled={!name || !slug || saveMutation.isPending}
+          className="bg-foreground text-background rounded-full font-semibold"
           data-testid="button-save-settings"
         >
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
@@ -128,7 +129,7 @@ export default function StoreSettingsPage() {
       </Card>
 
       <Card className="p-5">
-        <h3 className="mb-1 font-semibold">Тариф: {store?.plan?.toUpperCase()}</h3>
+        <h3 className="mb-1 font-extrabold tracking-tight">Тариф: {store?.plan?.toUpperCase()}</h3>
         <p className="text-sm text-muted-foreground">
           {store?.plan === "free" ? "До 30 товаров" : store?.plan === "pro" ? "До 300 товаров" : "До 2000 товаров"}
         </p>

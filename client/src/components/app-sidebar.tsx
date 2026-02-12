@@ -12,8 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink } from "lucide-react";
-import { SiWhatsapp } from "react-icons/si";
+import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import type { Store } from "@shared/schema";
@@ -35,12 +34,12 @@ export function AppSidebar({ store }: { store?: Store | null }) {
     <Sidebar>
       <SidebarHeader className="p-4">
         <Link href="/admin">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-              <SiWhatsapp className="h-4 w-4 text-primary-foreground" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center">
+              <ShoppingBag className="h-5 w-5 text-foreground" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold">TakeSale</p>
+              <p className="truncate text-sm font-extrabold tracking-tight">TakeSale</p>
               {store && (
                 <p className="truncate text-xs text-muted-foreground">{store.name}</p>
               )}
@@ -50,7 +49,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Управление</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Управление</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -58,7 +57,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
                   <SidebarMenuButton asChild isActive={location === item.url}>
                     <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      <span className="font-medium">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -68,14 +67,14 @@ export function AppSidebar({ store }: { store?: Store | null }) {
         </SidebarGroup>
         {store && (
           <SidebarGroup>
-            <SidebarGroupLabel>Витрина</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Витрина</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
-                      <span>Открыть магазин</span>
+                      <span className="font-medium">Открыть магазин</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -88,10 +87,10 @@ export function AppSidebar({ store }: { store?: Store | null }) {
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.profileImageUrl || undefined} />
-            <AvatarFallback>{user?.firstName?.[0] || user?.email?.[0] || "U"}</AvatarFallback>
+            <AvatarFallback className="text-xs font-semibold">{user?.firstName?.[0] || user?.email?.[0] || "U"}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">
+            <p className="truncate text-sm font-semibold">
               {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user?.email || "Пользователь"}
             </p>
           </div>

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Search, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ImageIcon, Package } from "lucide-react";
 import type { Product, Category, Store } from "@shared/schema";
 
 function formatPrice(price: number) {
@@ -143,9 +143,9 @@ export default function ProductsPage() {
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Товары</h1>
-        <Button onClick={openCreate} data-testid="button-add-product">
-          <Plus className="mr-1 h-4 w-4" /> Добавить
+        <h1 className="text-2xl font-extrabold tracking-tight">Товары</h1>
+        <Button onClick={openCreate} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-add-product">
+          <Plus className="mr-1.5 h-4 w-4" /> Добавить
         </Button>
       </div>
 
@@ -176,8 +176,8 @@ export default function ProductsPage() {
       {filtered.length === 0 ? (
         <Card className="flex flex-col items-center justify-center p-12 text-center">
           <Package className="mb-3 h-12 w-12 text-muted-foreground/40" />
-          <p className="font-medium">Нет товаров</p>
-          <p className="text-sm text-muted-foreground">Добавьте первый товар в ваш каталог</p>
+          <p className="font-semibold">Нет товаров</p>
+          <p className="mt-1 text-sm text-muted-foreground">Добавьте первый товар в ваш каталог</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -192,17 +192,17 @@ export default function ProductsPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="truncate font-medium" data-testid={`text-product-name-${p.id}`}>{p.name}</p>
+                  <p className="truncate font-semibold" data-testid={`text-product-name-${p.id}`}>{p.name}</p>
                   {!p.isActive && <Badge variant="secondary">Скрыт</Badge>}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   {p.discountPrice ? (
                     <>
-                      <span className="font-medium text-primary">{formatPrice(p.discountPrice)}</span>
+                      <span className="font-semibold">{formatPrice(p.discountPrice)}</span>
                       <span className="text-muted-foreground line-through">{formatPrice(p.price)}</span>
                     </>
                   ) : (
-                    <span className="font-medium">{formatPrice(p.price)}</span>
+                    <span className="font-semibold">{formatPrice(p.price)}</span>
                   )}
                 </div>
               </div>
@@ -227,29 +227,29 @@ export default function ProductsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editProduct ? "Редактировать товар" : "Новый товар"}</DialogTitle>
+            <DialogTitle className="font-extrabold tracking-tight">{editProduct ? "Редактировать товар" : "Новый товар"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Название *</Label>
+              <Label className="font-semibold">Название *</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} data-testid="input-product-name" />
             </div>
             <div>
-              <Label>Описание</Label>
+              <Label className="font-semibold">Описание</Label>
               <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} data-testid="input-product-description" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Цена (₸) *</Label>
+                <Label className="font-semibold">Цена (₸) *</Label>
                 <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} data-testid="input-product-price" />
               </div>
               <div>
-                <Label>Скидочная цена (₸)</Label>
+                <Label className="font-semibold">Скидочная цена (₸)</Label>
                 <Input type="number" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} data-testid="input-product-discount" />
               </div>
             </div>
             <div>
-              <Label>Категория</Label>
+              <Label className="font-semibold">Категория</Label>
               <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}>
                 <SelectTrigger data-testid="select-product-category">
                   <SelectValue placeholder="Выберите категорию" />
@@ -262,7 +262,7 @@ export default function ProductsPage() {
               </Select>
             </div>
             <div>
-              <Label>Фото товара</Label>
+              <Label className="font-semibold">Фото товара</Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {form.imageUrls.map((url, i) => (
                   <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-md border">
@@ -286,10 +286,10 @@ export default function ProductsPage() {
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={form.isActive} onCheckedChange={(v) => setForm({ ...form, isActive: v })} data-testid="switch-product-active" />
-              <Label>В наличии</Label>
+              <Label className="font-semibold">В наличии</Label>
             </div>
             <Button
-              className="w-full"
+              className="w-full bg-foreground text-background rounded-full font-semibold"
               onClick={() => saveMutation.mutate()}
               disabled={!form.name || !form.price || saveMutation.isPending}
               data-testid="button-save-product"

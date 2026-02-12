@@ -60,11 +60,11 @@ export default function WhatsAppPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Настройки WhatsApp</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">Настройки WhatsApp</h1>
 
       <Card className="space-y-5 p-5">
         <div>
-          <Label className="mb-1 block">Номер WhatsApp</Label>
+          <Label className="mb-1 block font-semibold">Номер WhatsApp</Label>
           <p className="mb-2 text-xs text-muted-foreground">Формат: 77771234567 (без +, без пробелов)</p>
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-green-600 text-white">
@@ -80,7 +80,7 @@ export default function WhatsAppPage() {
         </div>
 
         <div>
-          <Label className="mb-1 block">Шаблон сообщения</Label>
+          <Label className="mb-1 block font-semibold">Шаблон сообщения</Label>
           <p className="mb-2 text-xs text-muted-foreground">
             Переменные: {"{store_name}"}, {"{customer_name}"}, {"{customer_phone}"}, {"{address}"}, {"{comment}"}, {"{items}"}, {"{total}"}
           </p>
@@ -94,13 +94,13 @@ export default function WhatsAppPage() {
         </div>
 
         <div>
-          <Label className="mb-2 block">Предпросмотр сообщения</Label>
+          <Label className="mb-2 block font-semibold">Предпросмотр сообщения</Label>
           <div className="rounded-md border bg-green-50 p-4 dark:bg-green-950/30">
             <pre className="whitespace-pre-wrap text-sm" data-testid="text-whatsapp-preview">{previewMsg}</pre>
           </div>
         </div>
 
-        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} data-testid="button-save-whatsapp">
+        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-save-whatsapp">
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </Card>

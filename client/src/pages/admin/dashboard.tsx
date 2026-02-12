@@ -44,13 +44,13 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold" data-testid="text-dashboard-title">Панель управления</h1>
-        <p className="text-muted-foreground">Магазин: {store.name}</p>
+        <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-dashboard-title">Панель управления</h1>
+        <p className="mt-1 text-muted-foreground">Магазин: {store.name}</p>
       </div>
 
       <Card className="flex flex-wrap items-center gap-3 p-4">
-        <span className="text-sm text-muted-foreground">Ваша витрина:</span>
-        <code className="flex-1 truncate rounded bg-muted px-2 py-1 text-sm" data-testid="text-store-url">
+        <span className="text-sm font-medium text-muted-foreground">Ваша витрина:</span>
+        <code className="flex-1 truncate rounded-md bg-muted px-2.5 py-1 text-sm" data-testid="text-store-url">
           {storeUrl}
         </code>
         <Button size="icon" variant="ghost" onClick={copyUrl} data-testid="button-copy-url">
@@ -67,10 +67,10 @@ export default function Dashboard() {
         {stats.map((s) => (
           <Card key={s.label} className="p-4">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm text-muted-foreground">{s.label}</span>
+              <span className="text-sm font-medium text-muted-foreground">{s.label}</span>
               <s.icon className="h-4 w-4 text-muted-foreground" />
             </div>
-            <p className="mt-2 text-3xl font-bold" data-testid={`text-stat-${s.label}`}>{s.value}</p>
+            <p className="mt-2 text-3xl font-extrabold tracking-tight" data-testid={`text-stat-${s.label}`}>{s.value}</p>
           </Card>
         ))}
       </div>
@@ -79,19 +79,19 @@ export default function Dashboard() {
         <Card className="p-4">
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Товары</span>
+            <span className="text-sm font-medium text-muted-foreground">Товары</span>
           </div>
-          <p className="mt-2 text-2xl font-bold">{products?.length ?? 0}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="mt-2 text-2xl font-extrabold tracking-tight">{products?.length ?? 0}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Лимит: {store.plan === "free" ? 30 : store.plan === "pro" ? 300 : 2000}
           </p>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2">
             <FolderOpen className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Категории</span>
+            <span className="text-sm font-medium text-muted-foreground">Категории</span>
           </div>
-          <p className="mt-2 text-2xl font-bold">{categories?.length ?? 0}</p>
+          <p className="mt-2 text-2xl font-extrabold tracking-tight">{categories?.length ?? 0}</p>
         </Card>
       </div>
     </div>

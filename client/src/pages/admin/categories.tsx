@@ -78,17 +78,17 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Категории</h1>
-        <Button onClick={openCreate} data-testid="button-add-category">
-          <Plus className="mr-1 h-4 w-4" /> Добавить
+        <h1 className="text-2xl font-extrabold tracking-tight">Категории</h1>
+        <Button onClick={openCreate} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-add-category">
+          <Plus className="mr-1.5 h-4 w-4" /> Добавить
         </Button>
       </div>
 
       {(categories || []).length === 0 ? (
         <Card className="flex flex-col items-center justify-center p-12 text-center">
           <FolderOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
-          <p className="font-medium">Нет категорий</p>
-          <p className="text-sm text-muted-foreground">Создайте категории для организации товаров</p>
+          <p className="font-semibold">Нет категорий</p>
+          <p className="mt-1 text-sm text-muted-foreground">Создайте категории для организации товаров</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -99,7 +99,7 @@ export default function CategoriesPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium" data-testid={`text-category-name-${c.id}`}>{c.name}</p>
+                  <p className="font-semibold" data-testid={`text-category-name-${c.id}`}>{c.name}</p>
                   {!c.isActive && <Badge variant="secondary">Скрыта</Badge>}
                 </div>
               </div>
@@ -119,19 +119,19 @@ export default function CategoriesPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{editCat ? "Редактировать категорию" : "Новая категория"}</DialogTitle>
+            <DialogTitle className="font-extrabold tracking-tight">{editCat ? "Редактировать категорию" : "Новая категория"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Название *</Label>
+              <Label className="font-semibold">Название *</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-category-name" />
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={isActive} onCheckedChange={setIsActive} data-testid="switch-category-active" />
-              <Label>Активна</Label>
+              <Label className="font-semibold">Активна</Label>
             </div>
             <Button
-              className="w-full"
+              className="w-full bg-foreground text-background rounded-full font-semibold"
               onClick={() => saveMutation.mutate()}
               disabled={!name || saveMutation.isPending}
               data-testid="button-save-category"

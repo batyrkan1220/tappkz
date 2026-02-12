@@ -48,12 +48,12 @@ export default function LandingPage() {
             <div className="flex h-8 w-8 items-center justify-center">
               <ShoppingBag className="h-6 w-6 text-foreground" />
             </div>
-            <span className="text-xl font-bold tracking-tight" data-testid="text-brand-name">TakeSale</span>
+            <span className="text-xl font-extrabold tracking-tight" data-testid="text-brand-name">TakeSale</span>
           </div>
           <div className="flex items-center gap-3">
             <a href="/api/login">
               <Button
-                className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-5 text-sm font-semibold"
+                className="bg-foreground text-background rounded-full px-5 text-sm font-semibold"
                 data-testid="button-login"
               >
                 Начать бесплатно
@@ -70,9 +70,9 @@ export default function LandingPage() {
         </div>
         {mobileMenuOpen && (
           <div className="lg:hidden border-t px-4 py-3 bg-white dark:bg-background space-y-2">
-            <a href="#features" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)}>Возможности</a>
-            <a href="#pricing" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)}>Тарифы</a>
-            <a href="/s/arai-beauty" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)}>Демо магазин</a>
+            <a href="#features" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)} data-testid="link-features">Возможности</a>
+            <a href="#pricing" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)} data-testid="link-pricing">Тарифы</a>
+            <a href="/s/arai-beauty" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)} data-testid="link-demo">Демо магазин</a>
           </div>
         )}
       </nav>
@@ -98,7 +98,7 @@ export default function LandingPage() {
           <a href="/api/login">
             <Button
               size="lg"
-              className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-8 py-6 text-base font-semibold"
+              className="bg-foreground text-background rounded-full px-8 py-6 text-base font-semibold"
               data-testid="button-get-started"
             >
               Начать бесплатно
@@ -170,7 +170,8 @@ export default function LandingPage() {
                 {plan.highlight && (
                   <a href="/api/login" className="block mt-4">
                     <Button
-                      className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full font-semibold"
+                      className="w-full bg-foreground text-background rounded-full font-semibold"
+                      data-testid="button-pricing-start"
                     >
                       Начать
                     </Button>
@@ -194,7 +195,8 @@ export default function LandingPage() {
             <a href="/api/login">
               <Button
                 size="lg"
-                className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-8 py-6 text-base font-semibold"
+                className="bg-foreground text-background rounded-full px-8 py-6 text-base font-semibold"
+              data-testid="button-cta-bottom"
               >
                 Создать магазин бесплатно
               </Button>

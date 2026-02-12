@@ -74,11 +74,11 @@ export default function BrandingPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Брендирование</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">Брендирование</h1>
 
       <Card className="space-y-6 p-5">
         <div>
-          <Label className="mb-2 block">Фирменный цвет</Label>
+          <Label className="mb-2 block font-semibold">Фирменный цвет</Label>
           <div className="flex flex-wrap items-center gap-2">
             {COLORS.map((c) => (
               <button
@@ -100,18 +100,18 @@ export default function BrandingPage() {
         </div>
 
         <div>
-          <Label className="mb-2 block">Логотип</Label>
+          <Label className="mb-2 block font-semibold">Логотип</Label>
           {logoUrl ? (
             <div className="relative inline-block">
               <img src={logoUrl} alt="Logo" className="h-20 w-20 rounded-md border object-cover" />
-              <Button
-                size="icon"
-                variant="ghost"
-                className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground"
+              <button
+                type="button"
+                className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
                 onClick={() => setLogoUrl("")}
+                data-testid="button-remove-logo"
               >
                 <Trash2 className="h-3 w-3" />
-              </Button>
+              </button>
             </div>
           ) : (
             <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-md border border-dashed hover-elevate">
@@ -122,18 +122,18 @@ export default function BrandingPage() {
         </div>
 
         <div>
-          <Label className="mb-2 block">Баннер</Label>
+          <Label className="mb-2 block font-semibold">Баннер</Label>
           {bannerUrl ? (
             <div className="relative">
               <img src={bannerUrl} alt="Banner" className="h-32 w-full rounded-md border object-cover" />
-              <Button
-                size="icon"
-                variant="ghost"
-                className="absolute right-2 top-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground"
+              <button
+                type="button"
+                className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
                 onClick={() => setBannerUrl("")}
+                data-testid="button-remove-banner"
               >
                 <Trash2 className="h-3 w-3" />
-              </Button>
+              </button>
             </div>
           ) : (
             <label className="flex h-32 w-full cursor-pointer items-center justify-center rounded-md border border-dashed hover-elevate">
@@ -147,7 +147,7 @@ export default function BrandingPage() {
         </div>
 
         <div className="rounded-md border p-4">
-          <p className="mb-2 text-sm font-medium text-muted-foreground">Предпросмотр</p>
+          <p className="mb-2 text-sm font-semibold text-muted-foreground">Предпросмотр</p>
           <div className="rounded-md border overflow-hidden">
             {bannerUrl && (
               <div className="h-24 overflow-hidden">
@@ -163,14 +163,14 @@ export default function BrandingPage() {
                 </div>
               )}
               <div>
-                <p className="font-semibold" style={{ color: primaryColor }}>{store?.name || "Ваш магазин"}</p>
+                <p className="font-extrabold" style={{ color: primaryColor }}>{store?.name || "Ваш магазин"}</p>
                 <p className="text-xs text-muted-foreground">{store?.description || "Описание магазина"}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} data-testid="button-save-branding">
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-save-branding">
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </Card>
