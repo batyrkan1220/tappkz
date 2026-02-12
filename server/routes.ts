@@ -77,7 +77,10 @@ const kaspiSchema = z.object({
   kaspiEnabled: z.boolean(),
   kaspiPayUrl: z.string().max(500).nullable().optional(),
   kaspiRecipientName: z.string().max(200).nullable().optional(),
-});
+}).refine(
+  (data) => !data.kaspiEnabled || (data.kaspiPayUrl && data.kaspiPayUrl.trim().length > 0),
+  { message: "Ссылка на платеж Kaspi обязательна при включении Kaspi", path: ["kaspiPayUrl"] }
+);
 
 const whatsappSchema = z.object({
   phone: z.string().min(5).max(20).regex(/^[0-9]+$/),
@@ -318,7 +321,7 @@ export async function registerRoutes(
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const settings = await storage.getSettings(store.id);
-      res.json(settings || { storeId: store.id, showPrices: true, currency: "KZT", whatsappTemplate: "", instagramUrl: null, phoneNumber: null });
+      res.json(settings || { storeId: store.id, showPrices: true, currency: "KZT", whatsappTemplate: "", instagramUrl: null, phoneNumber: null, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
