@@ -59,8 +59,13 @@ const updateCategorySchema = createCategorySchema.partial();
 
 const themeSchema = z.object({
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().default("#2563eb"),
+  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
   logoUrl: z.string().nullable().optional(),
   bannerUrl: z.string().nullable().optional(),
+  bannerOverlay: z.boolean().optional().default(true),
+  buttonStyle: z.enum(["pill", "rounded", "square"]).optional().default("pill"),
+  cardStyle: z.enum(["bordered", "shadow", "flat"]).optional().default("bordered"),
+  fontStyle: z.enum(["modern", "classic", "rounded"]).optional().default("modern"),
 });
 
 const settingsSchema = z.object({
@@ -293,7 +298,7 @@ export async function registerRoutes(
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const theme = await storage.getTheme(store.id);
-      res.json(theme || { storeId: store.id, primaryColor: "#2563eb", logoUrl: null, bannerUrl: null });
+      res.json(theme || { storeId: store.id, primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
@@ -511,7 +516,7 @@ export async function registerRoutes(
 
       res.json({
         store,
-        theme: theme || { primaryColor: "#2563eb", logoUrl: null, bannerUrl: null },
+        theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
         settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),

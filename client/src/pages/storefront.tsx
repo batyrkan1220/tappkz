@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,6 +64,15 @@ export default function StorefrontPage() {
   const settings = data?.settings;
 
   const primaryColor = theme?.primaryColor || "#16a34a";
+  const secondaryColor = theme?.secondaryColor || null;
+  const bannerOverlay = theme?.bannerOverlay ?? true;
+  const btnStyle = theme?.buttonStyle || "pill";
+  const crdStyle = theme?.cardStyle || "bordered";
+  const fntStyle = theme?.fontStyle || "modern";
+
+  const btnRadius = btnStyle === "pill" ? "rounded-full" : btnStyle === "rounded" ? "rounded-md" : "rounded-none";
+  const cardCls = crdStyle === "bordered" ? "border" : crdStyle === "shadow" ? "shadow-md border-0" : "border-0";
+  const fontCls = fntStyle === "classic" ? "font-serif" : fntStyle === "rounded" ? "tracking-wide" : "";
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter((p) => p.isActive);
@@ -196,11 +204,11 @@ export default function StorefrontPage() {
   if (error || !store) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <Card className="max-w-sm p-8 text-center">
+        <div className="max-w-sm rounded-md border p-8 text-center bg-card">
           <ShoppingBag className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
           <p className="text-lg font-semibold">Магазин не найден</p>
           <p className="mt-1 text-sm text-muted-foreground">Проверьте ссылку и попробуйте снова</p>
-        </Card>
+        </div>
       </div>
     );
   }
@@ -219,9 +227,15 @@ export default function StorefrontPage() {
               <Menu className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground">
-                <ShoppingBag className="h-3.5 w-3.5 text-background" />
-              </div>
+              {theme?.logoUrl ? (
+                <img src={theme.logoUrl} alt={store.name} className="h-7 w-7 rounded-lg object-cover" />
+              ) : (
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="text-[10px] font-bold text-white" style={{ backgroundColor: primaryColor }}>
+                    {store.name.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              )}
               <span className="text-sm font-extrabold tracking-tight" data-testid="text-nav-store-name">{store.name}</span>
             </div>
           </div>
@@ -300,7 +314,7 @@ export default function StorefrontPage() {
                         <span className="text-lg font-bold" style={{ color: primaryColor }} data-testid="text-cart-total">{formatPrice(cartTotal)}</span>
                       </div>
                       <Button
-                        className="w-full gap-2 text-white rounded-full"
+                        className={`w-full gap-2 text-white ${btnRadius}`}
                         style={{ backgroundColor: "#25D366" }}
                         onClick={() => setCheckoutOpen(true)}
                         data-testid="button-checkout"
@@ -318,14 +332,19 @@ export default function StorefrontPage() {
       </nav>
 
       <div className="relative">
-        <div
-          className="h-36 w-full sm:h-44"
-          style={{
-            background: theme?.bannerUrl
-              ? `url(${theme.bannerUrl}) center/cover no-repeat`
-              : `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}08)`,
-          }}
-        />
+        <div className="relative">
+          <div
+            className="h-36 w-full sm:h-44"
+            style={{
+              background: theme?.bannerUrl
+                ? `url(${theme.bannerUrl}) center/cover no-repeat`
+                : `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}08)`,
+            }}
+          />
+          {theme?.bannerUrl && bannerOverlay && (
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40" />
+          )}
+        </div>
         <div className="flex flex-col items-center -mt-12 relative z-10">
           <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
             {theme?.logoUrl ? (
@@ -338,7 +357,7 @@ export default function StorefrontPage() {
               {store.name.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <h1 className="mt-3 text-xl font-extrabold tracking-tight text-center" data-testid="text-store-name">
+          <h1 className={`mt-3 text-xl font-extrabold tracking-tight text-center ${fontCls}`} data-testid="text-store-name">
             {store.name}
           </h1>
           {store.city && (
@@ -407,7 +426,7 @@ export default function StorefrontPage() {
             <ScrollArea className="w-full">
               <div className="flex gap-2 pb-1">
                 <button
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === null ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
+                  className={`shrink-0 ${btnRadius} px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === null ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
                   onClick={() => setActiveCategory(null)}
                   data-testid="button-category-all"
                 >
@@ -416,7 +435,7 @@ export default function StorefrontPage() {
                 {categories.map((c) => (
                   <button
                     key={c.id}
-                    className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === c.id ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
+                    className={`shrink-0 ${btnRadius} px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === c.id ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
                     onClick={() => setActiveCategory(c.id)}
                     data-testid={`button-category-${c.id}`}
                   >
@@ -447,14 +466,14 @@ export default function StorefrontPage() {
             {filteredProducts.map((p) => {
               const cartItem = cart.find((i) => i.product.id === p.id);
               return (
-                <Card
+                <div
                   key={p.id}
-                  className="flex overflow-visible cursor-pointer hover-elevate"
+                  className={`flex overflow-visible cursor-pointer hover-elevate rounded-md bg-card ${cardCls}`}
                   onClick={() => setSelectedProduct(p)}
                   data-testid={`card-storefront-product-${p.id}`}
                 >
                   <div className="flex-1 p-4 pr-2">
-                    <p className="font-semibold leading-tight" data-testid={`text-storefront-product-name-${p.id}`}>{p.name}</p>
+                    <p className={`font-semibold leading-tight ${fontCls}`} data-testid={`text-storefront-product-name-${p.id}`}>{p.name}</p>
                     {p.description && (
                       <p className="mt-1 line-clamp-2 text-xs text-muted-foreground leading-relaxed">{p.description}</p>
                     )}
@@ -462,7 +481,7 @@ export default function StorefrontPage() {
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         {p.discountPrice ? (
                           <>
-                            <span className="text-sm font-bold" style={{ color: primaryColor }}>{formatPrice(p.discountPrice)}</span>
+                            <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(p.discountPrice)}</span>
                             <span className="text-xs text-muted-foreground line-through">{formatPrice(p.price)}</span>
                           </>
                         ) : (
@@ -519,7 +538,7 @@ export default function StorefrontPage() {
                       </Button>
                     )}
                   </div>
-                </Card>
+                </div>
               );
             })}
           </div>
@@ -631,9 +650,9 @@ export default function StorefrontPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     {selectedProduct.discountPrice ? (
                       <>
-                        <span className="text-xl font-bold" style={{ color: primaryColor }}>{formatPrice(selectedProduct.discountPrice)}</span>
+                        <span className="text-xl font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(selectedProduct.discountPrice)}</span>
                         <span className="text-muted-foreground line-through">{formatPrice(selectedProduct.price)}</span>
-                        <Badge variant="secondary" className="text-xs" style={{ backgroundColor: primaryColor + "15", color: primaryColor }}>
+                        <Badge variant="secondary" className="text-xs" style={{ backgroundColor: (secondaryColor || primaryColor) + "15", color: secondaryColor || primaryColor }}>
                           -{Math.round((1 - selectedProduct.discountPrice / selectedProduct.price) * 100)}%
                         </Badge>
                       </>
@@ -650,7 +669,7 @@ export default function StorefrontPage() {
                   </div>
                 )}
                 <Button
-                  className="w-full rounded-full bg-foreground text-background"
+                  className={`w-full ${btnRadius} bg-foreground text-background`}
                   onClick={(e) => {
                     e.stopPropagation();
                     addToCart(selectedProduct);
@@ -783,7 +802,7 @@ export default function StorefrontPage() {
             </div>
 
             <Button
-              className="w-full gap-2 text-white rounded-full"
+              className={`w-full gap-2 text-white ${btnRadius}`}
               style={{ backgroundColor: "#25D366" }}
               disabled={!customerName || !customerPhone || isSubmitting}
               onClick={handleCheckout}

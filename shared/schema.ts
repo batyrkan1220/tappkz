@@ -22,8 +22,13 @@ export const storeThemes = pgTable("store_themes", {
   id: serial("id").primaryKey(),
   storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
   primaryColor: varchar("primary_color", { length: 7 }).notNull().default("#2563eb"),
+  secondaryColor: varchar("secondary_color", { length: 7 }),
   logoUrl: text("logo_url"),
   bannerUrl: text("banner_url"),
+  bannerOverlay: boolean("banner_overlay").notNull().default(true),
+  buttonStyle: varchar("button_style", { length: 20 }).notNull().default("pill"),
+  cardStyle: varchar("card_style", { length: 20 }).notNull().default("bordered"),
+  fontStyle: varchar("font_style", { length: 20 }).notNull().default("modern"),
 });
 
 export const storeSettings = pgTable("store_settings", {
