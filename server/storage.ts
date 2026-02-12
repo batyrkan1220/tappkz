@@ -10,8 +10,9 @@ import {
   type Customer, type InsertCustomer,
   PLAN_LIMITS,
 } from "@shared/schema";
+import { users, type User } from "@shared/models/auth";
 import { db } from "./db";
-import { eq, and, desc, sql, gte, lte, count } from "drizzle-orm";
+import { eq, and, desc, sql, gte, lte, count, asc } from "drizzle-orm";
 
 export interface IStorage {
   getStoreByOwner(userId: string): Promise<Store | undefined>;
@@ -68,6 +69,24 @@ export interface IStorage {
   }>;
 
   getAllStores(): Promise<Store[]>;
+
+  getAllUsers(): Promise<Omit<User, "passwordHash">[]>;
+  getAllStoresWithStats(): Promise<(Store & { productsCount: number; ordersCount: number; revenue: number; customersCount: number; ownerEmail: string | null })[]>;
+  getPlatformAnalytics(): Promise<{
+    totalStores: number;
+    activeStores: number;
+    totalUsers: number;
+    totalOrders: number;
+    totalRevenue: number;
+    totalProducts: number;
+    totalCustomers: number;
+    storesByPlan: { plan: string; count: number }[];
+    storesByType: { type: string; count: number }[];
+    recentStores: Store[];
+  }>;
+  updateStorePlan(storeId: number, plan: string): Promise<Store | undefined>;
+  toggleStoreActive(storeId: number, isActive: boolean): Promise<Store | undefined>;
+  setUserSuperAdmin(userId: string, isSuperAdmin: boolean): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -370,6 +389,84 @@ export class DatabaseStorage implements IStorage {
 
   async getAllStores(): Promise<Store[]> {
     return db.select().from(stores).orderBy(desc(stores.createdAt));
+  }
+
+  async getAllUsers(): Promise<Omit<User, "passwordHash">[]> {
+    const rows = await db.select({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      profileImageUrl: users.profileImageUrl,
+      isSuperAdmin: users.isSuperAdmin,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    }).from(users).orderBy(desc(users.createdAt));
+    return rows;
+  }
+
+  async getAllStoresWithStats(): Promise<(Store & { productsCount: number; ordersCount: number; revenue: number; customersCount: number; ownerEmail: string | null })[]> {
+    const allStores = await db.select().from(stores).orderBy(desc(stores.createdAt));
+    const result = [];
+    for (const store of allStores) {
+      const [prodCount] = await db.select({ count: count() }).from(products).where(eq(products.storeId, store.id));
+      const [orderStats] = await db.execute(sql`SELECT COUNT(*)::int as cnt, COALESCE(SUM(total), 0)::int as revenue FROM orders WHERE store_id = ${store.id}`).then(r => r.rows as any[]);
+      const [custCount] = await db.select({ count: count() }).from(customers).where(eq(customers.storeId, store.id));
+      const [owner] = await db.select({ email: users.email }).from(users).where(eq(users.id, store.ownerUserId));
+      result.push({
+        ...store,
+        productsCount: prodCount?.count ?? 0,
+        ordersCount: orderStats?.cnt ?? 0,
+        revenue: orderStats?.revenue ?? 0,
+        customersCount: custCount?.count ?? 0,
+        ownerEmail: owner?.email ?? null,
+      });
+    }
+    return result;
+  }
+
+  async getPlatformAnalytics() {
+    const [storeCount] = await db.select({ count: count() }).from(stores);
+    const [activeStoreCount] = await db.select({ count: count() }).from(stores).where(eq(stores.isActive, true));
+    const [userCount] = await db.select({ count: count() }).from(users);
+    const [orderStats] = await db.execute(sql`SELECT COUNT(*)::int as cnt, COALESCE(SUM(total), 0)::int as revenue FROM orders`).then(r => r.rows as any[]);
+    const [prodCount] = await db.select({ count: count() }).from(products);
+    const [custCount] = await db.select({ count: count() }).from(customers);
+
+    const planRows = await db.execute(sql`SELECT plan, COUNT(*)::int as cnt FROM stores GROUP BY plan ORDER BY cnt DESC`);
+    const storesByPlan = (planRows.rows as any[]).map(r => ({ plan: r.plan, count: r.cnt }));
+
+    const typeRows = await db.execute(sql`SELECT COALESCE(business_type, 'unknown') as btype, COUNT(*)::int as cnt FROM stores GROUP BY COALESCE(business_type, 'unknown') ORDER BY cnt DESC`);
+    const storesByType = (typeRows.rows as any[]).map(r => ({ type: r.btype, count: r.cnt }));
+
+    const recentStores = await db.select().from(stores).orderBy(desc(stores.createdAt)).limit(10);
+
+    return {
+      totalStores: storeCount?.count ?? 0,
+      activeStores: activeStoreCount?.count ?? 0,
+      totalUsers: userCount?.count ?? 0,
+      totalOrders: orderStats?.cnt ?? 0,
+      totalRevenue: orderStats?.revenue ?? 0,
+      totalProducts: prodCount?.count ?? 0,
+      totalCustomers: custCount?.count ?? 0,
+      storesByPlan,
+      storesByType,
+      recentStores,
+    };
+  }
+
+  async updateStorePlan(storeId: number, plan: string): Promise<Store | undefined> {
+    const [store] = await db.update(stores).set({ plan }).where(eq(stores.id, storeId)).returning();
+    return store;
+  }
+
+  async toggleStoreActive(storeId: number, isActive: boolean): Promise<Store | undefined> {
+    const [store] = await db.update(stores).set({ isActive }).where(eq(stores.id, storeId)).returning();
+    return store;
+  }
+
+  async setUserSuperAdmin(userId: string, isSuperAdmin: boolean): Promise<void> {
+    await db.update(users).set({ isSuperAdmin }).where(eq(users.id, userId));
   }
 }
 

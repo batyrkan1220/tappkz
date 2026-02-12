@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupSession, registerAuthRoutes, isAuthenticated } from "./auth";
+import { setupSession, registerAuthRoutes, isAuthenticated, isSuperAdminMiddleware } from "./auth";
 import { PLAN_LIMITS, BUSINESS_TYPES } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -681,6 +681,71 @@ export async function registerRoutes(
       if (e instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid event data" });
       }
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/analytics", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const data = await storage.getPlatformAnalytics();
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/stores", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const data = await storage.getAllStoresWithStats();
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.patch("/api/superadmin/stores/:id/plan", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const planSchema = z.object({ plan: z.enum(["free", "pro", "business"]) });
+      const data = validate(planSchema, req.body);
+      const store = await storage.updateStorePlan(parseInt(req.params.id), data.plan);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      res.json(store);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.patch("/api/superadmin/stores/:id/active", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({ isActive: z.boolean() });
+      const data = validate(schema, req.body);
+      const store = await storage.toggleStoreActive(parseInt(req.params.id), data.isActive);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      res.json(store);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/users", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const data = await storage.getAllUsers();
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.patch("/api/superadmin/users/:id/superadmin", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({ isSuperAdmin: z.boolean() });
+      const data = validate(schema, req.body);
+      await storage.setUserSuperAdmin(req.params.id, data.isSuperAdmin);
+      res.json({ ok: true });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
       res.status(500).json({ message: e.message });
     }
   });

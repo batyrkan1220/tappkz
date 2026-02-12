@@ -79,11 +79,21 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Step 2: Add products (unlocked after categories exist)
 - Products page blocks adding items without categories, shows warning with link to categories page
 
+## Super Admin Panel
+- Accessible at /superadmin/* routes (only for users with isSuperAdmin=true)
+- Dashboard: platform-wide analytics (stores, users, orders, revenue, products, customers)
+- Stores page: view all stores with stats, change plans (free/pro/business), toggle active/inactive
+- Users page: view all users, grant/revoke SuperAdmin role
+- API routes: GET /api/superadmin/analytics, GET /api/superadmin/stores, PATCH /api/superadmin/stores/:id/plan, PATCH /api/superadmin/stores/:id/active, GET /api/superadmin/users, PATCH /api/superadmin/users/:id/superadmin
+- isSuperAdmin field on users table, isSuperAdminMiddleware in server/auth.ts
+- SuperAdmin link visible in merchant sidebar for admin users
+
 ## Recent Changes
+- Added SuperAdmin panel with platform-wide analytics, store/user management
 - Replaced Replit Auth (OIDC) with local email/password authentication (bcrypt + express-session)
 - Added /login and /register pages with Russian UI
 - Auth module: server/auth.ts (setupSession, registerAuthRoutes, isAuthenticated)
-- Users table: added password_hash column
+- Users table: added password_hash, is_super_admin columns
 - Added business type selection to store registration (2-step flow: pick type → fill details)
 - Dynamic admin terminology based on business type (sidebar, products page, dashboard, categories)
 - Added onboarding guide to dashboard with step-by-step instructions

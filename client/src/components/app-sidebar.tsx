@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, CreditCard, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList, Users, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, CreditCard, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList, Users, BarChart3, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { getBusinessLabels, type Store } from "@shared/schema";
@@ -70,6 +70,23 @@ export function AppSidebar({ store }: { store?: Store | null }) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {user?.isSuperAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Администрирование</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild data-testid="link-sidebar-superadmin">
+                    <Link href="/superadmin">
+                      <Shield className="h-4 w-4" />
+                      <span className="font-medium">SuperAdmin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
         {store && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Витрина</SidebarGroupLabel>

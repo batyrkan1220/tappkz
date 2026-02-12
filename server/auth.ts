@@ -84,6 +84,7 @@ export function registerAuthRoutes(app: Express) {
         firstName: user.firstName,
         lastName: user.lastName,
         profileImageUrl: user.profileImageUrl,
+        isSuperAdmin: user.isSuperAdmin,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
@@ -126,6 +127,7 @@ export function registerAuthRoutes(app: Express) {
         firstName: user.firstName,
         lastName: user.lastName,
         profileImageUrl: user.profileImageUrl,
+        isSuperAdmin: user.isSuperAdmin,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
@@ -165,6 +167,7 @@ export function registerAuthRoutes(app: Express) {
         firstName: user.firstName,
         lastName: user.lastName,
         profileImageUrl: user.profileImageUrl,
+        isSuperAdmin: user.isSuperAdmin,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
@@ -174,6 +177,17 @@ export function registerAuthRoutes(app: Express) {
     }
   });
 }
+
+export const isSuperAdminMiddleware: RequestHandler = async (req: any, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const [user] = await db.select().from(users).where(eq(users.id, req.session.userId));
+  if (!user || !user.isSuperAdmin) {
+    return res.status(403).json({ message: "Доступ запрещён" });
+  }
+  next();
+};
 
 export const isAuthenticated: RequestHandler = (req, res, next) => {
   if (!req.session.userId) {
