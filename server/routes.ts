@@ -467,6 +467,70 @@ export async function registerRoutes(
     }
   });
 
+  const orderSchema = z.object({
+    customerName: z.string().min(1).max(200),
+    customerPhone: z.string().min(5).max(30),
+    customerAddress: z.string().max(500).nullable().optional(),
+    customerComment: z.string().max(1000).nullable().optional(),
+    items: z.array(z.object({
+      productId: z.number(),
+      name: z.string(),
+      quantity: z.number().min(1),
+      price: z.number(),
+      imageUrl: z.string().nullable().optional(),
+    })).min(1),
+    paymentMethod: z.string().max(30).nullable().optional(),
+  });
+
+  app.post("/api/storefront/:slug/order", async (req, res) => {
+    try {
+      const data = validate(orderSchema, req.body);
+      const store = await storage.getStoreBySlug(req.params.slug);
+      if (!store) return res.status(404).json({ message: "Not found" });
+
+      const subtotal = data.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const orderNumber = await storage.getNextOrderNumber(store.id);
+
+      const order = await storage.createOrder({
+        storeId: store.id,
+        orderNumber,
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        customerAddress: data.customerAddress || null,
+        customerComment: data.customerComment || null,
+        items: data.items,
+        subtotal,
+        total: subtotal,
+        paymentMethod: data.paymentMethod || null,
+        status: "pending",
+      });
+
+      res.json(order);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid order data", errors: e.errors });
+      }
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/orders/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid order ID" });
+
+      const order = await storage.getOrder(id);
+      if (!order) return res.status(404).json({ message: "Order not found" });
+
+      const allStores = await storage.getAllStores();
+      const store = allStores.find(s => s.id === order.storeId);
+
+      res.json({ order, storeName: store?.name, storeSlug: store?.slug });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.post("/api/storefront/:slug/event", async (req, res) => {
     try {
       const data = validate(eventSchema, req.body);

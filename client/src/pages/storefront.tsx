@@ -110,36 +110,68 @@ export default function StorefrontPage() {
     setCart((prev) => prev.filter((i) => i.product.id !== productId));
   };
 
-  const handleCheckout = () => {
-    if (!store || !settings) return;
-    const itemsText = cart
-      .map((i) => {
-        const price = i.product.discountPrice || i.product.price;
-        return `${i.quantity}x ${i.product.name} - ${formatPrice(price * i.quantity)}`;
-      })
-      .join("\n");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    let msg = (settings.whatsappTemplate || "")
-      .replace("{store_name}", store.name)
-      .replace("{customer_name}", customerName)
-      .replace("{customer_phone}", customerPhone)
-      .replace("{address}", customerAddress || "Не указан")
-      .replace("{comment}", customerComment || "Нет")
-      .replace("{items}", itemsText)
-      .replace("{total}", new Intl.NumberFormat("ru-KZ").format(cartTotal));
+  const handleCheckout = async () => {
+    if (!store || !settings || isSubmitting) return;
+    setIsSubmitting(true);
 
-    const encoded = encodeURIComponent(msg);
-    const phone = store.whatsappPhone.replace(/[^0-9]/g, "");
-    window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+    try {
+      const orderItems = cart.map((i) => ({
+        productId: i.product.id,
+        name: i.product.name,
+        quantity: i.quantity,
+        price: i.product.discountPrice || i.product.price,
+        imageUrl: i.product.imageUrls?.[0] || null,
+      }));
 
-    apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "checkout_click" }).catch(() => {});
+      const orderRes = await apiRequest("POST", `/api/storefront/${params.slug}/order`, {
+        customerName,
+        customerPhone,
+        customerAddress: customerAddress || null,
+        customerComment: customerComment || null,
+        items: orderItems,
+        paymentMethod: settings.kaspiEnabled ? "kaspi" : "whatsapp",
+      });
 
-    setCheckoutOpen(false);
-    setCart([]);
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerAddress("");
-    setCustomerComment("");
+      const order = await orderRes.json();
+      const invoiceUrl = `${window.location.origin}/invoice/${order.id}`;
+
+      const itemsText = cart
+        .map((i) => {
+          const price = i.product.discountPrice || i.product.price;
+          return `*${i.quantity}x* ${i.product.name} - ${formatPrice(price * i.quantity)}`;
+        })
+        .join("\n");
+
+      const totalFormatted = new Intl.NumberFormat("ru-KZ").format(cartTotal);
+
+      let msg = `*#${order.orderNumber}*\n\n`;
+      msg += `${itemsText}\n\n`;
+      msg += `Итого: *${totalFormatted} ₸*\n\n`;
+      msg += `Покупатель: *${customerName}* ${customerPhone}\n`;
+      if (customerAddress) msg += `Адрес: ${customerAddress}\n`;
+      if (customerComment) msg += `Комментарий: ${customerComment}\n`;
+      if (settings.kaspiEnabled) msg += `\nОплата: *Kaspi*\n`;
+      msg += `\nСмотреть счёт:\n${invoiceUrl}`;
+
+      const encoded = encodeURIComponent(msg);
+      const phone = store.whatsappPhone.replace(/[^0-9]/g, "");
+      window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+
+      apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "checkout_click" }).catch(() => {});
+
+      setCheckoutOpen(false);
+      setCart([]);
+      setCustomerName("");
+      setCustomerPhone("");
+      setCustomerAddress("");
+      setCustomerComment("");
+    } catch (e) {
+      console.error("Order creation failed:", e);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getCategoryProductCount = (catId: number) => {
@@ -739,12 +771,12 @@ export default function StorefrontPage() {
             <Button
               className="w-full gap-2 text-white rounded-full"
               style={{ backgroundColor: "#25D366" }}
-              disabled={!customerName || !customerPhone}
+              disabled={!customerName || !customerPhone || isSubmitting}
               onClick={handleCheckout}
               data-testid="button-send-whatsapp"
             >
               <SiWhatsapp className="h-5 w-5" />
-              Оформить заказ в WhatsApp
+              {isSubmitting ? "Создание заказа..." : "Оформить заказ в WhatsApp"}
             </Button>
 
             {settings?.kaspiEnabled && settings?.kaspiPayUrl && (

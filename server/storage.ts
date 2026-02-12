@@ -1,11 +1,12 @@
 import {
-  stores, storeThemes, storeSettings, categories, products, storeEvents,
+  stores, storeThemes, storeSettings, categories, products, storeEvents, orders,
   type Store, type InsertStore,
   type StoreTheme, type InsertStoreTheme,
   type StoreSettings, type InsertStoreSettings,
   type Category, type InsertCategory,
   type Product, type InsertProduct,
   type StoreEvent, type InsertStoreEvent,
+  type Order, type InsertOrder,
   PLAN_LIMITS,
 } from "@shared/schema";
 import { db } from "./db";
@@ -37,6 +38,11 @@ export interface IStorage {
 
   recordEvent(event: InsertStoreEvent): Promise<void>;
   getAnalytics(storeId: number): Promise<{ visits: number; checkouts: number; addToCarts: number }>;
+
+  createOrder(order: InsertOrder): Promise<Order>;
+  getOrder(id: number): Promise<Order | undefined>;
+  getNextOrderNumber(storeId: number): Promise<number>;
+  getOrdersByStore(storeId: number): Promise<Order[]>;
 
   getAllStores(): Promise<Store[]>;
 }
@@ -166,6 +172,28 @@ export class DatabaseStorage implements IStorage {
       checkouts: map["checkout_click"] ?? 0,
       addToCarts: map["add_to_cart"] ?? 0,
     };
+  }
+
+  async createOrder(data: InsertOrder): Promise<Order> {
+    const [order] = await db.insert(orders).values(data).returning();
+    return order;
+  }
+
+  async getOrder(id: number): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
+  }
+
+  async getNextOrderNumber(storeId: number): Promise<number> {
+    const [result] = await db
+      .select({ maxNum: sql<number>`COALESCE(MAX(${orders.orderNumber}), 0)` })
+      .from(orders)
+      .where(eq(orders.storeId, storeId));
+    return (result?.maxNum ?? 0) + 1;
+  }
+
+  async getOrdersByStore(storeId: number): Promise<Order[]> {
+    return db.select().from(orders).where(eq(orders.storeId, storeId)).orderBy(desc(orders.createdAt));
   }
 
   async getAllStores(): Promise<Store[]> {

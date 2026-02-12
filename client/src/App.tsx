@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
 import StorefrontPage from "@/pages/storefront";
+import InvoicePage from "@/pages/invoice";
 import AdminLayout from "@/pages/admin/admin-layout";
 import Dashboard from "@/pages/admin/dashboard";
 import ProductsPage from "@/pages/admin/products";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/admin/kaspi" component={() => <AdminRoute component={KaspiPage} />} />
       <Route path="/admin/settings" component={() => <AdminRoute component={StoreSettingsPage} />} />
       <Route path="/s/:slug" component={StorefrontPage} />
+      <Route path="/invoice/:id" component={InvoicePage} />
       <Route component={NotFound} />
     </Switch>
   );

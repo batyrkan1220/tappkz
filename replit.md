@@ -14,6 +14,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 ### Public
 - `/` - Landing page (logged out) / Admin dashboard (logged in)
 - `/s/:slug` - Public storefront for a store
+- `/invoice/:id` - Public invoice/order receipt page
 
 ### Admin (authenticated)
 - `/admin` - Dashboard with analytics
@@ -35,11 +36,13 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `PUT /api/my-store/kaspi` - Kaspi payment settings (validated)
 - `GET /api/my-store/analytics` - Store analytics
 - `GET /api/storefront/:slug` - Public store data
+- `POST /api/storefront/:slug/order` - Create order (validated)
+- `GET /api/orders/:id` - Get order by ID (public)
 - `POST /api/storefront/:slug/event` - Track events (validated)
 - `POST /api/upload` - Image upload (auth required)
 
 ## Database Tables
-users, sessions, stores, store_themes, store_settings, categories, products, store_events
+users, sessions, stores, store_themes, store_settings, categories, products, orders, store_events
 
 ## Demo Store
 Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) with 8 products across 4 categories
@@ -50,8 +53,9 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Business: 2000 products
 
 ## Recent Changes
+- Added order/invoice system: orders saved to DB on checkout, WhatsApp message includes "See invoice" link
+- Invoice page at /invoice/:id shows order number, items, totals, customer info, payment method
+- Storefront redesigned to take.app style: banner + circular avatar, tabs (Обзор/Поиск), horizontal product cards, bottom cart bar
 - Added Kaspi payment integration (toggle, pay URL, recipient name in store_settings)
 - Kaspi pay button shown on storefront checkout when enabled
 - Added Zod validation schemas on all API routes
-- All CRUD endpoints validate request bodies before processing
-- Event tracking validates event types (visit, add_to_cart, checkout_click)
