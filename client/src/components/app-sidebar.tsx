@@ -39,8 +39,8 @@ export function AppSidebar({ store }: { store?: Store | null }) {
       <SidebarHeader className="p-4">
         <Link href="/admin" data-testid="link-sidebar-home">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-600 to-emerald-600">
-              <ShoppingBag className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
+              <ShoppingBag className="h-4 w-4 text-background" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-extrabold tracking-tight" data-testid="text-sidebar-brand">TakeSale</p>
