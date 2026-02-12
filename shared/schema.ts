@@ -75,6 +75,9 @@ export const orders = pgTable("orders", {
   total: integer("total").notNull(),
   paymentMethod: varchar("payment_method", { length: 30 }),
   status: varchar("status", { length: 20 }).notNull().default("pending"),
+  paymentStatus: varchar("payment_status", { length: 30 }).notNull().default("unpaid"),
+  fulfillmentStatus: varchar("fulfillment_status", { length: 30 }).notNull().default("unfulfilled"),
+  internalNote: text("internal_note"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

@@ -429,6 +429,43 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/my-store/orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const ordersList = await storage.getOrdersByStore(store.id);
+      res.json(ordersList);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  const updateOrderSchema = z.object({
+    status: z.enum(["pending", "confirmed", "completed", "cancelled"]).optional(),
+    paymentStatus: z.enum(["unpaid", "confirming", "partially_paid", "paid", "refunded", "voided"]).optional(),
+    fulfillmentStatus: z.enum(["unfulfilled", "fulfilled", "partially_fulfilled"]).optional(),
+    internalNote: z.string().max(1000).nullable().optional(),
+  });
+
+  app.patch("/api/my-store/orders/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+
+      const data = validate(updateOrderSchema, req.body);
+      const order = await storage.updateOrder(parseInt(req.params.id), store.id, data);
+      if (!order) return res.status(404).json({ message: "Заказ не найден" });
+      res.json(order);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      }
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.get("/api/my-store/analytics", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

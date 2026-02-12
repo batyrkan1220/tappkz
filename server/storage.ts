@@ -43,6 +43,7 @@ export interface IStorage {
   getOrder(id: number): Promise<Order | undefined>;
   getNextOrderNumber(storeId: number): Promise<number>;
   getOrdersByStore(storeId: number): Promise<Order[]>;
+  updateOrder(id: number, storeId: number, data: Partial<InsertOrder>): Promise<Order | undefined>;
 
   getAllStores(): Promise<Store[]>;
 }
@@ -194,6 +195,11 @@ export class DatabaseStorage implements IStorage {
 
   async getOrdersByStore(storeId: number): Promise<Order[]> {
     return db.select().from(orders).where(eq(orders.storeId, storeId)).orderBy(desc(orders.createdAt));
+  }
+
+  async updateOrder(id: number, storeId: number, data: Partial<InsertOrder>): Promise<Order | undefined> {
+    const [order] = await db.update(orders).set(data).where(and(eq(orders.id, id), eq(orders.storeId, storeId))).returning();
+    return order;
   }
 
   async getAllStores(): Promise<Store[]> {
