@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Home, Menu, X, CreditCard, ChevronRight } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Home, Menu, X, CreditCard, ChevronRight, ShoppingBag } from "lucide-react";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import type { Store, Product, Category, StoreTheme, StoreSettings } from "@shared/schema";
@@ -180,7 +180,7 @@ export default function StorefrontPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen bg-background">
         <Skeleton className="h-40 w-full" />
         <div className="flex justify-center -mt-10">
           <Skeleton className="h-20 w-20 rounded-full" />
@@ -195,8 +195,9 @@ export default function StorefrontPage() {
 
   if (error || !store) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="max-w-sm p-8 text-center">
+          <ShoppingBag className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
           <p className="text-lg font-semibold">Магазин не найден</p>
           <p className="mt-1 text-sm text-muted-foreground">Проверьте ссылку и попробуйте снова</p>
         </Card>
@@ -205,106 +206,116 @@ export default function StorefrontPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      <header className="sticky top-0 z-50 flex items-center justify-between gap-2 px-4 py-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md">
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={() => setMenuOpen(true)}
-          data-testid="button-menu"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-        <div className="flex items-center gap-1">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => { setActiveTab("search"); }}
-            data-testid="button-search-top"
-          >
-            <Search className="h-5 w-5" />
-          </Button>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="ghost" className="relative" data-testid="button-open-cart">
-                <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span
-                    className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-md">
-              <SheetHeader>
-                <SheetTitle>Корзина</SheetTitle>
-              </SheetHeader>
-              {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <ShoppingCart className="mb-3 h-10 w-10 text-muted-foreground/30" />
-                  <p className="text-sm text-muted-foreground">Корзина пуста</p>
-                </div>
-              ) : (
-                <>
-                  <ScrollArea className="mt-4 flex-1" style={{ maxHeight: "calc(100vh - 220px)" }}>
-                    <div className="space-y-3 pr-2">
-                      {cart.map((item) => (
-                        <div key={item.product.id} className="flex items-center gap-3 rounded-lg border p-2" data-testid={`cart-item-${item.product.id}`}>
-                          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
-                            {item.product.imageUrls?.[0] ? (
-                              <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                              <div className="flex h-full items-center justify-center">
-                                <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">{item.product.name}</p>
-                            <p className="text-sm font-bold" style={{ color: primaryColor }}>
-                              {formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-0.5">
-                            <Button size="icon" variant="ghost" onClick={() => updateQuantity(item.product.id, -1)}>
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-                            <Button size="icon" variant="ghost" onClick={() => updateQuantity(item.product.id, 1)}>
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => removeFromCart(item.product.id)}>
-                              <Trash2 className="h-3 w-3 text-muted-foreground" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                  <div className="border-t pt-4 mt-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Итого:</span>
-                      <span className="text-lg font-bold" style={{ color: primaryColor }} data-testid="text-cart-total">{formatPrice(cartTotal)}</span>
-                    </div>
-                    <Button
-                      className="w-full gap-2 text-white rounded-full"
-                      style={{ backgroundColor: "#25D366" }}
-                      onClick={() => setCheckoutOpen(true)}
-                      data-testid="button-checkout"
+    <div className="min-h-screen bg-background">
+      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-background/90 backdrop-blur-md border-b border-border/40">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-4 px-4 py-3">
+          <div className="flex items-center gap-2.5">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setMenuOpen(true)}
+              data-testid="button-menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground">
+                <ShoppingBag className="h-3.5 w-3.5 text-background" />
+              </div>
+              <span className="text-sm font-extrabold tracking-tight" data-testid="text-nav-store-name">{store.name}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => { setActiveTab("search"); }}
+              data-testid="button-search-top"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="ghost" className="relative" data-testid="button-open-cart">
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span
+                      className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+                      style={{ backgroundColor: primaryColor }}
                     >
-                      <SiWhatsapp className="h-4 w-4" />
-                      Оформить заказ
-                    </Button>
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md">
+                <SheetHeader>
+                  <SheetTitle>Корзина</SheetTitle>
+                </SheetHeader>
+                {cart.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <ShoppingCart className="mb-3 h-10 w-10 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">Корзина пуста</p>
                   </div>
-                </>
-              )}
-            </SheetContent>
-          </Sheet>
+                ) : (
+                  <>
+                    <ScrollArea className="mt-4 flex-1" style={{ maxHeight: "calc(100vh - 220px)" }}>
+                      <div className="space-y-3 pr-2">
+                        {cart.map((item) => (
+                          <div key={item.product.id} className="flex items-center gap-3 rounded-lg border p-2" data-testid={`cart-item-${item.product.id}`}>
+                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {item.product.imageUrls?.[0] ? (
+                                <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="flex h-full items-center justify-center">
+                                  <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{item.product.name}</p>
+                              <p className="text-sm font-bold" style={{ color: primaryColor }}>
+                                {formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-0.5">
+                              <Button size="icon" variant="ghost" onClick={() => updateQuantity(item.product.id, -1)}>
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+                              <Button size="icon" variant="ghost" onClick={() => updateQuantity(item.product.id, 1)}>
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                              <Button size="icon" variant="ghost" onClick={() => removeFromCart(item.product.id)}>
+                                <Trash2 className="h-3 w-3 text-muted-foreground" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                    <div className="border-t pt-4 mt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">Итого:</span>
+                        <span className="text-lg font-bold" style={{ color: primaryColor }} data-testid="text-cart-total">{formatPrice(cartTotal)}</span>
+                      </div>
+                      <Button
+                        className="w-full gap-2 text-white rounded-full"
+                        style={{ backgroundColor: "#25D366" }}
+                        onClick={() => setCheckoutOpen(true)}
+                        data-testid="button-checkout"
+                      >
+                        <SiWhatsapp className="h-4 w-4" />
+                        Оформить заказ
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-      </header>
+      </nav>
 
       <div className="relative">
         <div
@@ -316,7 +327,7 @@ export default function StorefrontPage() {
           }}
         />
         <div className="flex flex-col items-center -mt-12 relative z-10">
-          <Avatar className="h-24 w-24 border-4 border-white dark:border-slate-900 shadow-lg">
+          <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
             {theme?.logoUrl ? (
               <AvatarImage src={theme.logoUrl} alt={store.name} />
             ) : null}
@@ -343,7 +354,7 @@ export default function StorefrontPage() {
         </div>
       </div>
 
-      <div className="mx-auto mt-4 max-w-lg border-b">
+      <div className="mx-auto mt-4 max-w-lg border-b border-border/40">
         <div className="flex">
           <button
             className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${activeTab === "overview" ? "border-b-2 border-foreground text-foreground" : "text-muted-foreground"}`}
@@ -373,7 +384,7 @@ export default function StorefrontPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск товаров..."
-                className="pl-9 rounded-full bg-white dark:bg-slate-900"
+                className="pl-9 rounded-full"
                 data-testid="input-search"
                 autoFocus
               />
@@ -396,8 +407,7 @@ export default function StorefrontPage() {
             <ScrollArea className="w-full">
               <div className="flex gap-2 pb-1">
                 <button
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === null ? "text-white" : "bg-white dark:bg-slate-800 text-foreground border"}`}
-                  style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === null ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
                   onClick={() => setActiveCategory(null)}
                   data-testid="button-category-all"
                 >
@@ -406,8 +416,7 @@ export default function StorefrontPage() {
                 {categories.map((c) => (
                   <button
                     key={c.id}
-                    className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === c.id ? "text-white" : "bg-white dark:bg-slate-800 text-foreground border"}`}
-                    style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
+                    className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === c.id ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
                     onClick={() => setActiveCategory(c.id)}
                     data-testid={`button-category-${c.id}`}
                   >
@@ -440,7 +449,7 @@ export default function StorefrontPage() {
               return (
                 <Card
                   key={p.id}
-                  className="flex overflow-visible cursor-pointer hover-elevate bg-white dark:bg-slate-900"
+                  className="flex overflow-visible cursor-pointer hover-elevate"
                   onClick={() => setSelectedProduct(p)}
                   data-testid={`card-storefront-product-${p.id}`}
                 >
@@ -499,7 +508,7 @@ export default function StorefrontPage() {
                       <Button
                         size="icon"
                         variant="outline"
-                        className="absolute bottom-2 right-2 rounded-full shadow-md bg-white dark:bg-slate-800"
+                        className="absolute bottom-2 right-2 rounded-full shadow-md bg-background"
                         onClick={(e) => {
                           e.stopPropagation();
                           addToCart(p);
@@ -522,14 +531,13 @@ export default function StorefrontPage() {
           <Sheet>
             <SheetTrigger asChild>
               <button
-                className="flex w-full items-center justify-between rounded-2xl px-5 py-3.5 text-white shadow-xl"
-                style={{ backgroundColor: "#1a1a1a" }}
+                className="flex w-full items-center justify-between rounded-2xl bg-foreground px-5 py-3.5 text-background shadow-xl"
                 data-testid="button-bottom-cart"
               >
                 <div className="flex items-center gap-3">
                   <span
                     className="flex h-7 min-w-[28px] items-center justify-center rounded-full px-1.5 text-xs font-bold"
-                    style={{ backgroundColor: primaryColor }}
+                    style={{ backgroundColor: primaryColor, color: "white" }}
                   >
                     {cartCount}
                   </span>
@@ -642,8 +650,7 @@ export default function StorefrontPage() {
                   </div>
                 )}
                 <Button
-                  className="w-full rounded-full text-white"
-                  style={{ backgroundColor: primaryColor }}
+                  className="w-full rounded-full bg-foreground text-background"
                   onClick={(e) => {
                     e.stopPropagation();
                     addToCart(selectedProduct);
@@ -662,7 +669,14 @@ export default function StorefrontPage() {
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="left" className="w-72">
           <SheetHeader>
-            <SheetTitle className="text-left">{store.name}</SheetTitle>
+            <SheetTitle className="text-left">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
+                  <ShoppingBag className="h-4 w-4 text-background" />
+                </div>
+                <span className="font-extrabold tracking-tight">{store.name}</span>
+              </div>
+            </SheetTitle>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             {store.description && (
@@ -675,7 +689,7 @@ export default function StorefrontPage() {
               </div>
             )}
             {settings?.phoneNumber && (
-              <a href={`tel:${settings.phoneNumber}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <a href={`tel:${settings.phoneNumber}`} className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
                 <span>{settings.phoneNumber}</span>
               </a>
@@ -685,7 +699,7 @@ export default function StorefrontPage() {
                 href={`https://instagram.com/${settings.instagramUrl.replace("@", "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-2 text-sm text-muted-foreground"
               >
                 <SiInstagram className="h-4 w-4" />
                 <span>{settings.instagramUrl}</span>
@@ -696,7 +710,7 @@ export default function StorefrontPage() {
                 href={`https://wa.me/${store.whatsappPhone.replace(/[^0-9]/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-2 text-sm text-muted-foreground"
               >
                 <SiWhatsapp className="h-4 w-4" />
                 <span>WhatsApp</span>
