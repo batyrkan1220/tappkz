@@ -1,18 +1,124 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { sql, relations } from "drizzle-orm";
+import { pgTable, text, varchar, integer, boolean, timestamp, jsonb, index, serial } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+export * from "./models/auth";
+
+export const stores = pgTable("stores", {
+  id: serial("id").primaryKey(),
+  ownerUserId: varchar("owner_user_id").notNull(),
+  name: text("name").notNull(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  whatsappPhone: varchar("whatsapp_phone", { length: 20 }).notNull(),
+  city: text("city"),
+  description: text("description"),
+  plan: varchar("plan", { length: 20 }).notNull().default("free"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const storeThemes = pgTable("store_themes", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  primaryColor: varchar("primary_color", { length: 7 }).notNull().default("#2563eb"),
+  logoUrl: text("logo_url"),
+  bannerUrl: text("banner_url"),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export const storeSettings = pgTable("store_settings", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  showPrices: boolean("show_prices").notNull().default(true),
+  currency: varchar("currency", { length: 5 }).notNull().default("KZT"),
+  whatsappTemplate: text("whatsapp_template").notNull().default(
+    "Новый заказ из {store_name}!\n\nКлиент: {customer_name}\nТелефон: {customer_phone}\nАдрес: {address}\nКомментарий: {comment}\n\nТовары:\n{items}\n\nИтого: {total} ₸"
+  ),
+  instagramUrl: text("instagram_url"),
+  phoneNumber: text("phone_number"),
+});
+
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: integer("price").notNull(),
+  discountPrice: integer("discount_price"),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  imageUrls: text("image_urls").array().notNull().default(sql`'{}'::text[]`),
+});
+
+export const storeEvents = pgTable("store_events", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  eventType: varchar("event_type", { length: 30 }).notNull(),
+  metaJson: jsonb("meta_json"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [index("idx_store_events_store").on(table.storeId, table.eventType)]);
+
+export const storesRelations = relations(stores, ({ many, one }) => ({
+  theme: one(storeThemes, { fields: [stores.id], references: [storeThemes.storeId] }),
+  settings: one(storeSettings, { fields: [stores.id], references: [storeSettings.storeId] }),
+  categories: many(categories),
+  products: many(products),
+  events: many(storeEvents),
+}));
+
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  store: one(stores, { fields: [categories.storeId], references: [stores.id] }),
+  products: many(products),
+}));
+
+export const productsRelations = relations(products, ({ one }) => ({
+  store: one(stores, { fields: [products.storeId], references: [stores.id] }),
+  category: one(categories, { fields: [products.categoryId], references: [categories.id] }),
+}));
+
+export const storeThemesRelations = relations(storeThemes, ({ one }) => ({
+  store: one(stores, { fields: [storeThemes.storeId], references: [stores.id] }),
+}));
+
+export const storeSettingsRelations = relations(storeSettings, ({ one }) => ({
+  store: one(stores, { fields: [storeSettings.storeId], references: [stores.id] }),
+}));
+
+export const storeEventsRelations = relations(storeEvents, ({ one }) => ({
+  store: one(stores, { fields: [storeEvents.storeId], references: [stores.id] }),
+}));
+
+export const insertStoreSchema = createInsertSchema(stores).omit({ id: true, createdAt: true });
+export const insertCategorySchema = createInsertSchema(categories).omit({ id: true });
+export const insertProductSchema = createInsertSchema(products).omit({ id: true });
+export const insertStoreThemeSchema = createInsertSchema(storeThemes).omit({ id: true });
+export const insertStoreSettingsSchema = createInsertSchema(storeSettings).omit({ id: true });
+export const insertStoreEventSchema = createInsertSchema(storeEvents).omit({ id: true, createdAt: true });
+
+export type Store = typeof stores.$inferSelect;
+export type InsertStore = z.infer<typeof insertStoreSchema>;
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = z.infer<typeof insertCategorySchema>;
+export type Product = typeof products.$inferSelect;
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type StoreTheme = typeof storeThemes.$inferSelect;
+export type InsertStoreTheme = z.infer<typeof insertStoreThemeSchema>;
+export type StoreSettings = typeof storeSettings.$inferSelect;
+export type InsertStoreSettings = z.infer<typeof insertStoreSettingsSchema>;
+export type StoreEvent = typeof storeEvents.$inferSelect;
+export type InsertStoreEvent = z.infer<typeof insertStoreEventSchema>;
+
+export const PLAN_LIMITS: Record<string, number> = {
+  free: 30,
+  pro: 300,
+  business: 2000,
+};

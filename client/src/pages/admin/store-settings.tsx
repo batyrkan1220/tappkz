@@ -1,0 +1,138 @@
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Store, StoreSettings } from "@shared/schema";
+
+export default function StoreSettingsPage() {
+  const { toast } = useToast();
+  const { data: store, isLoading: storeLoading } = useQuery<Store>({ queryKey: ["/api/my-store"] });
+  const { data: settings, isLoading: settingsLoading } = useQuery<StoreSettings>({ queryKey: ["/api/my-store/settings"] });
+
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [city, setCity] = useState("");
+  const [description, setDescription] = useState("");
+  const [showPrices, setShowPrices] = useState(true);
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  useEffect(() => {
+    if (store) {
+      setName(store.name);
+      setSlug(store.slug);
+      setCity(store.city || "");
+      setDescription(store.description || "");
+    }
+    if (settings) {
+      setShowPrices(settings.showPrices);
+      setInstagramUrl(settings.instagramUrl || "");
+      setPhoneNumber(settings.phoneNumber || "");
+    }
+  }, [store, settings]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PUT", "/api/my-store/settings", {
+        name,
+        slug,
+        city: city || null,
+        description: description || null,
+        showPrices,
+        instagramUrl: instagramUrl || null,
+        phoneNumber: phoneNumber || null,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store/settings"] });
+      toast({ title: "Настройки сохранены" });
+    },
+    onError: (e: Error) => {
+      toast({ title: "Ошибка", description: e.message, variant: "destructive" });
+    },
+  });
+
+  if (storeLoading || settingsLoading) {
+    return (
+      <div className="space-y-4 p-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-6">
+      <h1 className="text-2xl font-bold">Настройки магазина</h1>
+
+      <Card className="space-y-4 p-5">
+        <div>
+          <Label>Название магазина *</Label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-store-name" />
+        </div>
+        <div>
+          <Label>URL (slug) *</Label>
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <span>{window.location.origin}/s/</span>
+            <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} className="flex-1" data-testid="input-store-slug" />
+          </div>
+        </div>
+        <div>
+          <Label>Город</Label>
+          <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-store-city" />
+        </div>
+        <div>
+          <Label>Описание</Label>
+          <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Расскажите о вашем бизнесе" data-testid="input-store-description" />
+        </div>
+
+        <div className="border-t pt-4">
+          <h3 className="mb-3 font-semibold">Контакты</h3>
+          <div className="space-y-3">
+            <div>
+              <Label>Instagram</Label>
+              <Input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="@username" data-testid="input-store-instagram" />
+            </div>
+            <div>
+              <Label>Телефон для связи</Label>
+              <Input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+7 777 123 45 67" data-testid="input-store-phone" />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="font-medium">Показывать цены</p>
+              <p className="text-sm text-muted-foreground">Отключите, чтобы скрыть цены на витрине</p>
+            </div>
+            <Switch checked={showPrices} onCheckedChange={setShowPrices} data-testid="switch-show-prices" />
+          </div>
+        </div>
+
+        <Button
+          onClick={() => saveMutation.mutate()}
+          disabled={!name || !slug || saveMutation.isPending}
+          data-testid="button-save-settings"
+        >
+          {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
+        </Button>
+      </Card>
+
+      <Card className="p-5">
+        <h3 className="mb-1 font-semibold">Тариф: {store?.plan?.toUpperCase()}</h3>
+        <p className="text-sm text-muted-foreground">
+          {store?.plan === "free" ? "До 30 товаров" : store?.plan === "pro" ? "До 300 товаров" : "До 2000 товаров"}
+        </p>
+      </Card>
+    </div>
+  );
+}

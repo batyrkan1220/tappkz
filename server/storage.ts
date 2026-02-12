@@ -1,38 +1,176 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import {
+  stores, storeThemes, storeSettings, categories, products, storeEvents,
+  type Store, type InsertStore,
+  type StoreTheme, type InsertStoreTheme,
+  type StoreSettings, type InsertStoreSettings,
+  type Category, type InsertCategory,
+  type Product, type InsertProduct,
+  type StoreEvent, type InsertStoreEvent,
+  PLAN_LIMITS,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, sql, gte, count } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getStoreByOwner(userId: string): Promise<Store | undefined>;
+  getStoreBySlug(slug: string): Promise<Store | undefined>;
+  createStore(store: InsertStore): Promise<Store>;
+  updateStore(id: number, data: Partial<InsertStore>): Promise<Store | undefined>;
+
+  getTheme(storeId: number): Promise<StoreTheme | undefined>;
+  upsertTheme(theme: InsertStoreTheme): Promise<StoreTheme>;
+
+  getSettings(storeId: number): Promise<StoreSettings | undefined>;
+  upsertSettings(settings: InsertStoreSettings): Promise<StoreSettings>;
+
+  getCategories(storeId: number): Promise<Category[]>;
+  createCategory(cat: InsertCategory): Promise<Category>;
+  updateCategory(id: number, storeId: number, data: Partial<InsertCategory>): Promise<Category | undefined>;
+  deleteCategory(id: number, storeId: number): Promise<void>;
+
+  getProducts(storeId: number): Promise<Product[]>;
+  getProduct(id: number, storeId: number): Promise<Product | undefined>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, storeId: number, data: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: number, storeId: number): Promise<void>;
+  countProducts(storeId: number): Promise<number>;
+
+  recordEvent(event: InsertStoreEvent): Promise<void>;
+  getAnalytics(storeId: number): Promise<{ visits: number; checkouts: number; addToCarts: number }>;
+
+  getAllStores(): Promise<Store[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getStoreByOwner(userId: string): Promise<Store | undefined> {
+    const [store] = await db.select().from(stores).where(eq(stores.ownerUserId, userId));
+    return store;
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getStoreBySlug(slug: string): Promise<Store | undefined> {
+    const [store] = await db.select().from(stores).where(eq(stores.slug, slug));
+    return store;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createStore(data: InsertStore): Promise<Store> {
+    const [store] = await db.insert(stores).values(data).returning();
+    await db.insert(storeThemes).values({ storeId: store.id });
+    await db.insert(storeSettings).values({ storeId: store.id });
+    return store;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async updateStore(id: number, data: Partial<InsertStore>): Promise<Store | undefined> {
+    const [store] = await db.update(stores).set(data).where(eq(stores.id, id)).returning();
+    return store;
+  }
+
+  async getTheme(storeId: number): Promise<StoreTheme | undefined> {
+    const [theme] = await db.select().from(storeThemes).where(eq(storeThemes.storeId, storeId));
+    return theme;
+  }
+
+  async upsertTheme(data: InsertStoreTheme): Promise<StoreTheme> {
+    const existing = await this.getTheme(data.storeId);
+    if (existing) {
+      const [theme] = await db.update(storeThemes).set(data).where(eq(storeThemes.storeId, data.storeId)).returning();
+      return theme;
+    }
+    const [theme] = await db.insert(storeThemes).values(data).returning();
+    return theme;
+  }
+
+  async getSettings(storeId: number): Promise<StoreSettings | undefined> {
+    const [s] = await db.select().from(storeSettings).where(eq(storeSettings.storeId, storeId));
+    return s;
+  }
+
+  async upsertSettings(data: InsertStoreSettings): Promise<StoreSettings> {
+    const existing = await this.getSettings(data.storeId);
+    if (existing) {
+      const [s] = await db.update(storeSettings).set(data).where(eq(storeSettings.storeId, data.storeId)).returning();
+      return s;
+    }
+    const [s] = await db.insert(storeSettings).values(data).returning();
+    return s;
+  }
+
+  async getCategories(storeId: number): Promise<Category[]> {
+    return db.select().from(categories).where(eq(categories.storeId, storeId)).orderBy(categories.sortOrder);
+  }
+
+  async createCategory(data: InsertCategory): Promise<Category> {
+    const [cat] = await db.insert(categories).values(data).returning();
+    return cat;
+  }
+
+  async updateCategory(id: number, storeId: number, data: Partial<InsertCategory>): Promise<Category | undefined> {
+    const [cat] = await db.update(categories).set(data).where(and(eq(categories.id, id), eq(categories.storeId, storeId))).returning();
+    return cat;
+  }
+
+  async deleteCategory(id: number, storeId: number): Promise<void> {
+    await db.delete(categories).where(and(eq(categories.id, id), eq(categories.storeId, storeId)));
+  }
+
+  async getProducts(storeId: number): Promise<Product[]> {
+    return db.select().from(products).where(eq(products.storeId, storeId)).orderBy(products.sortOrder);
+  }
+
+  async getProduct(id: number, storeId: number): Promise<Product | undefined> {
+    const [p] = await db.select().from(products).where(and(eq(products.id, id), eq(products.storeId, storeId)));
+    return p;
+  }
+
+  async createProduct(data: InsertProduct): Promise<Product> {
+    const [p] = await db.insert(products).values(data).returning();
+    return p;
+  }
+
+  async updateProduct(id: number, storeId: number, data: Partial<InsertProduct>): Promise<Product | undefined> {
+    const [p] = await db.update(products).set(data).where(and(eq(products.id, id), eq(products.storeId, storeId))).returning();
+    return p;
+  }
+
+  async deleteProduct(id: number, storeId: number): Promise<void> {
+    await db.delete(products).where(and(eq(products.id, id), eq(products.storeId, storeId)));
+  }
+
+  async countProducts(storeId: number): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(products).where(eq(products.storeId, storeId));
+    return result?.count ?? 0;
+  }
+
+  async recordEvent(data: InsertStoreEvent): Promise<void> {
+    await db.insert(storeEvents).values(data);
+  }
+
+  async getAnalytics(storeId: number): Promise<{ visits: number; checkouts: number; addToCarts: number }> {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const results = await db
+      .select({
+        eventType: storeEvents.eventType,
+        count: count(),
+      })
+      .from(storeEvents)
+      .where(and(eq(storeEvents.storeId, storeId), gte(storeEvents.createdAt, thirtyDaysAgo)))
+      .groupBy(storeEvents.eventType);
+
+    const map: Record<string, number> = {};
+    for (const r of results) {
+      map[r.eventType] = r.count;
+    }
+    return {
+      visits: map["visit"] ?? 0,
+      checkouts: map["checkout_click"] ?? 0,
+      addToCarts: map["add_to_cart"] ?? 0,
+    };
+  }
+
+  async getAllStores(): Promise<Store[]> {
+    return db.select().from(stores).orderBy(desc(stores.createdAt));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

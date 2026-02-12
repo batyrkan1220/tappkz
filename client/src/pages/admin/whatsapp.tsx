@@ -1,0 +1,109 @@
+import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { SiWhatsapp } from "react-icons/si";
+import type { Store, StoreSettings } from "@shared/schema";
+
+const DEFAULT_TEMPLATE = "Новый заказ из {store_name}!\n\nКлиент: {customer_name}\nТелефон: {customer_phone}\nАдрес: {address}\nКомментарий: {comment}\n\nТовары:\n{items}\n\nИтого: {total} ₸";
+
+export default function WhatsAppPage() {
+  const { toast } = useToast();
+  const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
+  const { data: settings, isLoading } = useQuery<StoreSettings>({ queryKey: ["/api/my-store/settings"] });
+
+  const [phone, setPhone] = useState("");
+  const [template, setTemplate] = useState(DEFAULT_TEMPLATE);
+
+  useEffect(() => {
+    if (store) setPhone(store.whatsappPhone || "");
+    if (settings) setTemplate(settings.whatsappTemplate || DEFAULT_TEMPLATE);
+  }, [store, settings]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PUT", "/api/my-store/whatsapp", { phone, template });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store/settings"] });
+      toast({ title: "Настройки WhatsApp сохранены" });
+    },
+    onError: (e: Error) => {
+      toast({ title: "Ошибка", description: e.message, variant: "destructive" });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 p-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
+  const previewMsg = template
+    .replace("{store_name}", store?.name || "Магазин")
+    .replace("{customer_name}", "Алия Нурланова")
+    .replace("{customer_phone}", "+7 777 123 45 67")
+    .replace("{address}", "ул. Абая 1, кв 10")
+    .replace("{comment}", "Побыстрее, пожалуйста")
+    .replace("{items}", "1x Товар A - 5 000 ₸\n2x Товар B - 3 000 ₸")
+    .replace("{total}", "11 000");
+
+  return (
+    <div className="space-y-6 p-6">
+      <h1 className="text-2xl font-bold">Настройки WhatsApp</h1>
+
+      <Card className="space-y-5 p-5">
+        <div>
+          <Label className="mb-1 block">Номер WhatsApp</Label>
+          <p className="mb-2 text-xs text-muted-foreground">Формат: 77771234567 (без +, без пробелов)</p>
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-green-600 text-white">
+              <SiWhatsapp className="h-4 w-4" />
+            </div>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="77771234567"
+              data-testid="input-whatsapp-phone"
+            />
+          </div>
+        </div>
+
+        <div>
+          <Label className="mb-1 block">Шаблон сообщения</Label>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Переменные: {"{store_name}"}, {"{customer_name}"}, {"{customer_phone}"}, {"{address}"}, {"{comment}"}, {"{items}"}, {"{total}"}
+          </p>
+          <Textarea
+            value={template}
+            onChange={(e) => setTemplate(e.target.value)}
+            rows={10}
+            className="font-mono text-sm"
+            data-testid="input-whatsapp-template"
+          />
+        </div>
+
+        <div>
+          <Label className="mb-2 block">Предпросмотр сообщения</Label>
+          <div className="rounded-md border bg-green-50 p-4 dark:bg-green-950/30">
+            <pre className="whitespace-pre-wrap text-sm" data-testid="text-whatsapp-preview">{previewMsg}</pre>
+          </div>
+        </div>
+
+        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} data-testid="button-save-whatsapp">
+          {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
+        </Button>
+      </Card>
+    </div>
+  );
+}
