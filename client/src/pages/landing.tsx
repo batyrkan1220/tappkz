@@ -112,16 +112,15 @@ export default function LandingPage() {
             <a href="#how-it-works" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-how">Как это работает</a>
             <a href="#features" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-features">Возможности</a>
             <a href="#pricing" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-pricing">Тарифы</a>
-            <a href="/s/arai-beauty" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-demo">Демо</a>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <a href="/api/login" className="hidden sm:block">
+            <a href="/api/login">
               <Button variant="ghost" className="font-semibold text-sm" data-testid="button-login-ghost">
                 Войти
               </Button>
             </a>
-            <a href="/api/login">
+            <a href="/api/login" className="hidden sm:block">
               <Button className="bg-foreground text-background rounded-full font-semibold" data-testid="button-login">
                 Начать бесплатно
               </Button>
@@ -141,7 +140,6 @@ export default function LandingPage() {
             <a href="#how-it-works" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-how">Как это работает</a>
             <a href="#features" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-features">Возможности</a>
             <a href="#pricing" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-pricing">Тарифы</a>
-            <a href="/s/arai-beauty" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-demo">Демо магазин</a>
           </div>
         )}
       </nav>
@@ -178,11 +176,6 @@ export default function LandingPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </a>
-              <a href="/s/arai-beauty">
-                <Button size="lg" variant="outline" className="rounded-full font-semibold" data-testid="button-hero-demo">
-                  Посмотреть демо
-                </Button>
-              </a>
             </div>
 
             <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
@@ -202,40 +195,40 @@ export default function LandingPage() {
                       <ShoppingBag className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <p className="text-white text-xs font-bold">Arai Beauty</p>
-                      <p className="text-white/70 text-[10px]">Косметика и уход</p>
+                      <p className="text-white text-xs font-bold">Ваш магазин</p>
+                      <p className="text-white/70 text-[10px]">Ваш бренд</p>
                     </div>
                   </div>
                 </div>
                 <div className="px-3 py-3 space-y-2">
                   <div className="flex gap-2">
-                    <div className="h-16 w-16 rounded-lg bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold text-pink-600">Крем</span>
+                    <div className="h-16 w-16 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <ShoppingBag className="h-5 w-5 text-green-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold truncate">Увлажняющий крем</p>
-                      <p className="text-[10px] text-muted-foreground">Для сухой кожи</p>
-                      <p className="text-[11px] font-bold text-green-600 mt-1">4 500 ₸</p>
+                      <p className="text-[11px] font-bold truncate">Товар 1</p>
+                      <p className="text-[10px] text-muted-foreground">Описание</p>
+                      <p className="text-[11px] font-bold text-green-600 mt-1">5 000 ₸</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <div className="h-16 w-16 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold text-purple-600">Сыв.</span>
+                    <div className="h-16 w-16 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                      <ShoppingBag className="h-5 w-5 text-emerald-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold truncate">Сыворотка витамин С</p>
-                      <p className="text-[10px] text-muted-foreground">Осветление</p>
-                      <p className="text-[11px] font-bold text-green-600 mt-1">7 200 ₸</p>
+                      <p className="text-[11px] font-bold truncate">Товар 2</p>
+                      <p className="text-[10px] text-muted-foreground">Описание</p>
+                      <p className="text-[11px] font-bold text-green-600 mt-1">8 500 ₸</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <div className="h-16 w-16 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold text-amber-600">Масло</span>
+                    <div className="h-16 w-16 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+                      <ShoppingBag className="h-5 w-5 text-teal-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold truncate">Масло для волос</p>
-                      <p className="text-[10px] text-muted-foreground">Аргановое</p>
-                      <p className="text-[11px] font-bold text-green-600 mt-1">3 800 ₸</p>
+                      <p className="text-[11px] font-bold truncate">Товар 3</p>
+                      <p className="text-[10px] text-muted-foreground">Описание</p>
+                      <p className="text-[11px] font-bold text-green-600 mt-1">3 200 ₸</p>
                     </div>
                   </div>
                 </div>
@@ -447,11 +440,6 @@ export default function LandingPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </a>
-              <a href="/s/arai-beauty">
-                <Button size="lg" variant="outline" className="rounded-full font-semibold border-white/30 text-white bg-white/10" data-testid="button-cta-demo">
-                  Смотреть демо
-                </Button>
-              </a>
             </div>
           </div>
         </div>
@@ -470,7 +458,6 @@ export default function LandingPage() {
               <a href="#how-it-works" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-how">Как это работает</a>
               <a href="#features" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-features">Возможности</a>
               <a href="#pricing" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-pricing">Тарифы</a>
-              <a href="/s/arai-beauty" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-demo">Демо</a>
             </div>
             <p className="text-xs text-muted-foreground">
               TakeSale &copy; {new Date().getFullYear()}
