@@ -44,14 +44,17 @@ export default function CreateStorePage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-white dark:bg-background">
-      <Card className="w-full max-w-md space-y-5 p-6">
+    <div className="relative flex min-h-screen items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white to-emerald-50/60 dark:from-green-950/20 dark:via-background dark:to-emerald-950/10" />
+      <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-green-100/40 blur-3xl dark:bg-green-900/10" />
+
+      <Card className="relative z-10 w-full max-w-md space-y-5 p-6">
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center">
-            <ShoppingBag className="h-8 w-8 text-foreground" />
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600">
+            <ShoppingBag className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-xl font-extrabold tracking-tight">Создайте ваш магазин</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Заполните информацию для начала работы</p>
+          <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-create-store-title">Создайте ваш магазин</h1>
+          <p className="mt-1 text-sm text-muted-foreground" data-testid="text-create-store-subtitle">Заполните информацию для начала работы</p>
         </div>
 
         <div className="space-y-4">
@@ -80,7 +83,7 @@ export default function CreateStorePage() {
           </div>
 
           <Button
-            className="w-full bg-foreground text-background rounded-full font-semibold"
+            className="w-full bg-green-600 text-white rounded-full font-semibold"
             onClick={() => createMutation.mutate()}
             disabled={!name || !slug || !whatsappPhone || createMutation.isPending}
             data-testid="button-create-store"

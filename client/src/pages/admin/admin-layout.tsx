@@ -48,10 +48,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex h-screen w-full">
         <AppSidebar store={store} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
+          <header className="flex h-12 shrink-0 items-center flex-wrap gap-2 border-b bg-white/50 dark:bg-background/50 backdrop-blur-sm px-4">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
           </header>
-          <main className="flex-1 overflow-y-auto">
+          <main className="flex-1 overflow-y-auto bg-muted/20 dark:bg-muted/5">
             {children}
           </main>
         </div>

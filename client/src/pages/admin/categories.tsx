@@ -76,26 +76,36 @@ export default function CategoriesPage() {
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold tracking-tight">Категории</h1>
-        <Button onClick={openCreate} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-add-category">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/30">
+            <FolderOpen className="h-5 w-5 text-purple-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-categories-title">Категории</h1>
+            <p className="text-xs text-muted-foreground" data-testid="text-categories-count">{categories?.length ?? 0} категорий</p>
+          </div>
+        </div>
+        <Button onClick={openCreate} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-add-category">
           <Plus className="mr-1.5 h-4 w-4" /> Добавить
         </Button>
       </div>
 
       {(categories || []).length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-12 text-center">
-          <FolderOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
-          <p className="font-semibold">Нет категорий</p>
+        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed" data-testid="card-empty-categories">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 dark:bg-purple-950/30">
+            <FolderOpen className="h-7 w-7 text-purple-600" />
+          </div>
+          <p className="font-extrabold tracking-tight">Нет категорий</p>
           <p className="mt-1 text-sm text-muted-foreground">Создайте категории для организации товаров</p>
         </Card>
       ) : (
         <div className="space-y-2">
           {(categories || []).map((c) => (
             <Card key={c.id} className="flex items-center gap-3 p-3" data-testid={`card-category-${c.id}`}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/30">
+                <FolderOpen className="h-4 w-4 text-purple-600" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
@@ -131,7 +141,7 @@ export default function CategoriesPage() {
               <Label className="font-semibold">Активна</Label>
             </div>
             <Button
-              className="w-full bg-foreground text-background rounded-full font-semibold"
+              className="w-full bg-green-600 text-white rounded-full font-semibold"
               onClick={() => saveMutation.mutate()}
               disabled={!name || saveMutation.isPending}
               data-testid="button-save-category"

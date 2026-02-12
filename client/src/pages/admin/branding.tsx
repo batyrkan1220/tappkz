@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Trash2, Palette } from "lucide-react";
+import { Upload, Trash2, Palette, CheckCircle2 } from "lucide-react";
 import type { Store, StoreTheme } from "@shared/schema";
 
 const COLORS = ["#2563eb", "#059669", "#d97706", "#dc2626", "#7c3aed", "#0891b2", "#be185d", "#4f46e5"];
@@ -74,7 +74,15 @@ export default function BrandingPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-extrabold tracking-tight">Брендирование</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/30">
+          <Palette className="h-5 w-5 text-amber-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-branding-title">Брендирование</h1>
+          <p className="text-xs text-muted-foreground">Настройте внешний вид витрины</p>
+        </div>
+      </div>
 
       <Card className="space-y-6 p-5">
         <div>
@@ -84,10 +92,14 @@ export default function BrandingPage() {
               <button
                 key={c}
                 onClick={() => setPrimaryColor(c)}
-                className={`h-9 w-9 rounded-md transition-all ${primaryColor === c ? "ring-2 ring-offset-2 ring-foreground" : ""}`}
+                className={`relative h-9 w-9 rounded-lg transition-all ${primaryColor === c ? "ring-2 ring-offset-2 ring-foreground" : ""}`}
                 style={{ backgroundColor: c }}
                 data-testid={`button-color-${c}`}
-              />
+              >
+                {primaryColor === c && (
+                  <CheckCircle2 className="absolute inset-0 m-auto h-4 w-4 text-white" />
+                )}
+              </button>
             ))}
             <Input
               type="color"
@@ -103,7 +115,7 @@ export default function BrandingPage() {
           <Label className="mb-2 block font-semibold">Логотип</Label>
           {logoUrl ? (
             <div className="relative inline-block">
-              <img src={logoUrl} alt="Logo" className="h-20 w-20 rounded-md border object-cover" />
+              <img src={logoUrl} alt="Logo" className="h-20 w-20 rounded-lg border object-cover" />
               <button
                 type="button"
                 className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
@@ -114,7 +126,7 @@ export default function BrandingPage() {
               </button>
             </div>
           ) : (
-            <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-md border border-dashed hover-elevate">
+            <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border border-dashed hover-elevate" data-testid="label-logo-upload">
               <Upload className="h-5 w-5 text-muted-foreground" />
               <input type="file" accept="image/*" className="hidden" onChange={(e) => handleUpload(e, "logo")} data-testid="input-logo-upload" />
             </label>
@@ -125,7 +137,7 @@ export default function BrandingPage() {
           <Label className="mb-2 block font-semibold">Баннер</Label>
           {bannerUrl ? (
             <div className="relative">
-              <img src={bannerUrl} alt="Banner" className="h-32 w-full rounded-md border object-cover" />
+              <img src={bannerUrl} alt="Banner" className="h-32 w-full rounded-lg border object-cover" />
               <button
                 type="button"
                 className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
@@ -136,7 +148,7 @@ export default function BrandingPage() {
               </button>
             </div>
           ) : (
-            <label className="flex h-32 w-full cursor-pointer items-center justify-center rounded-md border border-dashed hover-elevate">
+            <label className="flex h-32 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed hover-elevate" data-testid="label-banner-upload">
               <div className="flex flex-col items-center gap-1 text-muted-foreground">
                 <Upload className="h-5 w-5" />
                 <span className="text-xs">Загрузить баннер</span>
@@ -146,9 +158,9 @@ export default function BrandingPage() {
           )}
         </div>
 
-        <div className="rounded-md border p-4">
+        <div className="rounded-lg border p-4">
           <p className="mb-2 text-sm font-semibold text-muted-foreground">Предпросмотр</p>
-          <div className="rounded-md border overflow-hidden">
+          <div className="rounded-lg border overflow-hidden">
             {bannerUrl && (
               <div className="h-24 overflow-hidden">
                 <img src={bannerUrl} alt="" className="h-full w-full object-cover" />
@@ -156,9 +168,9 @@ export default function BrandingPage() {
             )}
             <div className="flex items-center gap-3 p-3" style={{ borderTop: `3px solid ${primaryColor}` }}>
               {logoUrl ? (
-                <img src={logoUrl} alt="" className="h-10 w-10 rounded-md object-cover" />
+                <img src={logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ backgroundColor: primaryColor + "20" }}>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: primaryColor + "20" }}>
                   <Palette className="h-5 w-5" style={{ color: primaryColor }} />
                 </div>
               )}
@@ -170,7 +182,7 @@ export default function BrandingPage() {
           </div>
         </div>
 
-        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-save-branding">
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-save-branding">
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </Card>

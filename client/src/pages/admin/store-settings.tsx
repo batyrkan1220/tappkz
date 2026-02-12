@@ -5,10 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Settings, Crown } from "lucide-react";
 import type { Store, StoreSettings } from "@shared/schema";
 
 export default function StoreSettingsPage() {
@@ -71,7 +73,15 @@ export default function StoreSettingsPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-extrabold tracking-tight">Настройки магазина</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/30">
+          <Settings className="h-5 w-5 text-blue-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-settings-title">Настройки магазина</h1>
+          <p className="text-xs text-muted-foreground">Основная информация и контакты</p>
+        </div>
+      </div>
 
       <Card className="space-y-4 p-5">
         <div>
@@ -121,18 +131,28 @@ export default function StoreSettingsPage() {
         <Button
           onClick={() => saveMutation.mutate()}
           disabled={!name || !slug || saveMutation.isPending}
-          className="bg-foreground text-background rounded-full font-semibold"
+          className="bg-green-600 text-white rounded-full font-semibold"
           data-testid="button-save-settings"
         >
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </Card>
 
-      <Card className="p-5">
-        <h3 className="mb-1 font-extrabold tracking-tight">Тариф: {store?.plan?.toUpperCase()}</h3>
-        <p className="text-sm text-muted-foreground">
-          {store?.plan === "free" ? "До 30 товаров" : store?.plan === "pro" ? "До 300 товаров" : "До 2000 товаров"}
-        </p>
+      <Card className="p-5" data-testid="card-plan-info">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/30">
+            <Crown className="h-5 w-5 text-amber-600" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-extrabold tracking-tight" data-testid="text-plan-name">Тариф: {store?.plan?.toUpperCase()}</h3>
+              <Badge variant="secondary" className="rounded-full font-semibold">{store?.plan === "free" ? "Бесплатный" : store?.plan === "pro" ? "Профессиональный" : "Бизнес"}</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground" data-testid="text-plan-limit">
+              {store?.plan === "free" ? "До 30 товаров" : store?.plan === "pro" ? "До 300 товаров" : "До 2000 товаров"}
+            </p>
+          </div>
+        </div>
       </Card>
     </div>
   );

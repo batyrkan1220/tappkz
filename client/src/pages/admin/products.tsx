@@ -141,16 +141,24 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold tracking-tight">Товары</h1>
-        <Button onClick={openCreate} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-add-product">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 dark:bg-green-950/30">
+            <Package className="h-5 w-5 text-green-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-products-title">Товары</h1>
+            <p className="text-xs text-muted-foreground" data-testid="text-products-count">{products?.length ?? 0} товаров</p>
+          </div>
+        </div>
+        <Button onClick={openCreate} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-add-product">
           <Plus className="mr-1.5 h-4 w-4" /> Добавить
         </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-[200px]" data-testid="container-search-products">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Поиск..."
@@ -174,16 +182,18 @@ export default function ProductsPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center p-12 text-center">
-          <Package className="mb-3 h-12 w-12 text-muted-foreground/40" />
-          <p className="font-semibold">Нет товаров</p>
+        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed" data-testid="card-empty-products">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 dark:bg-green-950/30">
+            <Package className="h-7 w-7 text-green-600" />
+          </div>
+          <p className="font-extrabold tracking-tight">Нет товаров</p>
           <p className="mt-1 text-sm text-muted-foreground">Добавьте первый товар в ваш каталог</p>
         </Card>
       ) : (
         <div className="space-y-2">
           {filtered.map((p) => (
             <Card key={p.id} className="flex items-center gap-3 p-3" data-testid={`card-product-${p.id}`}>
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
                 {p.imageUrls?.[0] ? (
                   <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" />
                 ) : (
@@ -198,7 +208,7 @@ export default function ProductsPage() {
                 <div className="flex items-center gap-2 text-sm">
                   {p.discountPrice ? (
                     <>
-                      <span className="font-semibold">{formatPrice(p.discountPrice)}</span>
+                      <span className="font-semibold text-green-600">{formatPrice(p.discountPrice)}</span>
                       <span className="text-muted-foreground line-through">{formatPrice(p.price)}</span>
                     </>
                   ) : (
@@ -265,7 +275,7 @@ export default function ProductsPage() {
               <Label className="font-semibold">Фото товара</Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {form.imageUrls.map((url, i) => (
-                  <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-md border">
+                  <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-lg border">
                     <img src={url} alt="" className="h-full w-full object-cover" />
                     <button
                       type="button"
@@ -277,7 +287,7 @@ export default function ProductsPage() {
                   </div>
                 ))}
                 {form.imageUrls.length < 5 && (
-                  <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-md border border-dashed hover-elevate">
+                  <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border border-dashed hover-elevate">
                     <Plus className="h-5 w-5 text-muted-foreground" />
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} data-testid="input-product-images" />
                   </label>
@@ -289,7 +299,7 @@ export default function ProductsPage() {
               <Label className="font-semibold">В наличии</Label>
             </div>
             <Button
-              className="w-full bg-foreground text-background rounded-full font-semibold"
+              className="w-full bg-green-600 text-white rounded-full font-semibold"
               onClick={() => saveMutation.mutate()}
               disabled={!form.name || !form.price || saveMutation.isPending}
               data-testid="button-save-product"

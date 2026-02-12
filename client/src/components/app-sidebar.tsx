@@ -33,15 +33,15 @@ export function AppSidebar({ store }: { store?: Store | null }) {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <Link href="/admin">
+        <Link href="/admin" data-testid="link-sidebar-home">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center">
-              <ShoppingBag className="h-5 w-5 text-foreground" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-green-600 to-emerald-600">
+              <ShoppingBag className="h-4 w-4 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-extrabold tracking-tight">TakeSale</p>
+              <p className="truncate text-sm font-extrabold tracking-tight" data-testid="text-sidebar-brand">TakeSale</p>
               {store && (
-                <p className="truncate text-xs text-muted-foreground">{store.name}</p>
+                <p className="truncate text-xs text-muted-foreground" data-testid="text-sidebar-store-name">{store.name}</p>
               )}
             </div>
           </div>
@@ -54,7 +54,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
+                  <SidebarMenuButton asChild isActive={location === item.url} data-testid={`link-sidebar-${item.title}`}>
                     <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span className="font-medium">{item.title}</span>
@@ -71,7 +71,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild data-testid="link-sidebar-storefront">
                     <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
                       <span className="font-medium">Открыть магазин</span>
@@ -87,10 +87,10 @@ export function AppSidebar({ store }: { store?: Store | null }) {
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.profileImageUrl || undefined} />
-            <AvatarFallback className="text-xs font-semibold">{user?.firstName?.[0] || user?.email?.[0] || "U"}</AvatarFallback>
+            <AvatarFallback className="text-xs font-semibold bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400">{user?.firstName?.[0] || user?.email?.[0] || "U"}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold">
+            <p className="truncate text-sm font-semibold" data-testid="text-sidebar-user">
               {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user?.email || "Пользователь"}
             </p>
           </div>

@@ -9,6 +9,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { SiWhatsapp } from "react-icons/si";
+import { MessageCircle } from "lucide-react";
 import type { Store, StoreSettings } from "@shared/schema";
 
 const DEFAULT_TEMPLATE = "Новый заказ из {store_name}!\n\nКлиент: {customer_name}\nТелефон: {customer_phone}\nАдрес: {address}\nКомментарий: {comment}\n\nТовары:\n{items}\n\nИтого: {total} ₸";
@@ -60,14 +61,22 @@ export default function WhatsAppPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-extrabold tracking-tight">Настройки WhatsApp</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 dark:bg-green-950/30">
+          <MessageCircle className="h-5 w-5 text-green-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-whatsapp-title">Настройки WhatsApp</h1>
+          <p className="text-xs text-muted-foreground">Управление чекаутом и шаблоном сообщений</p>
+        </div>
+      </div>
 
       <Card className="space-y-5 p-5">
         <div>
           <Label className="mb-1 block font-semibold">Номер WhatsApp</Label>
           <p className="mb-2 text-xs text-muted-foreground">Формат: 77771234567 (без +, без пробелов)</p>
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-green-600 text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-600 text-white">
               <SiWhatsapp className="h-4 w-4" />
             </div>
             <Input
@@ -95,12 +104,12 @@ export default function WhatsAppPage() {
 
         <div>
           <Label className="mb-2 block font-semibold">Предпросмотр сообщения</Label>
-          <div className="rounded-md border bg-green-50 p-4 dark:bg-green-950/30">
+          <div className="rounded-lg border bg-green-50 dark:bg-green-950/20 p-4">
             <pre className="whitespace-pre-wrap text-sm" data-testid="text-whatsapp-preview">{previewMsg}</pre>
           </div>
         </div>
 
-        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} className="bg-foreground text-background rounded-full font-semibold" data-testid="button-save-whatsapp">
+        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-save-whatsapp">
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </Card>
