@@ -5,6 +5,43 @@ import { z } from "zod";
 
 export * from "./models/auth";
 
+export const BUSINESS_TYPES = {
+  restaurant: { label: "Ресторан", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
+  cafe: { label: "Кафе", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
+  home_food: { label: "Домашняя еда", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
+  bakery: { label: "Пекарня и кондитерская", group: "fnb", itemLabel: "изделие", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
+  catering: { label: "Кейтеринг", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
+  hotel_restaurant: { label: "Ресторан при отеле", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
+  grocery: { label: "Продукты и мясо", group: "fnb", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  ecommerce: { label: "Интернет-магазин", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  fashion: { label: "Одежда и обувь", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  pharmacy: { label: "Аптека и здоровье", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  electronics: { label: "Электроника и телефоны", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  digital: { label: "Цифровые товары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  popup: { label: "Pop-up магазин", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  personal_shopping: { label: "Шоппинг-услуги", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  jewelry: { label: "Украшения и аксессуары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  b2b: { label: "B2B и оптовая торговля", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  salon: { label: "Салон красоты", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
+  laundry: { label: "Прачечная и химчистка", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
+  professional: { label: "Профессиональные услуги", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
+  pets: { label: "Зоотовары и груминг", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
+  hotel: { label: "Бронирование жилья", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
+  education: { label: "Образование и курсы", group: "service", itemLabel: "курс", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
+  printing: { label: "Типография и печать", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
+  rental: { label: "Аренда", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
+  travel: { label: "Туризм и путешествия", group: "service", itemLabel: "тур", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
+  ticketing: { label: "Билеты и мероприятия", group: "service", itemLabel: "билет", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
+} as const;
+
+export type BusinessTypeKey = keyof typeof BUSINESS_TYPES;
+
+export function getBusinessLabels(businessType: string | null | undefined) {
+  const bt = businessType as BusinessTypeKey;
+  if (bt && BUSINESS_TYPES[bt]) return BUSINESS_TYPES[bt];
+  return { label: "Магазин", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" };
+}
+
 export const stores = pgTable("stores", {
   id: serial("id").primaryKey(),
   ownerUserId: varchar("owner_user_id").notNull(),
@@ -13,6 +50,7 @@ export const stores = pgTable("stores", {
   whatsappPhone: varchar("whatsapp_phone", { length: 20 }).notNull(),
   city: text("city"),
   description: text("description"),
+  businessType: varchar("business_type", { length: 50 }),
   plan: varchar("plan", { length: 20 }).notNull().default("free"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),

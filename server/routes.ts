@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { PLAN_LIMITS } from "@shared/schema";
+import { PLAN_LIMITS, BUSINESS_TYPES } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -34,6 +34,7 @@ const createStoreSchema = z.object({
   whatsappPhone: z.string().min(5).max(20).regex(/^[0-9]+$/),
   city: z.string().max(100).nullable().optional(),
   description: z.string().max(1000).nullable().optional(),
+  businessType: z.enum(Object.keys(BUSINESS_TYPES) as [string, ...string[]]).nullable().optional(),
 });
 
 const createProductSchema = z.object({
@@ -142,6 +143,7 @@ export async function registerRoutes(
         whatsappPhone: data.whatsappPhone,
         city: data.city || null,
         description: data.description || null,
+        businessType: data.businessType || null,
         ownerUserId: userId,
         plan: "free",
         isActive: true,

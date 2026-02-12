@@ -59,13 +59,29 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Pro: 300 products  
 - Business: 2000 products
 
+## Business Types
+- Store registration includes business type selection (26 types in 3 groups: F&B, E-commerce, Service)
+- Business type determines UI terminology: "Товары"/"Меню"/"Услуги" in sidebar, products page, dashboard
+- Defined in shared/schema.ts BUSINESS_TYPES constant with getBusinessLabels() helper
+- useBusinessLabels() hook for frontend components
+
+## Onboarding Flow
+- Dashboard shows onboarding card when store has 0 categories or 0 products
+- Step 1: Create category (required first)
+- Step 2: Add products (unlocked after categories exist)
+- Products page blocks adding items without categories, shows warning with link to categories page
+
 ## Recent Changes
-- Added analytics page at /admin/analytics: line charts for page views/sales/orders, tab reports (Трафик/Заказы/Клиенты/Товары)
-- Added admin customers page at /admin/customers: table with search, filter tabs (Все/Неактивно/Первый заказ/Никогда не заказывал), add/edit/delete customers, auto-created from orders
-- Added admin orders page at /admin/orders: table with search, filter tabs (Все/Неоплаченный/Подтверждение/Оплачено), inline status/payment/fulfillment dropdowns, order detail panel with internal notes
-- Added order/invoice system: orders saved to DB on checkout, WhatsApp message includes "See invoice" link
-- Invoice page at /invoice/:id shows order number, items, totals, customer info, payment method
-- Storefront redesigned to take.app style: banner + circular avatar, tabs (Обзор/Поиск), horizontal product cards, bottom cart bar
-- Added Kaspi payment integration (toggle, pay URL, recipient name in store_settings)
-- Kaspi pay button shown on storefront checkout when enabled
+- Added business type selection to store registration (2-step flow: pick type → fill details)
+- Dynamic admin terminology based on business type (sidebar, products page, dashboard, categories)
+- Added onboarding guide to dashboard with step-by-step instructions
+- Products page enforces category-first creation with warning card
+- Removed demo page links from landing page, added mobile login button
+- Added theme customization: secondary color, button/card/font styles, banner overlay
+- Storefront uses merchant's own branding in nav instead of TakeSale logo
+- Added analytics page at /admin/analytics: line charts for page views/sales/orders
+- Added admin customers page at /admin/customers
+- Added admin orders page at /admin/orders
+- Added order/invoice system with WhatsApp integration
+- Added Kaspi payment integration
 - Added Zod validation schemas on all API routes

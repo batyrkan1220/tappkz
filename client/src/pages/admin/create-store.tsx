@@ -7,10 +7,22 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase } from "lucide-react";
+import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
+
+const GROUPS = [
+  { key: "fnb", label: "Еда и напитки", icon: UtensilsCrossed, color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-950/30" },
+  { key: "ecommerce", label: "Торговля", icon: Store, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
+  { key: "service", label: "Услуги", icon: Briefcase, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/30" },
+];
+
+const businessTypeEntries = Object.entries(BUSINESS_TYPES) as [BusinessTypeKey, typeof BUSINESS_TYPES[BusinessTypeKey]][];
 
 export default function CreateStorePage() {
   const { toast } = useToast();
+  const [step, setStep] = useState(1);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+  const [businessType, setBusinessType] = useState<BusinessTypeKey | null>(null);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [whatsappPhone, setWhatsappPhone] = useState("");
@@ -25,6 +37,7 @@ export default function CreateStorePage() {
         whatsappPhone,
         city: city || null,
         description: description || null,
+        businessType: businessType || null,
       });
     },
     onSuccess: () => {
@@ -43,54 +56,131 @@ export default function CreateStorePage() {
     }
   };
 
+  const filteredTypes = businessTypeEntries.filter(([, v]) => v.group === selectedGroup);
+
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white to-emerald-50/60 dark:from-green-950/20 dark:via-background dark:to-emerald-950/10" />
       <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-green-100/40 blur-3xl dark:bg-green-900/10" />
 
-      <Card className="relative z-10 w-full max-w-md space-y-5 p-6">
+      <Card className="relative z-10 w-full max-w-lg space-y-5 p-6">
         <div className="text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600">
             <ShoppingBag className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-create-store-title">Создайте ваш магазин</h1>
-          <p className="mt-1 text-sm text-muted-foreground" data-testid="text-create-store-subtitle">Заполните информацию для начала работы</p>
+          <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-create-store-title">
+            {step === 1 ? "Выберите тип бизнеса" : "Создайте ваш магазин"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground" data-testid="text-create-store-subtitle">
+            {step === 1 ? "Это поможет настроить платформу под ваш бизнес" : "Заполните информацию для начала работы"}
+          </p>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <Label className="font-semibold">Название магазина *</Label>
-            <Input value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Мой магазин" data-testid="input-create-store-name" />
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step >= 1 ? "bg-green-600 text-white" : "bg-muted text-muted-foreground"}`} data-testid="step-indicator-1">1</div>
+          <div className={`h-0.5 w-8 ${step >= 2 ? "bg-green-600" : "bg-muted"}`} />
+          <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step >= 2 ? "bg-green-600 text-white" : "bg-muted text-muted-foreground"}`} data-testid="step-indicator-2">2</div>
+        </div>
+
+        {step === 1 && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-2">
+              {GROUPS.map((g) => (
+                <button
+                  key={g.key}
+                  onClick={() => { setSelectedGroup(g.key); setBusinessType(null); }}
+                  className={`flex flex-col items-center gap-2 rounded-md border p-3 text-center transition-colors ${
+                    selectedGroup === g.key ? "border-green-500 bg-green-50 dark:bg-green-950/20" : "hover-elevate"
+                  }`}
+                  data-testid={`button-group-${g.key}`}
+                >
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${g.bg}`}>
+                    <g.icon className={`h-5 w-5 ${g.color}`} />
+                  </div>
+                  <span className="text-xs font-semibold">{g.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {selectedGroup && (
+              <div className="space-y-1.5 max-h-[280px] overflow-y-auto">
+                {filteredTypes.map(([key, val]) => (
+                  <button
+                    key={key}
+                    onClick={() => setBusinessType(key)}
+                    className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                      businessType === key ? "border-green-500 bg-green-50 dark:bg-green-950/20" : "hover-elevate"
+                    }`}
+                    data-testid={`button-type-${key}`}
+                  >
+                    {businessType === key && <Check className="h-4 w-4 shrink-0 text-green-600" />}
+                    <span className={businessType === key ? "" : "ml-7"}>{val.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <Button
+              className="w-full bg-green-600 text-white rounded-full font-semibold"
+              onClick={() => setStep(2)}
+              disabled={!businessType}
+              data-testid="button-next-step"
+            >
+              Далее
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
           </div>
-          <div>
-            <Label className="font-semibold">URL магазина *</Label>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <span className="shrink-0">/s/</span>
-              <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-store" data-testid="input-create-store-slug" />
+        )}
+
+        {step === 2 && (
+          <div className="space-y-4">
+            {businessType && (
+              <div className="flex items-center gap-2 rounded-md bg-green-50 dark:bg-green-950/20 px-3 py-2 text-sm">
+                <Check className="h-4 w-4 text-green-600 shrink-0" />
+                <span className="font-medium">{BUSINESS_TYPES[businessType].label}</span>
+                <button onClick={() => setStep(1)} className="ml-auto text-xs text-muted-foreground underline" data-testid="button-change-type">Изменить</button>
+              </div>
+            )}
+
+            <div>
+              <Label className="font-semibold">Название *</Label>
+              <Input value={name} onChange={(e) => handleNameChange(e.target.value)} placeholder="Мой магазин" data-testid="input-create-store-name" />
+            </div>
+            <div>
+              <Label className="font-semibold">URL магазина *</Label>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <span className="shrink-0">/s/</span>
+                <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-store" data-testid="input-create-store-slug" />
+              </div>
+            </div>
+            <div>
+              <Label className="font-semibold">Номер WhatsApp *</Label>
+              <Input value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} placeholder="77771234567" data-testid="input-create-store-phone" />
+            </div>
+            <div>
+              <Label className="font-semibold">Город</Label>
+              <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-create-store-city" />
+            </div>
+            <div>
+              <Label className="font-semibold">Описание</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Расскажите о вашем бизнесе" data-testid="input-create-store-desc" />
+            </div>
+
+            <div className="flex gap-2">
+              <Button variant="outline" className="rounded-full font-semibold" onClick={() => setStep(1)} data-testid="button-back-step">
+                <ArrowLeft className="mr-1.5 h-4 w-4" /> Назад
+              </Button>
+              <Button
+                className="flex-1 bg-green-600 text-white rounded-full font-semibold"
+                onClick={() => createMutation.mutate()}
+                disabled={!name || !slug || !whatsappPhone || createMutation.isPending}
+                data-testid="button-create-store"
+              >
+                {createMutation.isPending ? "Создание..." : "Создать магазин"}
+              </Button>
             </div>
           </div>
-          <div>
-            <Label className="font-semibold">Номер WhatsApp *</Label>
-            <Input value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} placeholder="77771234567" data-testid="input-create-store-phone" />
-          </div>
-          <div>
-            <Label className="font-semibold">Город</Label>
-            <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-create-store-city" />
-          </div>
-          <div>
-            <Label className="font-semibold">Описание</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Расскажите о вашем бизнесе" data-testid="input-create-store-desc" />
-          </div>
-
-          <Button
-            className="w-full bg-green-600 text-white rounded-full font-semibold"
-            onClick={() => createMutation.mutate()}
-            disabled={!name || !slug || !whatsappPhone || createMutation.isPending}
-            data-testid="button-create-store"
-          >
-            {createMutation.isPending ? "Создание..." : "Создать магазин"}
-          </Button>
-        </div>
+        )}
       </Card>
     </div>
   );

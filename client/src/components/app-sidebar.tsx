@@ -15,24 +15,25 @@ import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, CreditCard, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList, Users, BarChart3 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
-import type { Store } from "@shared/schema";
-
-const menuItems = [
-  { title: "Панель", url: "/admin", icon: LayoutDashboard },
-  { title: "Аналитика", url: "/admin/analytics", icon: BarChart3 },
-  { title: "Заказы", url: "/admin/orders", icon: ClipboardList },
-  { title: "Клиенты", url: "/admin/customers", icon: Users },
-  { title: "Товары", url: "/admin/products", icon: Package },
-  { title: "Категории", url: "/admin/categories", icon: FolderOpen },
-  { title: "Брендирование", url: "/admin/branding", icon: Palette },
-  { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageCircle },
-  { title: "Kaspi", url: "/admin/kaspi", icon: CreditCard },
-  { title: "Настройки", url: "/admin/settings", icon: Settings },
-];
+import { getBusinessLabels, type Store } from "@shared/schema";
 
 export function AppSidebar({ store }: { store?: Store | null }) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
+  const labels = getBusinessLabels(store?.businessType);
+
+  const menuItems = [
+    { title: "Панель", url: "/admin", icon: LayoutDashboard },
+    { title: "Аналитика", url: "/admin/analytics", icon: BarChart3 },
+    { title: "Заказы", url: "/admin/orders", icon: ClipboardList },
+    { title: "Клиенты", url: "/admin/customers", icon: Users },
+    { title: labels.itemLabelPlural, url: "/admin/products", icon: Package },
+    { title: "Категории", url: "/admin/categories", icon: FolderOpen },
+    { title: "Брендирование", url: "/admin/branding", icon: Palette },
+    { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageCircle },
+    { title: "Kaspi", url: "/admin/kaspi", icon: CreditCard },
+    { title: "Настройки", url: "/admin/settings", icon: Settings },
+  ];
 
   return (
     <Sidebar>

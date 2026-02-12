@@ -3,13 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, MousePointerClick, ShoppingCart, Package, FolderOpen, ExternalLink, Copy, ArrowRight } from "lucide-react";
+import { Eye, MousePointerClick, ShoppingCart, Package, FolderOpen, ExternalLink, Copy, ArrowRight, Check, CircleDot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import { useBusinessLabels } from "@/hooks/use-business-labels";
 import type { Store, Product, Category } from "@shared/schema";
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const labels = useBusinessLabels();
   const { data: store, isLoading } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: products } = useQuery<Product[]>({ queryKey: ["/api/my-store/products"] });
   const { data: categories } = useQuery<Category[]>({ queryKey: ["/api/my-store/categories"] });
@@ -31,6 +33,9 @@ export default function Dashboard() {
   if (!store) return null;
 
   const storeUrl = `${window.location.origin}/s/${store.slug}`;
+  const hasCategories = (categories?.length ?? 0) > 0;
+  const hasProducts = (products?.length ?? 0) > 0;
+  const isOnboarded = hasCategories && hasProducts;
 
   const copyUrl = () => {
     navigator.clipboard.writeText(storeUrl);
@@ -74,6 +79,66 @@ export default function Dashboard() {
         </Button>
       </Card>
 
+      {!isOnboarded && (
+        <Card className="p-5 border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/10" data-testid="card-onboarding">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600">
+              <ArrowRight className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <h2 className="font-extrabold tracking-tight" data-testid="text-onboarding-title">Быстрый старт</h2>
+              <p className="text-xs text-muted-foreground">Выполните шаги, чтобы запустить витрину</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasCategories ? "bg-background border-green-300 dark:border-green-700" : "bg-background border-border"}`} data-testid="onboarding-step-1">
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasCategories ? "bg-green-600" : "bg-muted"}`}>
+                {hasCategories ? <Check className="h-4 w-4 text-white" /> : <CircleDot className="h-4 w-4 text-muted-foreground" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-semibold ${hasCategories ? "line-through text-muted-foreground" : ""}`}>
+                  Шаг 1: Создайте {labels.categoryLabel.toLowerCase()}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {labels.group === "fnb" ? "Добавьте разделы меню для организации блюд" : labels.group === "service" ? "Добавьте категории для организации услуг" : "Добавьте категории для организации товаров"}
+                </p>
+              </div>
+              {!hasCategories && (
+                <Link href="/admin/categories" data-testid="link-onboarding-categories">
+                  <Button className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-onboarding-categories">
+                    Создать
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+            </div>
+
+            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasProducts ? "bg-background border-green-300 dark:border-green-700" : !hasCategories ? "bg-muted/30 border-border opacity-60" : "bg-background border-border"}`} data-testid="onboarding-step-2">
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasProducts ? "bg-green-600" : "bg-muted"}`}>
+                {hasProducts ? <Check className="h-4 w-4 text-white" /> : <CircleDot className="h-4 w-4 text-muted-foreground" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-semibold ${hasProducts ? "line-through text-muted-foreground" : ""}`}>
+                  Шаг 2: Добавьте {labels.itemLabel}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {labels.group === "fnb" ? "Добавьте блюда с ценами и фото" : labels.group === "service" ? "Добавьте услуги с ценами и описанием" : "Добавьте товары с ценами и фото"}
+                </p>
+              </div>
+              {!hasProducts && hasCategories && (
+                <Link href="/admin/products" data-testid="link-onboarding-products">
+                  <Button className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-onboarding-products">
+                    Добавить
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-3">
         {stats.map((s) => (
           <Card key={s.label} className="p-5" data-testid={`card-stat-${s.label}`}>
@@ -97,7 +162,7 @@ export default function Dashboard() {
                   <Package className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-muted-foreground">Товары</span>
+                  <span className="text-sm font-medium text-muted-foreground">{labels.itemLabelPlural}</span>
                   <p className="text-2xl font-extrabold tracking-tight">{products?.length ?? 0}</p>
                 </div>
               </div>
@@ -132,24 +197,6 @@ export default function Dashboard() {
           </Link>
         </Card>
       </div>
-
-      {(products?.length ?? 0) === 0 && (
-        <Card className="p-6 text-center border-dashed" data-testid="card-empty-state">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 dark:bg-green-950/30">
-            <Package className="h-7 w-7 text-green-600" />
-          </div>
-          <h3 className="font-extrabold tracking-tight" data-testid="text-empty-title">Начните с добавления товаров</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Добавьте товары, чтобы ваша витрина заработала</p>
-          <div className="mt-4">
-            <Link href="/admin/products" data-testid="link-go-products">
-              <Button className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-go-products">
-                <Package className="mr-1.5 h-4 w-4" />
-                Добавить товары
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      )}
     </div>
   );
 }

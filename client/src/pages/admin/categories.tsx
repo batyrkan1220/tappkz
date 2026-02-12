@@ -11,10 +11,12 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, FolderOpen } from "lucide-react";
+import { useBusinessLabels } from "@/hooks/use-business-labels";
 import type { Category, Store } from "@shared/schema";
 
 export default function CategoriesPage() {
   const { toast } = useToast();
+  const labels = useBusinessLabels();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCat, setEditCat] = useState<Category | null>(null);
   const [name, setName] = useState("");
@@ -84,7 +86,7 @@ export default function CategoriesPage() {
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-categories-title">Категории</h1>
-            <p className="text-xs text-muted-foreground" data-testid="text-categories-count">{categories?.length ?? 0} категорий</p>
+            <p className="text-xs text-muted-foreground" data-testid="text-categories-count">{categories?.length ?? 0} {labels.group === "fnb" ? "разделов" : "категорий"}</p>
           </div>
         </div>
         <Button onClick={openCreate} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-add-category">
@@ -98,7 +100,9 @@ export default function CategoriesPage() {
             <FolderOpen className="h-7 w-7 text-purple-600" />
           </div>
           <p className="font-extrabold tracking-tight">Нет категорий</p>
-          <p className="mt-1 text-sm text-muted-foreground">Создайте категории для организации товаров</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {labels.group === "fnb" ? "Создайте разделы для организации меню" : labels.group === "service" ? "Создайте категории для организации услуг" : "Создайте категории для организации товаров"}
+          </p>
         </Card>
       ) : (
         <div className="space-y-2">

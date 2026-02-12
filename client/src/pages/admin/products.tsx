@@ -12,7 +12,9 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Search, ImageIcon, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ImageIcon, Package, FolderOpen, ArrowRight, AlertCircle } from "lucide-react";
+import { useBusinessLabels } from "@/hooks/use-business-labels";
+import { Link } from "wouter";
 import type { Product, Category, Store } from "@shared/schema";
 
 function formatPrice(price: number) {
@@ -21,6 +23,7 @@ function formatPrice(price: number) {
 
 export default function ProductsPage() {
   const { toast } = useToast();
+  const labels = useBusinessLabels();
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -29,6 +32,8 @@ export default function ProductsPage() {
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: products, isLoading } = useQuery<Product[]>({ queryKey: ["/api/my-store/products"] });
   const { data: categories } = useQuery<Category[]>({ queryKey: ["/api/my-store/categories"] });
+
+  const hasCategories = (categories?.length ?? 0) > 0;
 
   const [form, setForm] = useState({
     name: "",
@@ -82,7 +87,7 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/my-store/products"] });
       setDialogOpen(false);
-      toast({ title: editProduct ? "Товар обновлён" : "Товар создан" });
+      toast({ title: editProduct ? `${labels.itemLabelPlural} обновлён` : `${labels.itemLabelPlural} создан` });
     },
     onError: (e: Error) => {
       toast({ title: "Ошибка", description: e.message, variant: "destructive" });
@@ -95,7 +100,7 @@ export default function ProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/my-store/products"] });
-      toast({ title: "Товар удалён" });
+      toast({ title: "Удалено" });
     },
   });
 
@@ -148,46 +153,74 @@ export default function ProductsPage() {
             <Package className="h-5 w-5 text-green-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-products-title">Товары</h1>
-            <p className="text-xs text-muted-foreground" data-testid="text-products-count">{products?.length ?? 0} товаров</p>
+            <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-products-title">{labels.itemLabelPlural}</h1>
+            <p className="text-xs text-muted-foreground" data-testid="text-products-count">{products?.length ?? 0} позиций</p>
           </div>
         </div>
-        <Button onClick={openCreate} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-add-product">
+        <Button
+          onClick={hasCategories ? openCreate : undefined}
+          className="bg-green-600 text-white rounded-full font-semibold"
+          disabled={!hasCategories}
+          data-testid="button-add-product"
+        >
           <Plus className="mr-1.5 h-4 w-4" /> Добавить
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]" data-testid="container-search-products">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Поиск..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-            data-testid="input-search-products"
-          />
-        </div>
-        <Select value={filterCat} onValueChange={setFilterCat}>
-          <SelectTrigger className="w-[180px]" data-testid="select-filter-category">
-            <SelectValue placeholder="Все категории" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все категории</SelectItem>
-            {(categories || []).map((c) => (
-              <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {!hasCategories && (
+        <Card className="flex items-center gap-3 p-4 border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/10" data-testid="card-no-categories-warning">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-950/30">
+            <AlertCircle className="h-5 w-5 text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold" data-testid="text-no-categories-title">Сначала создайте категорию</p>
+            <p className="text-xs text-muted-foreground">
+              {labels.group === "fnb" ? "Чтобы добавить блюда, сначала создайте разделы меню" : labels.group === "service" ? "Чтобы добавить услуги, сначала создайте категории услуг" : "Чтобы добавить товары, сначала создайте категории"}
+            </p>
+          </div>
+          <Link href="/admin/categories" data-testid="link-go-categories">
+            <Button className="bg-amber-600 text-white rounded-full font-semibold" data-testid="button-go-categories">
+              <FolderOpen className="mr-1.5 h-4 w-4" />
+              Создать
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          </Link>
+        </Card>
+      )}
 
-      {filtered.length === 0 ? (
+      {hasCategories && (
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]" data-testid="container-search-products">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Поиск..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+              data-testid="input-search-products"
+            />
+          </div>
+          <Select value={filterCat} onValueChange={setFilterCat}>
+            <SelectTrigger className="w-[180px]" data-testid="select-filter-category">
+              <SelectValue placeholder="Все категории" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все категории</SelectItem>
+              {(categories || []).map((c) => (
+                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {filtered.length === 0 && hasCategories ? (
         <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed" data-testid="card-empty-products">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 dark:bg-green-950/30">
             <Package className="h-7 w-7 text-green-600" />
           </div>
-          <p className="font-extrabold tracking-tight">Нет товаров</p>
-          <p className="mt-1 text-sm text-muted-foreground">Добавьте первый товар в ваш каталог</p>
+          <p className="font-extrabold tracking-tight">Нет позиций</p>
+          <p className="mt-1 text-sm text-muted-foreground">Добавьте первую позицию в каталог</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -237,7 +270,7 @@ export default function ProductsPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="font-extrabold tracking-tight">{editProduct ? "Редактировать товар" : "Новый товар"}</DialogTitle>
+            <DialogTitle className="font-extrabold tracking-tight">{editProduct ? "Редактировать" : "Добавить"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -259,7 +292,7 @@ export default function ProductsPage() {
               </div>
             </div>
             <div>
-              <Label className="font-semibold">Категория</Label>
+              <Label className="font-semibold">{labels.categoryLabel}</Label>
               <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v })}>
                 <SelectTrigger data-testid="select-product-category">
                   <SelectValue placeholder="Выберите категорию" />
@@ -272,7 +305,7 @@ export default function ProductsPage() {
               </Select>
             </div>
             <div>
-              <Label className="font-semibold">Фото товара</Label>
+              <Label className="font-semibold">Фото</Label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {form.imageUrls.map((url, i) => (
                   <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-lg border">
