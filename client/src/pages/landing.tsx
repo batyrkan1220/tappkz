@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Store, ShoppingBag, MessageCircle, Smartphone, Palette, BarChart3 } from "lucide-react";
+import { Store, ShoppingBag, MessageCircle, Smartphone, Palette, BarChart3, Menu } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import { useState } from "react";
 
 const features = [
   {
@@ -37,91 +38,97 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+    <div className="min-h-screen bg-white dark:bg-background">
+      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary">
-              <SiWhatsapp className="h-5 w-5 text-primary-foreground" />
+            <div className="flex h-8 w-8 items-center justify-center">
+              <ShoppingBag className="h-6 w-6 text-foreground" />
             </div>
-            <span className="text-lg font-bold tracking-tight">TakeSale</span>
+            <span className="text-xl font-bold tracking-tight" data-testid="text-brand-name">TakeSale</span>
           </div>
-          <a href="/api/login">
-            <Button data-testid="button-login">Войти</Button>
-          </a>
+          <div className="flex items-center gap-3">
+            <a href="/api/login">
+              <Button
+                className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-5 text-sm font-semibold"
+                data-testid="button-login"
+              >
+                Начать бесплатно
+              </Button>
+            </a>
+            <button
+              className="lg:hidden p-1"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-testid="button-mobile-menu"
+            >
+              <Menu className="h-6 w-6 text-foreground" />
+            </button>
+          </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t px-4 py-3 bg-white dark:bg-background space-y-2">
+            <a href="#features" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)}>Возможности</a>
+            <a href="#pricing" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)}>Тарифы</a>
+            <a href="/s/arai-beauty" className="block text-sm text-muted-foreground py-1" onClick={() => setMobileMenuOpen(false)}>Демо магазин</a>
+          </div>
+        )}
       </nav>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 md:py-24">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-              <SiWhatsapp className="h-3.5 w-3.5" />
-              Для бизнеса в Казахстане
-            </div>
-            <h1 className="font-serif text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              Продавайте через{" "}
-              <span className="text-primary">WhatsApp</span> — легко и быстро
-            </h1>
-            <p className="max-w-lg text-lg text-muted-foreground">
-              Создайте онлайн-витрину для вашего бизнеса. Клиенты выбирают товары, собирают корзину и оформляют заказ прямо в WhatsApp.
-            </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <a href="/api/login">
-                <Button size="lg" data-testid="button-get-started">
-                  Начать бесплатно
-                </Button>
-              </a>
-              <a href="#features">
-                <Button variant="outline" size="lg" data-testid="button-learn-more">
-                  Узнать больше
-                </Button>
-              </a>
-            </div>
-            <div className="flex flex-wrap items-center gap-4 pt-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Бесплатно до 30 товаров
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Без онлайн-оплаты
-              </span>
-            </div>
-          </div>
-          <div className="relative hidden lg:block">
-            <div className="relative mx-auto w-72 overflow-hidden rounded-[2rem] border-[8px] border-foreground/10 bg-card shadow-xl">
-              <div className="aspect-[9/16] p-4">
-                <div className="mb-4 h-12 w-12 rounded-md bg-primary/20" />
-                <div className="mb-2 h-4 w-32 rounded bg-foreground/10" />
-                <div className="mb-6 h-3 w-48 rounded bg-foreground/5" />
-                <div className="space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex gap-3 rounded-md border p-2">
-                      <div className="h-16 w-16 shrink-0 rounded-md bg-muted" />
-                      <div className="flex-1 space-y-1.5 pt-1">
-                        <div className="h-3 w-20 rounded bg-foreground/10" />
-                        <div className="h-2.5 w-28 rounded bg-foreground/5" />
-                        <div className="h-3 w-16 rounded bg-primary/20" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-6 flex items-center justify-center gap-2 rounded-md bg-green-600 py-2.5 text-sm font-medium text-white">
-                  <SiWhatsapp className="h-4 w-4" />
-                  Оформить заказ
-                </div>
-              </div>
-            </div>
-          </div>
+      <section className="mx-auto max-w-3xl px-4 pt-12 pb-10 md:pt-20 md:pb-16 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full bg-green-50 dark:bg-green-950/30 px-4 py-1.5 mb-8">
+          <SiWhatsapp className="h-4 w-4 text-green-600" />
+          <span className="text-sm font-medium text-green-700 dark:text-green-400">
+            WhatsApp <span className="text-orange-500 font-semibold">Official</span> Partner
+          </span>
+        </div>
+
+        <h1 className="text-4xl font-extrabold leading-[1.15] tracking-tight text-foreground md:text-5xl lg:text-[3.5rem]">
+          Создайте онлайн-магазин для WhatsApp
+        </h1>
+
+        <p className="mx-auto mt-5 max-w-md text-base text-muted-foreground leading-relaxed md:text-lg">
+          Принимайте заказы и оплаты онлайн<br />
+          Меньше ошибок, быстрее сделки
+        </p>
+
+        <div className="mt-8">
+          <a href="/api/login">
+            <Button
+              size="lg"
+              className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-8 py-6 text-base font-semibold"
+              data-testid="button-get-started"
+            >
+              Начать бесплатно
+            </Button>
+          </a>
+        </div>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-6 md:gap-10 opacity-60">
+          <span className="text-sm font-bold tracking-tight text-foreground">Meta</span>
+          <span className="text-sm font-bold tracking-tight text-foreground">WhatsApp</span>
+          <span className="text-sm font-bold tracking-tight text-foreground">Kazakhstan</span>
+          <span className="text-sm font-bold tracking-tight text-foreground">TechCrunch</span>
         </div>
       </section>
 
-      <section id="features" className="border-t bg-card/50 py-16 md:py-24">
+      <section className="bg-muted/30 dark:bg-muted/10 py-16 md:py-20">
+        <div className="mx-auto max-w-3xl px-4 text-center">
+          <h2 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl lg:text-[2.75rem]">
+            Упростите заказы через WhatsApp
+          </h2>
+          <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
+            Всё что нужно для продажи товаров через мессенджер — от витрины до корзины
+          </p>
+        </div>
+      </section>
+
+      <section id="features" className="py-16 md:py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="mb-12 text-center">
-            <h2 className="font-serif text-3xl font-bold tracking-tight md:text-4xl">
+            <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">
               Всё для вашего бизнеса
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
@@ -130,21 +137,21 @@ export default function LandingPage() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
-              <Card key={f.title} className="hover-elevate p-5">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-primary/10">
-                  <f.icon className="h-5 w-5 text-primary" />
+              <Card key={f.title} className="hover-elevate p-6">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-muted">
+                  <f.icon className="h-5 w-5 text-foreground" />
                 </div>
-                <h3 className="mb-1 font-semibold">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
+                <h3 className="mb-1.5 text-base font-semibold">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </Card>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="border-t py-16">
+      <section id="pricing" className="bg-muted/30 dark:bg-muted/10 py-16 md:py-20">
         <div className="mx-auto max-w-6xl px-4 text-center">
-          <h2 className="font-serif text-3xl font-bold tracking-tight md:text-4xl">
+          <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">
             Тарифы
           </h2>
           <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
@@ -152,16 +159,46 @@ export default function LandingPage() {
           </p>
           <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-3">
             {[
-              { name: "Free", price: "Бесплатно", products: "до 30 товаров" },
-              { name: "Pro", price: "Скоро", products: "до 300 товаров" },
-              { name: "Business", price: "Скоро", products: "до 2000 товаров" },
+              { name: "Free", price: "Бесплатно", products: "до 30 товаров", highlight: true },
+              { name: "Pro", price: "Скоро", products: "до 300 товаров", highlight: false },
+              { name: "Business", price: "Скоро", products: "до 2000 товаров", highlight: false },
             ].map((plan) => (
-              <Card key={plan.name} className="p-5 text-left">
-                <h3 className="font-semibold">{plan.name}</h3>
-                <p className="mt-1 text-2xl font-bold">{plan.price}</p>
+              <Card key={plan.name} className={`p-6 text-left ${plan.highlight ? "border-foreground/20" : ""}`}>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{plan.name}</h3>
+                <p className="mt-2 text-2xl font-extrabold">{plan.price}</p>
                 <p className="mt-2 text-sm text-muted-foreground">{plan.products}</p>
+                {plan.highlight && (
+                  <a href="/api/login" className="block mt-4">
+                    <Button
+                      className="w-full bg-foreground text-background hover:bg-foreground/90 rounded-full font-semibold"
+                    >
+                      Начать
+                    </Button>
+                  </a>
+                )}
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 md:py-20 text-center">
+        <div className="mx-auto max-w-3xl px-4">
+          <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+            Готовы начать продавать?
+          </h2>
+          <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
+            Создайте свою витрину за 5 минут и начните принимать заказы через WhatsApp
+          </p>
+          <div className="mt-8">
+            <a href="/api/login">
+              <Button
+                size="lg"
+                className="bg-foreground text-background hover:bg-foreground/90 rounded-full px-8 py-6 text-base font-semibold"
+              >
+                Создать магазин бесплатно
+              </Button>
+            </a>
           </div>
         </div>
       </section>
