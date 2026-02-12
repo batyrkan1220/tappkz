@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, ChevronLeft, X } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, ChevronLeft, X, CreditCard } from "lucide-react";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import type { Store, Product, Category, StoreTheme, StoreSettings } from "@shared/schema";
@@ -453,6 +453,32 @@ export default function StorefrontPage() {
               <SiWhatsapp className="h-5 w-5" />
               Оформить заказ в WhatsApp
             </Button>
+
+            {settings?.kaspiEnabled && settings?.kaspiPayUrl && (
+              <div className="border-t pt-4">
+                <p className="mb-2 text-center text-sm font-medium text-muted-foreground">Оплата</p>
+                <a
+                  href={settings.kaspiPayUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-testid="link-kaspi-pay"
+                >
+                  <Button
+                    variant="outline"
+                    className="w-full gap-2 border-red-200 text-red-600 dark:border-red-800 dark:text-red-400"
+                    data-testid="button-kaspi-pay"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    Оплатить через Kaspi
+                  </Button>
+                </a>
+                {settings.kaspiRecipientName && (
+                  <p className="mt-1.5 text-center text-xs text-muted-foreground" data-testid="text-kaspi-recipient">
+                    Получатель: {settings.kaspiRecipientName}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

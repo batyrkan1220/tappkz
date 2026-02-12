@@ -13,6 +13,7 @@ import ProductsPage from "@/pages/admin/products";
 import CategoriesPage from "@/pages/admin/categories";
 import BrandingPage from "@/pages/admin/branding";
 import WhatsAppPage from "@/pages/admin/whatsapp";
+import KaspiPage from "@/pages/admin/kaspi";
 import StoreSettingsPage from "@/pages/admin/store-settings";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/admin/categories" component={() => <AdminRoute component={CategoriesPage} />} />
       <Route path="/admin/branding" component={() => <AdminRoute component={BrandingPage} />} />
       <Route path="/admin/whatsapp" component={() => <AdminRoute component={WhatsAppPage} />} />
+      <Route path="/admin/kaspi" component={() => <AdminRoute component={KaspiPage} />} />
       <Route path="/admin/settings" component={() => <AdminRoute component={StoreSettingsPage} />} />
       <Route path="/s/:slug" component={StorefrontPage} />
       <Route component={NotFound} />

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, CreditCard, Settings, LogOut, ExternalLink, ShoppingBag } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import type { Store } from "@shared/schema";
@@ -23,6 +23,7 @@ const menuItems = [
   { title: "Категории", url: "/admin/categories", icon: FolderOpen },
   { title: "Брендирование", url: "/admin/branding", icon: Palette },
   { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageCircle },
+  { title: "Kaspi", url: "/admin/kaspi", icon: CreditCard },
   { title: "Настройки", url: "/admin/settings", icon: Settings },
 ];
 

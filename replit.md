@@ -21,6 +21,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `/admin/categories` - Category CRUD
 - `/admin/branding` - Logo, banner, colors
 - `/admin/whatsapp` - Phone number + message template
+- `/admin/kaspi` - Kaspi payment settings (toggle, pay URL, recipient name)
 - `/admin/settings` - Store info, contacts, display settings
 
 ### API
@@ -31,6 +32,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `GET/PUT /api/my-store/theme` - Store theme/branding (validated)
 - `GET/PUT /api/my-store/settings` - Store settings (validated)
 - `PUT /api/my-store/whatsapp` - WhatsApp settings (validated)
+- `PUT /api/my-store/kaspi` - Kaspi payment settings (validated)
 - `GET /api/my-store/analytics` - Store analytics
 - `GET /api/storefront/:slug` - Public store data
 - `POST /api/storefront/:slug/event` - Track events (validated)
@@ -48,6 +50,8 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Business: 2000 products
 
 ## Recent Changes
+- Added Kaspi payment integration (toggle, pay URL, recipient name in store_settings)
+- Kaspi pay button shown on storefront checkout when enabled
 - Added Zod validation schemas on all API routes
 - All CRUD endpoints validate request bodies before processing
 - Event tracking validates event types (visit, add_to_cart, checkout_click)

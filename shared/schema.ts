@@ -36,6 +36,9 @@ export const storeSettings = pgTable("store_settings", {
   ),
   instagramUrl: text("instagram_url"),
   phoneNumber: text("phone_number"),
+  kaspiEnabled: boolean("kaspi_enabled").notNull().default(false),
+  kaspiPayUrl: text("kaspi_pay_url"),
+  kaspiRecipientName: text("kaspi_recipient_name"),
 });
 
 export const categories = pgTable("categories", {
