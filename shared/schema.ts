@@ -52,6 +52,8 @@ export const stores = pgTable("stores", {
   description: text("description"),
   businessType: varchar("business_type", { length: 50 }),
   plan: varchar("plan", { length: 20 }).notNull().default("free"),
+  planStartedAt: timestamp("plan_started_at"),
+  planExpiresAt: timestamp("plan_expires_at"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -219,4 +221,16 @@ export const PLAN_LIMITS: Record<string, number> = {
   free: 30,
   pro: 300,
   business: 2000,
+};
+
+export const PLAN_PRICES: Record<string, number> = {
+  free: 0,
+  pro: 4990,
+  business: 14990,
+};
+
+export const PLAN_NAMES: Record<string, string> = {
+  free: "Бесплатный",
+  pro: "Профессиональный",
+  business: "Бизнес",
 };
