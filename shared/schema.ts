@@ -79,6 +79,8 @@ export const storeSettings = pgTable("store_settings", {
   ),
   instagramUrl: text("instagram_url"),
   phoneNumber: text("phone_number"),
+  checkoutAddressEnabled: boolean("checkout_address_enabled").notNull().default(false),
+  checkoutCommentEnabled: boolean("checkout_comment_enabled").notNull().default(false),
   kaspiEnabled: boolean("kaspi_enabled").notNull().default(false),
   kaspiPayUrl: text("kaspi_pay_url"),
   kaspiRecipientName: text("kaspi_recipient_name"),
