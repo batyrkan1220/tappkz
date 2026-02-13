@@ -27,6 +27,10 @@ import {
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useState } from "react";
+import mockCream from "@/assets/images/mock-product-cream.jpg";
+import mockSerum from "@/assets/images/mock-product-serum.jpg";
+import mockFoundation from "@/assets/images/mock-product-foundation.jpg";
+import mockBanner from "@/assets/images/mock-store-banner.jpg";
 
 const steps = [
   {
@@ -253,7 +257,9 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="h-20 w-full relative" style={{ background: "linear-gradient(135deg, #e91e6320, #e91e6308)" }}>
+                <div className="h-20 w-full relative overflow-hidden">
+                  <img src={mockBanner} alt="" className="h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/30" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="h-12 w-12 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: "#e91e63" }}>
                       AB
@@ -277,21 +283,21 @@ export default function LandingPage() {
 
                 <div className="px-3 pb-2 space-y-2">
                   {[
-                    { name: "Увлажняющий крем", desc: "Дневной крем для лица с гиалуроновой кислотой", price: "4 500", old: "5 200", color: "#f3e5f5" },
-                    { name: "Сыворотка витамин C", desc: "Антиоксидантная сыворотка для сияния кожи", price: "7 800", color: "#fff3e0" },
-                    { name: "Тональный крем", desc: "Лёгкое покрытие, SPF 30, натуральный финиш", price: "6 200", color: "#fce4ec" },
+                    { name: "Увлажняющий крем", desc: "Дневной крем с гиалуроновой кислотой", price: "4 500", old: "5 200", img: mockCream },
+                    { name: "Сыворотка витамин C", desc: "Антиоксидантная сыворотка для сияния", price: "7 800", img: mockSerum },
+                    { name: "Тональный крем", desc: "SPF 30, натуральный финиш", price: "6 200", img: mockFoundation },
                   ].map((item, i) => (
-                    <div key={i} className="flex rounded-md border border-border/50 bg-card overflow-visible">
+                    <div key={i} className="flex rounded-md border border-border/50 bg-card">
                       <div className="flex-1 p-2.5 pr-1">
                         <p className="text-[10px] font-semibold leading-tight">{item.name}</p>
                         <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{item.desc}</p>
-                        <div className="mt-1 flex items-center gap-1">
+                        <div className="mt-1.5 flex items-center gap-1">
                           <span className="text-[10px] font-bold" style={{ color: "#e91e63" }}>{item.price} ₸</span>
                           {item.old && <span className="text-[8px] text-muted-foreground line-through">{item.old} ₸</span>}
                         </div>
                       </div>
-                      <div className="w-16 shrink-0 rounded-r-md flex items-center justify-center" style={{ backgroundColor: item.color }}>
-                        <ShoppingBag className="h-4 w-4" style={{ color: "#e91e63", opacity: 0.4 }} />
+                      <div className="w-[72px] shrink-0 overflow-hidden rounded-r-md bg-muted">
+                        <img src={item.img} alt={item.name} className="h-full w-full object-cover" />
                       </div>
                     </div>
                   ))}
