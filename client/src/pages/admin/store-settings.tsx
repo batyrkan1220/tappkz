@@ -129,7 +129,7 @@ export default function StoreSettingsPage() {
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="font-semibold">Показывать цены</p>
-              <p className="text-sm text-muted-foreground">Отключите, чтобы скрыть цены на витрине</p>
+              <p className="text-sm text-muted-foreground">Отключите, чтобы скрыть цены в магазине</p>
             </div>
             <Switch checked={showPrices} onCheckedChange={setShowPrices} data-testid="switch-show-prices" />
           </div>

@@ -420,7 +420,7 @@ export default function SuperAdminStoreDetail() {
           <p className="text-sm text-muted-foreground">
             Всего товаров: {data.productsCount}.
             <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
-              Посмотреть витрину
+              Посмотреть магазин
             </a>
           </p>
           {data.topProducts.length > 0 && (

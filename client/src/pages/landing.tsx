@@ -42,7 +42,7 @@ const steps = [
   {
     num: "02",
     title: "Поделитесь ссылкой",
-    desc: "Отправьте ссылку витрины в Instagram, мессенджерах или на визитке",
+    desc: "Отправьте ссылку магазина в Instagram, мессенджерах или на визитке",
     icon: Globe,
   },
   {
@@ -56,13 +56,13 @@ const steps = [
 const features = [
   {
     icon: Smartphone,
-    title: "Мобильная витрина",
+    title: "Мобильный магазин",
     desc: "Адаптивный дизайн для смартфонов. 90% ваших клиентов покупают с телефона",
   },
   {
     icon: Palette,
     title: "Полный брендинг",
-    desc: "Логотип, баннер, цвета, стили кнопок и карточек. Витрина выглядит как ваш бренд",
+    desc: "Логотип, баннер, цвета, стили кнопок и карточек. Магазин выглядит как ваш бренд",
   },
   {
     icon: FolderOpen,
@@ -111,7 +111,7 @@ const testimonials = [
   {
     name: "Марат Т.",
     role: "Еда на дом, Астана",
-    text: "Запустил витрину за один вечер. Клиенты довольны - всё понятно, удобно, красиво. Заказов стало в 2 раза больше.",
+    text: "Запустил магазин за один вечер. Клиенты довольны - всё понятно, удобно, красиво. Заказов стало в 2 раза больше.",
     rating: 5,
   },
   {
@@ -198,7 +198,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white/80 dark:bg-background/80 px-4 py-2 mb-7">
               <SiWhatsapp className="h-4 w-4 text-green-600" />
               <span className="text-sm font-semibold">
-                Витрина + WhatsApp = Продажи
+                Магазин + WhatsApp = Продажи
               </span>
             </div>
 
@@ -210,7 +210,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed" data-testid="text-hero-subtitle">
-              Создайте витрину, управляйте заказами, ведите клиентскую базу и анализируйте продажи - всё в одном месте.
+              Создайте магазин, управляйте заказами, ведите клиентскую базу и анализируйте продажи - всё в одном месте.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -529,7 +529,7 @@ export default function LandingPage() {
                 price: "0 ₸",
                 period: "навсегда",
                 products: "до 30 товаров",
-                features: ["Мобильная витрина", "WhatsApp заказы", "Базовая аналитика", "Брендирование", "Управление заказами", "База клиентов"],
+                features: ["Мобильный магазин", "WhatsApp заказы", "Базовая аналитика", "Брендирование", "Управление заказами", "База клиентов"],
                 highlight: false,
                 cta: "Начать бесплатно",
                 enabled: true,

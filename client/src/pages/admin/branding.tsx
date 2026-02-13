@@ -135,7 +135,7 @@ export default function BrandingPage() {
         </div>
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-branding-title">Брендирование</h1>
-          <p className="text-xs text-muted-foreground">Настройте дизайн и оформление витрины</p>
+          <p className="text-xs text-muted-foreground">Настройте дизайн и оформление магазина</p>
         </div>
       </div>
 
@@ -338,7 +338,7 @@ export default function BrandingPage() {
         </div>
 
         <div className="lg:sticky lg:top-20 lg:self-start">
-          <p className="mb-2 text-sm font-semibold text-muted-foreground">Предпросмотр витрины</p>
+          <p className="mb-2 text-sm font-semibold text-muted-foreground">Предпросмотр магазина</p>
           <div className="overflow-hidden rounded-2xl border bg-background shadow-lg" style={{ maxWidth: 360 }}>
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/30">
               <Menu className="h-4 w-4 text-muted-foreground" />

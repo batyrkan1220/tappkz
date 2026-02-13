@@ -60,7 +60,7 @@ export default function Dashboard() {
         <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer" data-testid="link-view-store">
           <Button variant="outline" className="rounded-full font-semibold" data-testid="button-view-store">
             <ExternalLink className="mr-1.5 h-4 w-4" />
-            Открыть витрину
+            Открыть магазин
           </Button>
         </a>
       </div>
@@ -70,7 +70,7 @@ export default function Dashboard() {
           <Copy className="h-4 w-4 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-muted-foreground">Ссылка на витрину</p>
+          <p className="text-xs font-medium text-muted-foreground">Ссылка на магазин</p>
           <code className="block truncate text-sm font-semibold" data-testid="text-store-url">{storeUrl}</code>
         </div>
         <Button variant="outline" className="rounded-full font-semibold" onClick={copyUrl} data-testid="button-copy-url">
@@ -87,7 +87,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h2 className="font-extrabold tracking-tight" data-testid="text-onboarding-title">Быстрый старт</h2>
-              <p className="text-xs text-muted-foreground">Выполните шаги, чтобы запустить витрину</p>
+              <p className="text-xs text-muted-foreground">Выполните шаги, чтобы запустить магазин</p>
             </div>
           </div>
 
