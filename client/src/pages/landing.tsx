@@ -23,6 +23,7 @@ import {
   Store,
   Truck,
   Receipt,
+  MapPin,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useState } from "react";
@@ -231,38 +232,75 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-16 flex justify-center">
-            <div className="relative mx-auto w-[280px] rounded-[2.5rem] border-[8px] border-foreground/90 bg-white dark:bg-zinc-900 p-1.5 shadow-2xl">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-foreground/90 rounded-b-2xl" />
+            <div className="relative mx-auto w-[300px] rounded-[2.5rem] border-[8px] border-foreground/90 bg-white dark:bg-zinc-900 p-1.5 shadow-2xl">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-foreground/90 rounded-b-2xl z-10" />
               <div className="rounded-[2rem] overflow-hidden bg-white dark:bg-zinc-900">
-                <div className="bg-primary px-4 pt-8 pb-4">
+                <div className="flex items-center justify-between px-3.5 pt-8 pb-2 border-b border-border/30">
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
-                      <ShoppingBag className="h-4 w-4 text-white" />
+                    <div className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold" style={{ backgroundColor: "#e91e63" }}>
+                      AB
                     </div>
-                    <div>
-                      <p className="text-white text-xs font-bold">Ваш магазин</p>
-                      <p className="text-white/70 text-[10px]">Ваш бренд</p>
+                    <span className="text-[11px] font-extrabold tracking-tight">Arai Beauty</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="h-6 w-6 rounded-md flex items-center justify-center">
+                      <ShoppingBag className="h-3 w-3 text-muted-foreground" />
+                    </div>
+                    <div className="h-6 w-6 rounded-md flex items-center justify-center relative">
+                      <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-[#e91e63] text-[7px] text-white flex items-center justify-center font-bold">2</span>
                     </div>
                   </div>
                 </div>
-                <div className="px-3 py-3 space-y-2">
-                  {["Товар 1", "Товар 2", "Товар 3"].map((name, i) => (
-                    <div key={i} className="flex gap-2">
-                      <div className="h-16 w-16 rounded-lg bg-primary/10 dark:bg-primary/5 flex items-center justify-center shrink-0">
-                        <ShoppingBag className="h-5 w-5 text-primary" />
+
+                <div className="h-20 w-full relative" style={{ background: "linear-gradient(135deg, #e91e6320, #e91e6308)" }}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="h-12 w-12 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: "#e91e63" }}>
+                      AB
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center pt-1 pb-2">
+                  <p className="text-[11px] font-extrabold tracking-tight">Arai Beauty</p>
+                  <p className="text-[8px] text-muted-foreground flex items-center justify-center gap-0.5">
+                    <MapPin className="h-2 w-2" /> Алматы
+                  </p>
+                </div>
+
+                <div className="px-3 pb-2">
+                  <div className="flex gap-1.5 overflow-hidden">
+                    <span className="shrink-0 rounded-full bg-foreground text-background px-2.5 py-0.5 text-[9px] font-medium">Все</span>
+                    <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Уход за лицом</span>
+                    <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Макияж</span>
+                  </div>
+                </div>
+
+                <div className="px-3 pb-2 space-y-2">
+                  {[
+                    { name: "Увлажняющий крем", desc: "Дневной крем для лица с гиалуроновой кислотой", price: "4 500", old: "5 200", color: "#f3e5f5" },
+                    { name: "Сыворотка витамин C", desc: "Антиоксидантная сыворотка для сияния кожи", price: "7 800", color: "#fff3e0" },
+                    { name: "Тональный крем", desc: "Лёгкое покрытие, SPF 30, натуральный финиш", price: "6 200", color: "#fce4ec" },
+                  ].map((item, i) => (
+                    <div key={i} className="flex rounded-md border border-border/50 bg-card overflow-visible">
+                      <div className="flex-1 p-2.5 pr-1">
+                        <p className="text-[10px] font-semibold leading-tight">{item.name}</p>
+                        <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{item.desc}</p>
+                        <div className="mt-1 flex items-center gap-1">
+                          <span className="text-[10px] font-bold" style={{ color: "#e91e63" }}>{item.price} ₸</span>
+                          {item.old && <span className="text-[8px] text-muted-foreground line-through">{item.old} ₸</span>}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-bold truncate">{name}</p>
-                        <p className="text-[10px] text-muted-foreground">Описание</p>
-                        <p className="text-[11px] font-bold text-primary mt-1">{[5000, 8500, 3200][i].toLocaleString("ru-RU")} ₸</p>
+                      <div className="w-16 shrink-0 rounded-r-md flex items-center justify-center" style={{ backgroundColor: item.color }}>
+                        <ShoppingBag className="h-4 w-4" style={{ color: "#e91e63", opacity: 0.4 }} />
                       </div>
                     </div>
                   ))}
                 </div>
+
                 <div className="px-3 pb-3">
-                  <div className="flex items-center justify-center gap-2 rounded-full bg-green-600 py-2.5 text-white">
-                    <SiWhatsapp className="h-4 w-4" />
-                    <span className="text-xs font-bold">Заказать в WhatsApp</span>
+                  <div className="flex items-center justify-center gap-1.5 rounded-full bg-[#25D366] py-2 text-white">
+                    <SiWhatsapp className="h-3.5 w-3.5" />
+                    <span className="text-[10px] font-bold">Заказать в WhatsApp</span>
                   </div>
                 </div>
               </div>
