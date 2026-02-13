@@ -11,8 +11,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown } from "lucide-react";
+import { Settings, Crown, Calendar, Clock, Package } from "lucide-react";
 import type { Store, StoreSettings } from "@shared/schema";
+import { PLAN_PRICES, PLAN_NAMES, PLAN_LIMITS } from "@shared/schema";
 
 export default function StoreSettingsPage() {
   const { toast } = useToast();
@@ -160,17 +161,52 @@ export default function StoreSettingsPage() {
       </Card>
 
       <Card className="p-5" data-testid="card-plan-info">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 mb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/30">
             <Crown className="h-5 w-5 text-amber-600" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-extrabold tracking-tight" data-testid="text-plan-name">Тариф: {store?.plan?.toUpperCase()}</h3>
-              <Badge variant="secondary" className="rounded-full font-semibold">{store?.plan === "free" ? "Бесплатный" : store?.plan === "pro" ? "Профессиональный" : "Бизнес"}</Badge>
+              <Badge variant="secondary" className="rounded-full font-semibold">{PLAN_NAMES[store?.plan || "free"]}</Badge>
             </div>
             <p className="text-sm text-muted-foreground" data-testid="text-plan-limit">
-              {store?.plan === "free" ? "До 30 товаров" : store?.plan === "pro" ? "До 300 товаров" : "До 2000 товаров"}
+              {(PLAN_PRICES[store?.plan || "free"] || 0) > 0
+                ? `${PLAN_PRICES[store?.plan || "free"].toLocaleString("ru-RU")} ₸/мес`
+                : "Бесплатно"}
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-md border px-3 py-2">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
+              <Package className="h-3 w-3" />
+              Лимит товаров
+            </div>
+            <p className="text-sm font-bold" data-testid="text-plan-usage">{PLAN_LIMITS[store?.plan || "free"]} шт.</p>
+          </div>
+          <div className="rounded-md border px-3 py-2">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
+              <Calendar className="h-3 w-3" />
+              Начало тарифа
+            </div>
+            <p className="text-sm font-bold">
+              {store?.planStartedAt
+                ? new Date(store.planStartedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" })
+                : store?.plan === "free" ? "—" : "—"}
+            </p>
+          </div>
+          <div className="rounded-md border px-3 py-2">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-0.5">
+              <Clock className="h-3 w-3" />
+              Действует до
+            </div>
+            <p className={`text-sm font-bold ${store?.planExpiresAt && new Date(store.planExpiresAt) < new Date() ? "text-red-600" : ""}`}>
+              {store?.plan === "free"
+                ? "Бессрочно"
+                : store?.planExpiresAt
+                  ? new Date(store.planExpiresAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" })
+                  : "—"}
             </p>
           </div>
         </div>

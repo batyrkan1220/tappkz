@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Store, Package, ShoppingCart, Users, ExternalLink, Power, PowerOff, Search, DollarSign } from "lucide-react";
-import { BUSINESS_TYPES } from "@shared/schema";
+import { Store, Package, ShoppingCart, Users, ExternalLink, Power, PowerOff, Search, DollarSign, Calendar, Clock, CreditCard } from "lucide-react";
+import { BUSINESS_TYPES, PLAN_PRICES, PLAN_NAMES, PLAN_LIMITS } from "@shared/schema";
 import { useState } from "react";
 import { Link } from "wouter";
 
@@ -17,6 +17,8 @@ interface StoreWithStats {
   name: string;
   slug: string;
   plan: string;
+  planStartedAt: string | null;
+  planExpiresAt: string | null;
   isActive: boolean;
   businessType: string | null;
   whatsappPhone: string;
@@ -29,12 +31,27 @@ interface StoreWithStats {
   customersCount: number;
 }
 
-const planLabels: Record<string, string> = { free: "Free", pro: "Pro", business: "Business" };
 const planColors: Record<string, string> = {
   free: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
   pro: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   business: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
 };
+
+function formatDate(d: string | null) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function getPlanExpiry(plan: string, expiresAt: string | null) {
+  if (plan === "free") return null;
+  if (!expiresAt) return { label: "Бессрочный", expired: false };
+  const exp = new Date(expiresAt);
+  const now = new Date();
+  const daysLeft = Math.ceil((exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (daysLeft < 0) return { label: `Истёк ${formatDate(expiresAt)}`, expired: true };
+  if (daysLeft <= 7) return { label: `${daysLeft} дн. осталось`, expired: false, warning: true };
+  return { label: `до ${formatDate(expiresAt)}`, expired: false };
+}
 
 export default function SuperAdminStores() {
   const { toast } = useToast();
@@ -76,12 +93,16 @@ export default function SuperAdminStores() {
   }
 
   const totalRevenue = stores?.reduce((sum, s) => sum + s.revenue, 0) || 0;
+  const totalMonthlyRevenue = stores?.reduce((sum, s) => sum + (PLAN_PRICES[s.plan] || 0), 0) || 0;
 
   const filtered = stores?.filter((s) => {
     let passFilter = true;
     if (filter === "active") passFilter = s.isActive;
     else if (filter === "inactive") passFilter = !s.isActive;
-    else if (filter !== "all") passFilter = s.plan === filter;
+    else if (filter === "expired") {
+      const exp = getPlanExpiry(s.plan, s.planExpiresAt);
+      passFilter = exp?.expired === true;
+    } else if (filter !== "all") passFilter = s.plan === filter;
 
     if (!passFilter) return false;
     if (!search) return true;
@@ -95,13 +116,19 @@ export default function SuperAdminStores() {
     );
   }) || [];
 
+  const planSummary = {
+    free: stores?.filter(s => s.plan === "free").length || 0,
+    pro: stores?.filter(s => s.plan === "pro").length || 0,
+    business: stores?.filter(s => s.plan === "business").length || 0,
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-superadmin-stores-title">Магазины</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Всего: {stores?.length || 0} · Общая выручка: {totalRevenue.toLocaleString("ru-RU")} ₸
+            Всего: {stores?.length || 0} · Выручка магазинов: {totalRevenue.toLocaleString("ru-RU")} ₸
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -123,6 +150,7 @@ export default function SuperAdminStores() {
               <SelectItem value="all">Все</SelectItem>
               <SelectItem value="active">Активные</SelectItem>
               <SelectItem value="inactive">Отключённые</SelectItem>
+              <SelectItem value="expired">Просроченные</SelectItem>
               <SelectItem value="free">Free</SelectItem>
               <SelectItem value="pro">Pro</SelectItem>
               <SelectItem value="business">Business</SelectItem>
@@ -131,9 +159,43 @@ export default function SuperAdminStores() {
         </div>
       </div>
 
+      <div className="grid gap-3 sm:grid-cols-4">
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Free</span>
+            <Badge variant="secondary" className={planColors.free}>{planSummary.free}</Badge>
+          </div>
+          <p className="mt-1 text-lg font-bold">{(planSummary.free * PLAN_PRICES.free).toLocaleString("ru-RU")} ₸/мес</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Pro</span>
+            <Badge variant="secondary" className={planColors.pro}>{planSummary.pro}</Badge>
+          </div>
+          <p className="mt-1 text-lg font-bold">{(planSummary.pro * PLAN_PRICES.pro).toLocaleString("ru-RU")} ₸/мес</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Business</span>
+            <Badge variant="secondary" className={planColors.business}>{planSummary.business}</Badge>
+          </div>
+          <p className="mt-1 text-lg font-bold">{(planSummary.business * PLAN_PRICES.business).toLocaleString("ru-RU")} ₸/мес</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-muted-foreground">MRR итого</span>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <p className="mt-1 text-lg font-bold">{totalMonthlyRevenue.toLocaleString("ru-RU")} ₸/мес</p>
+        </Card>
+      </div>
+
       <div className="space-y-3">
         {filtered.map((store) => {
           const bt = store.businessType ? BUSINESS_TYPES[store.businessType as keyof typeof BUSINESS_TYPES] : null;
+          const expiry = getPlanExpiry(store.plan, store.planExpiresAt);
+          const price = PLAN_PRICES[store.plan] || 0;
+          const limit = PLAN_LIMITS[store.plan] || 30;
           return (
             <Card key={store.id} className="p-5" data-testid={`card-store-${store.id}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
@@ -145,13 +207,34 @@ export default function SuperAdminStores() {
                         {store.isActive ? "Активен" : "Отключён"}
                       </Badge>
                       <Badge variant="secondary" className={planColors[store.plan] || ""} data-testid={`badge-store-plan-${store.id}`}>
-                        {planLabels[store.plan] || store.plan}
+                        {store.plan.toUpperCase()} · {price > 0 ? `${price.toLocaleString("ru-RU")} ₸/мес` : "Бесплатный"}
                       </Badge>
+                      {expiry?.expired && (
+                        <Badge variant="destructive">Просрочен</Badge>
+                      )}
+                      {expiry?.warning && (
+                        <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                          {expiry.label}
+                        </Badge>
+                      )}
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">/s/{store.slug} {store.city ? `· ${store.city}` : ""}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {bt?.label || "Не указан"} · Владелец: {store.ownerEmail || "—"}
-                    </p>
+                    <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground flex-wrap">
+                      <span>{bt?.label || "Не указан"}</span>
+                      <span>Владелец: {store.ownerEmail || "—"}</span>
+                      {store.createdAt && (
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(store.createdAt)}
+                        </span>
+                      )}
+                      {expiry && !expiry.expired && !expiry.warning && (
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {expiry.label}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </Link>
 
@@ -186,12 +269,12 @@ export default function SuperAdminStores() {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
                 <div className="flex items-center gap-2 rounded-md border px-3 py-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Товары</p>
-                    <p className="text-sm font-bold" data-testid={`text-store-products-${store.id}`}>{store.productsCount}</p>
+                    <p className="text-sm font-bold" data-testid={`text-store-products-${store.id}`}>{store.productsCount}/{limit}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-md border px-3 py-2">
@@ -213,6 +296,13 @@ export default function SuperAdminStores() {
                   <div>
                     <p className="text-xs text-muted-foreground">Клиенты</p>
                     <p className="text-sm font-bold" data-testid={`text-store-customers-${store.id}`}>{store.customersCount}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Тариф/мес</p>
+                    <p className="text-sm font-bold">{price > 0 ? `${price.toLocaleString("ru-RU")} ₸` : "—"}</p>
                   </div>
                 </div>
               </div>

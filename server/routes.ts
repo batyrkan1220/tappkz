@@ -673,9 +673,15 @@ export async function registerRoutes(
 
   app.patch("/api/superadmin/stores/:id/plan", isSuperAdminMiddleware, async (req, res) => {
     try {
-      const planSchema = z.object({ plan: z.enum(["free", "pro", "business"]) });
+      const planSchema = z.object({
+        plan: z.enum(["free", "pro", "business"]),
+        planStartedAt: z.string().optional(),
+        planExpiresAt: z.string().nullable().optional(),
+      });
       const data = validate(planSchema, req.body);
-      const store = await storage.updateStorePlan(parseInt(req.params.id), data.plan);
+      const planStartedAt = data.plan === "free" ? null : (data.planStartedAt ? new Date(data.planStartedAt) : new Date());
+      const planExpiresAt = data.plan === "free" ? null : (data.planExpiresAt === null ? null : (data.planExpiresAt ? new Date(data.planExpiresAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)));
+      const store = await storage.updateStorePlan(parseInt(req.params.id), data.plan, planStartedAt, planExpiresAt);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       res.json(store);
     } catch (e: any) {

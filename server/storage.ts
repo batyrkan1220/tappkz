@@ -84,7 +84,7 @@ export interface IStorage {
     storesByType: { type: string; count: number }[];
     recentStores: Store[];
   }>;
-  updateStorePlan(storeId: number, plan: string): Promise<Store | undefined>;
+  updateStorePlan(storeId: number, plan: string, planStartedAt?: Date | null, planExpiresAt?: Date | null): Promise<Store | undefined>;
   toggleStoreActive(storeId: number, isActive: boolean): Promise<Store | undefined>;
   setUserSuperAdmin(userId: string, isSuperAdmin: boolean): Promise<void>;
 
@@ -480,8 +480,11 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async updateStorePlan(storeId: number, plan: string): Promise<Store | undefined> {
-    const [store] = await db.update(stores).set({ plan }).where(eq(stores.id, storeId)).returning();
+  async updateStorePlan(storeId: number, plan: string, planStartedAt?: Date | null, planExpiresAt?: Date | null): Promise<Store | undefined> {
+    const updateData: any = { plan };
+    if (planStartedAt !== undefined) updateData.planStartedAt = planStartedAt;
+    if (planExpiresAt !== undefined) updateData.planExpiresAt = planExpiresAt;
+    const [store] = await db.update(stores).set(updateData).where(eq(stores.id, storeId)).returning();
     return store;
   }
 

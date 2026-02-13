@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Store, Package, ShoppingCart, Users, ExternalLink, Power, PowerOff, ArrowLeft, Settings, Palette, Globe, Phone, MapPin, Mail, TrendingUp } from "lucide-react";
-import { BUSINESS_TYPES } from "@shared/schema";
+import { Store, Package, ShoppingCart, Users, ExternalLink, Power, PowerOff, ArrowLeft, Settings, Palette, Globe, Phone, MapPin, Mail, TrendingUp, CreditCard, Calendar, Clock } from "lucide-react";
+import { BUSINESS_TYPES, PLAN_PRICES, PLAN_NAMES, PLAN_LIMITS } from "@shared/schema";
 import { Link, useParams } from "wouter";
 
 interface StoreDetail {
@@ -17,6 +17,8 @@ interface StoreDetail {
     name: string;
     slug: string;
     plan: string;
+    planStartedAt: string | null;
+    planExpiresAt: string | null;
     isActive: boolean;
     businessType: string | null;
     whatsappPhone: string;
@@ -69,7 +71,6 @@ interface StoreDetail {
   topProducts: { name: string; quantity: number; revenue: number }[];
 }
 
-const planLabels: Record<string, string> = { free: "Free", pro: "Pro", business: "Business" };
 const planColors: Record<string, string> = {
   free: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
   pro: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
@@ -88,6 +89,16 @@ const statusColors: Record<string, string> = {
   completed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
+
+function formatDate(d: string | null) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function formatDateTime(d: string | null) {
+  if (!d) return "—";
+  return new Date(d).toLocaleString("ru-RU", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
 
 type TabKey = "overview" | "orders" | "customers" | "products";
 
@@ -159,9 +170,15 @@ export default function SuperAdminStoreDetail() {
 
   const { store, settings, theme } = data;
   const bt = store.businessType ? BUSINESS_TYPES[store.businessType as keyof typeof BUSINESS_TYPES] : null;
+  const planPrice = PLAN_PRICES[store.plan] || 0;
+  const planLimit = PLAN_LIMITS[store.plan] || 30;
+  const planName = PLAN_NAMES[store.plan] || store.plan;
+
+  const isExpired = store.plan !== "free" && store.planExpiresAt && new Date(store.planExpiresAt) < new Date();
+  const daysLeft = store.planExpiresAt ? Math.ceil((new Date(store.planExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
 
   const statCards = [
-    { label: "Товары", value: data.productsCount, icon: Package, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/30" },
+    { label: "Товары", value: `${data.productsCount}/${planLimit}`, icon: Package, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/30" },
     { label: "Заказы", value: data.ordersCount, icon: ShoppingCart, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30" },
     { label: "Выручка", value: `${data.revenue.toLocaleString("ru-RU")} ₸`, icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
     { label: "Клиенты", value: data.customersCount, icon: Users, color: "text-cyan-600", bg: "bg-cyan-50 dark:bg-cyan-950/30" },
@@ -189,8 +206,9 @@ export default function SuperAdminStoreDetail() {
               {store.isActive ? "Активен" : "Отключён"}
             </Badge>
             <Badge variant="secondary" className={planColors[store.plan] || ""}>
-              {planLabels[store.plan] || store.plan}
+              {store.plan.toUpperCase()}
             </Badge>
+            {isExpired && <Badge variant="destructive">Просрочен</Badge>}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
             /s/{store.slug} · {bt?.label || "Не указан"} · Владелец: {data.ownerEmail || "—"}
@@ -237,6 +255,50 @@ export default function SuperAdminStoreDetail() {
           </Card>
         ))}
       </div>
+
+      <Card className="p-5" data-testid="card-plan-detail">
+        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+          <CreditCard className="h-4 w-4 text-muted-foreground" />
+          Тариф и подписка
+        </h3>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Текущий тариф</p>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className={planColors[store.plan] || ""}>{store.plan.toUpperCase()}</Badge>
+              <span className="text-sm font-medium">{planName}</span>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Стоимость</p>
+            <p className="text-sm font-bold">
+              {planPrice > 0 ? `${planPrice.toLocaleString("ru-RU")} ₸/мес` : "Бесплатно"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Начало тарифа</p>
+            <p className="text-sm flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+              {formatDate(store.planStartedAt)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground mb-1">Действует до</p>
+            <p className={`text-sm flex items-center gap-1 ${isExpired ? "text-red-600 font-bold" : daysLeft !== null && daysLeft <= 7 ? "text-amber-600 font-bold" : ""}`}>
+              <Clock className="h-3.5 w-3.5" />
+              {store.plan === "free" ? "Бессрочно" : formatDate(store.planExpiresAt)}
+              {daysLeft !== null && daysLeft > 0 && daysLeft <= 30 && store.plan !== "free" && (
+                <span className="text-xs text-muted-foreground ml-1">({daysLeft} дн.)</span>
+              )}
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+          <span>Лимит товаров: {planLimit}</span>
+          <span>Использовано: {data.productsCount}/{planLimit} ({planLimit > 0 ? Math.round(data.productsCount / planLimit * 100) : 0}%)</span>
+          {store.createdAt && <span>Магазин создан: {formatDate(store.createdAt)}</span>}
+        </div>
+      </Card>
 
       <div className="flex items-center gap-1 border-b overflow-x-auto">
         {tabs.map((t) => (
@@ -293,11 +355,6 @@ export default function SuperAdminStoreDetail() {
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <Badge variant="secondary">Цены: {settings?.showPrices ? "Показаны" : "Скрыты"}</Badge>
               </div>
-              {store.createdAt && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  Создан: {new Date(store.createdAt).toLocaleDateString("ru-RU")}
-                </p>
-              )}
             </div>
           </Card>
 
@@ -418,7 +475,7 @@ export default function SuperAdminStoreDetail() {
       {tab === "products" && (
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">
-            Всего товаров: {data.productsCount}.
+            Всего товаров: {data.productsCount}/{planLimit} (лимит тарифа {store.plan.toUpperCase()}).
             <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
               Посмотреть магазин
             </a>
