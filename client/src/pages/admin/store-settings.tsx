@@ -96,7 +96,7 @@ export default function StoreSettingsPage() {
           <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-store-name" />
         </div>
         <div>
-          <Label className="font-semibold">Адрес витрины (slug) *</Label>
+          <Label className="font-semibold">Адрес магазина *</Label>
           <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-shop" data-testid="input-store-slug" />
           {slug && (
             <p className="mt-1 text-xs text-muted-foreground break-all">{window.location.origin}/s/{slug}</p>
