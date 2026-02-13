@@ -24,6 +24,8 @@ export default function StoreSettingsPage() {
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
   const [showPrices, setShowPrices] = useState(true);
+  const [checkoutAddressEnabled, setCheckoutAddressEnabled] = useState(false);
+  const [checkoutCommentEnabled, setCheckoutCommentEnabled] = useState(false);
   const [instagramUrl, setInstagramUrl] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
@@ -36,6 +38,8 @@ export default function StoreSettingsPage() {
     }
     if (settings) {
       setShowPrices(settings.showPrices);
+      setCheckoutAddressEnabled(settings.checkoutAddressEnabled ?? false);
+      setCheckoutCommentEnabled(settings.checkoutCommentEnabled ?? false);
       setInstagramUrl(settings.instagramUrl || "");
       setPhoneNumber(settings.phoneNumber || "");
     }
@@ -49,6 +53,8 @@ export default function StoreSettingsPage() {
         city: city || null,
         description: description || null,
         showPrices,
+        checkoutAddressEnabled,
+        checkoutCommentEnabled,
         instagramUrl: instagramUrl || null,
         phoneNumber: phoneNumber || null,
       });
@@ -119,13 +125,27 @@ export default function StoreSettingsPage() {
           </div>
         </div>
 
-        <div className="border-t pt-4">
+        <div className="border-t pt-4 space-y-4">
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="font-semibold">Показывать цены</p>
               <p className="text-sm text-muted-foreground">Отключите, чтобы скрыть цены на витрине</p>
             </div>
             <Switch checked={showPrices} onCheckedChange={setShowPrices} data-testid="switch-show-prices" />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="font-semibold">Поле "Адрес" при оформлении</p>
+              <p className="text-sm text-muted-foreground">Покупатель сможет указать адрес доставки</p>
+            </div>
+            <Switch checked={checkoutAddressEnabled} onCheckedChange={setCheckoutAddressEnabled} data-testid="switch-checkout-address" />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="font-semibold">Поле "Комментарий" при оформлении</p>
+              <p className="text-sm text-muted-foreground">Покупатель сможет оставить пожелания к заказу</p>
+            </div>
+            <Switch checked={checkoutCommentEnabled} onCheckedChange={setCheckoutCommentEnabled} data-testid="switch-checkout-comment" />
           </div>
         </div>
 

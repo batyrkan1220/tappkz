@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useParams } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Home, Menu, X, ShoppingBag } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { PhoneInput } from "@/components/phone-input";
+import { getBusinessLabels } from "@shared/schema";
 import type { Store, Product, Category, StoreTheme, StoreSettings } from "@shared/schema";
 
 interface CartItem {
@@ -47,16 +48,17 @@ export default function StorefrontPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerComment, setCustomerComment] = useState("");
+  const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
   const { data, isLoading, error } = useQuery<StoreData>({
     queryKey: ["/api/storefront", params.slug],
   });
 
-  useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "visit" });
-    },
-  });
+  const [visitTracked, setVisitTracked] = useState(false);
+  if (data && !visitTracked) {
+    setVisitTracked(true);
+    apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "visit" }).catch(() => {});
+  }
 
   const store = data?.store;
   const products = data?.products || [];
@@ -64,16 +66,11 @@ export default function StorefrontPage() {
   const theme = data?.theme;
   const settings = data?.settings;
 
+  const businessLabels = getBusinessLabels(store?.businessType);
+
   const primaryColor = theme?.primaryColor || "#16a34a";
   const secondaryColor = theme?.secondaryColor || null;
   const bannerOverlay = theme?.bannerOverlay ?? true;
-  const btnStyle = theme?.buttonStyle || "pill";
-  const crdStyle = theme?.cardStyle || "bordered";
-  const fntStyle = theme?.fontStyle || "modern";
-
-  const btnRadius = btnStyle === "pill" ? "rounded-full" : btnStyle === "rounded" ? "rounded-md" : "rounded-none";
-  const cardCls = crdStyle === "bordered" ? "border" : crdStyle === "shadow" ? "shadow-md border-0" : "border-0";
-  const fontCls = fntStyle === "classic" ? "font-serif" : fntStyle === "rounded" ? "tracking-wide" : "";
 
   const filteredProducts = useMemo(() => {
     let filtered = products.filter((p) => p.isActive);
@@ -189,13 +186,17 @@ export default function StorefrontPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Skeleton className="h-40 w-full" />
-        <div className="flex justify-center -mt-10">
-          <Skeleton className="h-20 w-20 rounded-full" />
+        <div className="flex items-center justify-between px-4 py-4">
+          <Skeleton className="h-6 w-6" />
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-6" />
+            <Skeleton className="h-6 w-6" />
+          </div>
         </div>
+        <Skeleton className="mx-4 h-40 rounded-2xl" />
         <div className="space-y-3 p-4 mt-4">
-          <Skeleton className="mx-auto h-6 w-40" />
-          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28" />)}
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         </div>
       </div>
     );
@@ -204,7 +205,7 @@ export default function StorefrontPage() {
   if (error || !store) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="max-w-sm rounded-md border p-8 text-center bg-card">
+        <div className="max-w-sm rounded-2xl border p-8 text-center bg-card">
           <ShoppingBag className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
           <p className="text-lg font-semibold">Магазин не найден</p>
           <p className="mt-1 text-sm text-muted-foreground">Проверьте ссылку и попробуйте снова</p>
@@ -213,33 +214,39 @@ export default function StorefrontPage() {
     );
   }
 
+  const tabLabel = businessLabels.itemLabelPlural;
+
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-white/90 dark:bg-background/90 backdrop-blur-md border-b border-border/40">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-4 px-4 py-3">
-          <div className="flex items-center gap-2.5">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setMenuOpen(true)}
-              data-testid="button-menu"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              {theme?.logoUrl ? (
-                <img src={theme.logoUrl} alt={store.name} className="h-7 w-7 rounded-lg object-cover" />
-              ) : (
-                <Avatar className="h-7 w-7">
-                  <AvatarFallback className="text-[10px] font-bold text-white" style={{ backgroundColor: primaryColor }}>
-                    {store.name.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              )}
-              <span className="text-sm font-extrabold tracking-tight" data-testid="text-nav-store-name">{store.name}</span>
-            </div>
+      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-background/95 backdrop-blur-md border-b border-border/30">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-2 px-4 py-3">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setMenuOpen(true)}
+            data-testid="button-menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          <div className="flex flex-col items-center gap-1">
+            {theme?.logoUrl ? (
+              <Avatar className="h-9 w-9 border border-border/40">
+                <AvatarImage src={theme.logoUrl} alt={store.name} />
+                <AvatarFallback className="text-xs font-bold text-white" style={{ backgroundColor: primaryColor }}>
+                  {store.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="text-xs font-bold text-white" style={{ backgroundColor: primaryColor }}>
+                  {store.name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            )}
           </div>
-          <div className="flex items-center gap-1">
+
+          <div className="flex items-center gap-0.5">
             <Button
               size="icon"
               variant="ghost"
@@ -251,7 +258,7 @@ export default function StorefrontPage() {
             <Sheet>
               <SheetTrigger asChild>
                 <Button size="icon" variant="ghost" className="relative" data-testid="button-open-cart">
-                  <ShoppingCart className="h-5 w-5" />
+                  <ShoppingBag className="h-5 w-5" />
                   {cartCount > 0 && (
                     <span
                       className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
@@ -268,7 +275,7 @@ export default function StorefrontPage() {
                 </SheetHeader>
                 {cart.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <ShoppingCart className="mb-3 h-10 w-10 text-muted-foreground/30" />
+                    <ShoppingBag className="mb-3 h-10 w-10 text-muted-foreground/30" />
                     <p className="text-sm text-muted-foreground">Корзина пуста</p>
                   </div>
                 ) : (
@@ -276,7 +283,7 @@ export default function StorefrontPage() {
                     <ScrollArea className="mt-4 flex-1" style={{ maxHeight: "calc(100vh - 220px)" }}>
                       <div className="space-y-3 pr-2">
                         {cart.map((item) => (
-                          <div key={item.product.id} className="flex items-center gap-3 rounded-lg border p-2" data-testid={`cart-item-${item.product.id}`}>
+                          <div key={item.product.id} className="flex items-center gap-3 rounded-xl border p-2.5" data-testid={`cart-item-${item.product.id}`}>
                             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
                               {item.product.imageUrls?.[0] ? (
                                 <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
@@ -314,7 +321,7 @@ export default function StorefrontPage() {
                         <span className="text-lg font-bold" style={{ color: primaryColor }} data-testid="text-cart-total">{formatPrice(cartTotal)}</span>
                       </div>
                       <Button
-                        className={`w-full gap-2 text-white ${btnRadius}`}
+                        className="w-full gap-2 text-white rounded-full"
                         style={{ backgroundColor: "#25D366" }}
                         onClick={() => setCheckoutOpen(true)}
                         data-testid="button-checkout"
@@ -332,32 +339,34 @@ export default function StorefrontPage() {
       </nav>
 
       <div className="relative">
-        <div className="relative">
-          <div
-            className="h-36 w-full sm:h-44"
-            style={{
-              background: theme?.bannerUrl
-                ? `url(${theme.bannerUrl}) center/cover no-repeat`
-                : `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}08)`,
-            }}
-          />
-          {theme?.bannerUrl && bannerOverlay && (
-            <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40" />
-          )}
+        <div className="mx-auto max-w-lg px-4 pt-3">
+          <div className="relative overflow-hidden rounded-2xl">
+            <div
+              className="h-40 w-full sm:h-48"
+              style={{
+                background: theme?.bannerUrl
+                  ? `url(${theme.bannerUrl}) center/cover no-repeat`
+                  : `linear-gradient(135deg, ${primaryColor}20, ${primaryColor}08)`,
+              }}
+            />
+            {theme?.bannerUrl && bannerOverlay && (
+              <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/30 rounded-2xl" />
+            )}
+          </div>
         </div>
         <div className="flex flex-col items-center -mt-12 relative z-10">
-          <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+          <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
             {theme?.logoUrl ? (
               <AvatarImage src={theme.logoUrl} alt={store.name} />
             ) : null}
             <AvatarFallback
-              className="text-2xl font-bold text-white"
+              className="text-xl font-bold text-white"
               style={{ backgroundColor: primaryColor }}
             >
               {store.name.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <h1 className={`mt-3 text-xl font-extrabold tracking-tight text-center ${fontCls}`} data-testid="text-store-name">
+          <h1 className="mt-2 text-lg font-bold tracking-tight text-center" data-testid="text-store-name">
             {store.name}
           </h1>
           {store.city && (
@@ -373,15 +382,14 @@ export default function StorefrontPage() {
         </div>
       </div>
 
-      <div className="mx-auto mt-4 max-w-lg border-b border-border/40">
+      <div className="mx-auto mt-4 max-w-lg border-b border-border/30">
         <div className="flex">
           <button
             className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${activeTab === "overview" ? "border-b-2 border-foreground text-foreground" : "text-muted-foreground"}`}
             onClick={() => { setActiveTab("overview"); setSearchQuery(""); }}
             data-testid="tab-overview"
           >
-            <Home className="h-4 w-4" />
-            Обзор
+            {tabLabel}
           </button>
           <button
             className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${activeTab === "search" ? "border-b-2 border-foreground text-foreground" : "text-muted-foreground"}`}
@@ -398,12 +406,12 @@ export default function StorefrontPage() {
         {activeTab === "search" && (
           <div className="mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск товаров..."
-                className="pl-9 rounded-full"
+                placeholder="Поиск..."
+                className="pl-10 rounded-full bg-muted/50 border-0 focus-visible:ring-1"
                 data-testid="input-search"
                 autoFocus
               />
@@ -411,7 +419,7 @@ export default function StorefrontPage() {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                  className="absolute right-1 top-1/2 -translate-y-1/2"
                   onClick={() => setSearchQuery("")}
                 >
                   <X className="h-3 w-3" />
@@ -426,7 +434,8 @@ export default function StorefrontPage() {
             <ScrollArea className="w-full">
               <div className="flex gap-2 pb-1">
                 <button
-                  className={`shrink-0 ${btnRadius} px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === null ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                  style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
                   onClick={() => setActiveCategory(null)}
                   data-testid="button-category-all"
                 >
@@ -435,7 +444,8 @@ export default function StorefrontPage() {
                 {categories.map((c) => (
                   <button
                     key={c.id}
-                    className={`shrink-0 ${btnRadius} px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === c.id ? "bg-foreground text-background" : "bg-muted text-foreground"}`}
+                    className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                    style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
                     onClick={() => setActiveCategory(c.id)}
                     data-testid={`button-category-${c.id}`}
                   >
@@ -456,78 +466,43 @@ export default function StorefrontPage() {
               </>
             ) : (
               <>
-                <ShoppingCart className="mb-3 h-10 w-10 text-muted-foreground/30" />
+                <ShoppingBag className="mb-3 h-10 w-10 text-muted-foreground/30" />
                 <p className="text-sm text-muted-foreground">Товары пока не добавлены</p>
               </>
             )}
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             {filteredProducts.map((p) => {
               const cartItem = cart.find((i) => i.product.id === p.id);
               return (
                 <div
                   key={p.id}
-                  className={`flex overflow-visible cursor-pointer hover-elevate rounded-md bg-card ${cardCls}`}
+                  className="group cursor-pointer overflow-hidden rounded-xl border border-border/40 bg-card"
                   onClick={() => setSelectedProduct(p)}
                   data-testid={`card-storefront-product-${p.id}`}
                 >
-                  <div className="flex-1 p-4 pr-2">
-                    <p className={`font-semibold leading-tight ${fontCls}`} data-testid={`text-storefront-product-name-${p.id}`}>{p.name}</p>
-                    {p.description && (
-                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground leading-relaxed">{p.description}</p>
-                    )}
-                    {settings?.showPrices !== false && (
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        {p.discountPrice ? (
-                          <>
-                            <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(p.discountPrice)}</span>
-                            <span className="text-xs text-muted-foreground line-through">{formatPrice(p.price)}</span>
-                          </>
-                        ) : (
-                          <span className="text-sm font-bold">{formatPrice(p.price)}</span>
-                        )}
+                  <div className="relative aspect-square overflow-hidden bg-muted">
+                    {p.imageUrls?.[0] ? (
+                      <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
                       </div>
                     )}
-                    {cartItem && (
-                      <div className="mt-2 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="rounded-full"
-                          onClick={() => updateQuantity(p.id, -1)}
-                          data-testid={`button-qty-minus-${p.id}`}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-7 text-center text-sm font-medium">{cartItem.quantity}</span>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="rounded-full"
-                          onClick={() => updateQuantity(p.id, 1)}
-                          data-testid={`button-qty-plus-${p.id}`}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
+                    {p.discountPrice && (
+                      <Badge
+                        className="absolute top-2 left-2 rounded-full text-[10px] px-1.5 py-0.5 text-white border-0"
+                        style={{ backgroundColor: secondaryColor || primaryColor }}
+                      >
+                        -{Math.round((1 - p.discountPrice / p.price) * 100)}%
+                      </Badge>
                     )}
-                  </div>
-                  <div className="relative w-28 shrink-0 sm:w-32">
-                    <div className="h-full overflow-hidden rounded-r-md bg-muted">
-                      {p.imageUrls?.[0] ? (
-                        <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full min-h-[100px] items-center justify-center">
-                          <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
-                        </div>
-                      )}
-                    </div>
-                    {!cartItem && (
+                    {!cartItem ? (
                       <Button
                         size="icon"
                         variant="outline"
-                        className="absolute bottom-2 right-2 rounded-full shadow-md bg-background"
+                        className="absolute bottom-2 right-2 rounded-full shadow-md bg-white/90 dark:bg-background/90 backdrop-blur-sm border-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           addToCart(p);
@@ -536,6 +511,43 @@ export default function StorefrontPage() {
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
+                    ) : (
+                      <div className="absolute bottom-2 right-2 flex items-center gap-0.5 rounded-full bg-white/90 dark:bg-background/90 backdrop-blur-sm shadow-md px-1" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => updateQuantity(p.id, -1)}
+                          data-testid={`button-qty-minus-${p.id}`}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-5 text-center text-xs font-bold">{cartItem.quantity}</span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => updateQuantity(p.id, 1)}
+                          data-testid={`button-qty-plus-${p.id}`}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <p className="text-sm font-semibold leading-tight line-clamp-2" data-testid={`text-storefront-product-name-${p.id}`}>{p.name}</p>
+                    {settings?.showPrices !== false && (
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                        {p.discountPrice ? (
+                          <>
+                            <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(p.discountPrice)}</span>
+                            <span className="text-[11px] text-muted-foreground line-through">{formatPrice(p.price)}</span>
+                          </>
+                        ) : (
+                          <span className="text-sm font-bold">{formatPrice(p.price)}</span>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -550,14 +562,12 @@ export default function StorefrontPage() {
           <Sheet>
             <SheetTrigger asChild>
               <button
-                className="flex w-full items-center justify-between rounded-2xl bg-foreground px-5 py-3.5 text-background shadow-xl"
+                className="flex w-full items-center justify-between rounded-2xl px-5 py-3.5 text-white shadow-xl"
+                style={{ backgroundColor: primaryColor }}
                 data-testid="button-bottom-cart"
               >
                 <div className="flex items-center gap-3">
-                  <span
-                    className="flex h-7 min-w-[28px] items-center justify-center rounded-full px-1.5 text-xs font-bold"
-                    style={{ backgroundColor: primaryColor, color: "white" }}
-                  >
+                  <span className="flex h-7 min-w-[28px] items-center justify-center rounded-full bg-white/20 px-1.5 text-xs font-bold">
                     {cartCount}
                   </span>
                   <span className="font-semibold">Корзина</span>
@@ -572,7 +582,7 @@ export default function StorefrontPage() {
               <ScrollArea className="mt-4" style={{ maxHeight: "calc(80vh - 200px)" }}>
                 <div className="space-y-3 pr-2">
                   {cart.map((item) => (
-                    <div key={item.product.id} className="flex items-center gap-3 rounded-lg border p-2" data-testid={`cart-item-bottom-${item.product.id}`}>
+                    <div key={item.product.id} className="flex items-center gap-3 rounded-xl border p-2.5" data-testid={`cart-item-bottom-${item.product.id}`}>
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
                         {item.product.imageUrls?.[0] ? (
                           <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
@@ -644,7 +654,7 @@ export default function StorefrontPage() {
               <div className="space-y-3 p-5">
                 <h2 className="text-xl font-bold" data-testid="text-product-detail-name">{selectedProduct.name}</h2>
                 {selectedProduct.description && (
-                  <p className="text-sm text-muted-foreground">{selectedProduct.description}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedProduct.description}</p>
                 )}
                 {settings?.showPrices !== false && (
                   <div className="flex flex-wrap items-center gap-2">
@@ -652,7 +662,7 @@ export default function StorefrontPage() {
                       <>
                         <span className="text-xl font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(selectedProduct.discountPrice)}</span>
                         <span className="text-muted-foreground line-through">{formatPrice(selectedProduct.price)}</span>
-                        <Badge variant="secondary" className="text-xs" style={{ backgroundColor: (secondaryColor || primaryColor) + "15", color: secondaryColor || primaryColor }}>
+                        <Badge variant="secondary" className="text-xs rounded-full" style={{ backgroundColor: (secondaryColor || primaryColor) + "15", color: secondaryColor || primaryColor }}>
                           -{Math.round((1 - selectedProduct.discountPrice / selectedProduct.price) * 100)}%
                         </Badge>
                       </>
@@ -669,7 +679,8 @@ export default function StorefrontPage() {
                   </div>
                 )}
                 <Button
-                  className={`w-full ${btnRadius} bg-foreground text-background`}
+                  className="w-full rounded-full text-white"
+                  style={{ backgroundColor: primaryColor }}
                   onClick={(e) => {
                     e.stopPropagation();
                     addToCart(selectedProduct);
@@ -677,7 +688,7 @@ export default function StorefrontPage() {
                   }}
                   data-testid="button-add-to-cart-detail"
                 >
-                  <ShoppingCart className="mr-2 h-4 w-4" /> В корзину
+                  <ShoppingBag className="mr-2 h-4 w-4" /> В корзину
                 </Button>
               </div>
             </>
@@ -688,76 +699,104 @@ export default function StorefrontPage() {
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="left" className="w-72">
           <SheetHeader>
-            <SheetTitle className="text-left">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
-                  <ShoppingBag className="h-4 w-4 text-background" />
-                </div>
-                <span className="font-extrabold tracking-tight">{store.name}</span>
-              </div>
-            </SheetTitle>
+            <SheetTitle className="sr-only">{store.name}</SheetTitle>
           </SheetHeader>
-          <div className="mt-6 space-y-4">
-            {store.description && (
-              <p className="text-sm text-muted-foreground">{store.description}</p>
-            )}
-            {store.city && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                <span>{store.city}</span>
-              </div>
-            )}
-            {settings?.phoneNumber && (
-              <a href={`tel:${settings.phoneNumber}`} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                <span>{settings.phoneNumber}</span>
-              </a>
-            )}
-            {settings?.instagramUrl && (
-              <a
-                href={`https://instagram.com/${settings.instagramUrl.replace("@", "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <SiInstagram className="h-4 w-4" />
-                <span>{settings.instagramUrl}</span>
-              </a>
-            )}
-            {store.whatsappPhone && (
-              <a
-                href={`https://wa.me/${store.whatsappPhone.replace(/[^0-9]/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <SiWhatsapp className="h-4 w-4" />
-                <span>WhatsApp</span>
-              </a>
-            )}
+          <div className="mt-4 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Поиск"
+                className="pl-9 rounded-full bg-muted/50 border-0"
+                onClick={() => {
+                  setActiveTab("search");
+                  setMenuOpen(false);
+                }}
+                readOnly
+                data-testid="input-menu-search"
+              />
+            </div>
+
+            <button
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover-elevate"
+              onClick={() => {
+                setActiveTab("overview");
+                setActiveCategory(null);
+                setSearchQuery("");
+                setMenuOpen(false);
+              }}
+              data-testid="button-menu-all"
+            >
+              {tabLabel}
+            </button>
 
             {categories.length > 0 && (
-              <div className="border-t pt-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Категории</p>
-                <div className="space-y-1">
-                  {categories.map((c) => (
-                    <button
-                      key={c.id}
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm hover-elevate"
-                      onClick={() => {
-                        setActiveCategory(c.id);
-                        setActiveTab("overview");
-                        setMenuOpen(false);
-                      }}
-                      data-testid={`button-menu-category-${c.id}`}
-                    >
-                      <span>{c.name}</span>
-                      <span className="text-xs text-muted-foreground">{getCategoryProductCount(c.id)}</span>
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <button
+                  className="flex w-full items-center justify-between px-3 py-2 text-sm font-bold"
+                  onClick={() => setCategoriesExpanded(!categoriesExpanded)}
+                  data-testid="button-menu-categories-toggle"
+                >
+                  <span>{businessLabels.categoryLabel}</span>
+                  {categoriesExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                </button>
+                {categoriesExpanded && (
+                  <div className="space-y-0.5 mt-1">
+                    {categories.map((c) => (
+                      <button
+                        key={c.id}
+                        className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm hover-elevate ${activeCategory === c.id ? "font-semibold" : ""}`}
+                        onClick={() => {
+                          setActiveCategory(c.id);
+                          setActiveTab("overview");
+                          setMenuOpen(false);
+                        }}
+                        data-testid={`button-menu-category-${c.id}`}
+                      >
+                        <span>{c.name}</span>
+                        <span className="text-xs text-muted-foreground">{getCategoryProductCount(c.id)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
+
+            <div className="border-t pt-4 space-y-2">
+              {store.city && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground px-3">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span>{store.city}</span>
+                </div>
+              )}
+              {settings?.phoneNumber && (
+                <a href={`tel:${settings.phoneNumber}`} className="flex items-center gap-2 text-sm text-muted-foreground px-3">
+                  <Phone className="h-4 w-4 shrink-0" />
+                  <span>{settings.phoneNumber}</span>
+                </a>
+              )}
+              {settings?.instagramUrl && (
+                <a
+                  href={`https://instagram.com/${settings.instagramUrl.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-muted-foreground px-3"
+                >
+                  <SiInstagram className="h-4 w-4 shrink-0" />
+                  <span>{settings.instagramUrl}</span>
+                </a>
+              )}
+              {store.whatsappPhone && (
+                <a
+                  href={`https://wa.me/${store.whatsappPhone.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-muted-foreground px-3"
+                >
+                  <SiWhatsapp className="h-4 w-4 shrink-0" />
+                  <span>WhatsApp</span>
+                </a>
+              )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
@@ -777,14 +816,18 @@ export default function StorefrontPage() {
               <Label>Телефон *</Label>
               <PhoneInput value={customerPhone} onValueChange={setCustomerPhone} data-testid="input-checkout-phone" />
             </div>
-            <div>
-              <Label>Адрес доставки</Label>
-              <Input value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="ул. Абая 1, кв 10" data-testid="input-checkout-address" />
-            </div>
-            <div>
-              <Label>Комментарий</Label>
-              <Textarea value={customerComment} onChange={(e) => setCustomerComment(e.target.value)} placeholder="Пожелания к заказу" data-testid="input-checkout-comment" />
-            </div>
+            {settings?.checkoutAddressEnabled && (
+              <div>
+                <Label>Адрес доставки</Label>
+                <Input value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="ул. Абая 1, кв 10" data-testid="input-checkout-address" />
+              </div>
+            )}
+            {settings?.checkoutCommentEnabled && (
+              <div>
+                <Label>Комментарий</Label>
+                <Textarea value={customerComment} onChange={(e) => setCustomerComment(e.target.value)} placeholder="Пожелания к заказу" data-testid="input-checkout-comment" />
+              </div>
+            )}
 
             <div className="rounded-xl border p-3">
               <div className="space-y-1 text-sm">
@@ -802,7 +845,7 @@ export default function StorefrontPage() {
             </div>
 
             <Button
-              className={`w-full gap-2 text-white ${btnRadius}`}
+              className="w-full gap-2 text-white rounded-full"
               style={{ backgroundColor: "#25D366" }}
               disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting}
               onClick={handleCheckout}
@@ -816,7 +859,7 @@ export default function StorefrontPage() {
         </DialogContent>
       </Dialog>
 
-      <footer className="mx-auto max-w-lg border-t border-border/40 px-4 py-6 text-center">
+      <footer className="mx-auto max-w-lg border-t border-border/30 px-4 py-6 text-center">
         <a href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground" data-testid="link-footer-takesale">
           <div className="flex h-5 w-5 items-center justify-center rounded bg-foreground">
             <ShoppingBag className="h-3 w-3 text-background" />

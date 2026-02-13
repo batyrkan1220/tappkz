@@ -91,6 +91,10 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Super Admin login redirects to /superadmin, regular users to /
 
 ## Recent Changes
+- Storefront redesign (take.app style): centered logo header, hamburger sidebar with search/categories, 2-column product grid, primary-color cart bar
+- Sidebar: no logo, search bar, business-type category label, expandable categories list
+- Tab "Обзор" renamed to business-type label (Товары/Меню/Услуги)
+- Checkout fields: by default only Name + Phone; Address and Comment are optional, controlled via admin settings (checkoutAddressEnabled, checkoutCommentEnabled in store_settings table)
 - Enhanced SuperAdmin panel with trend charts, orders page, store detail view, events log, search/filters
 - Replaced Replit Auth (OIDC) with local email/password authentication (bcrypt + express-session)
 - Added /login and /register pages with Russian UI

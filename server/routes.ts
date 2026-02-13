@@ -75,6 +75,8 @@ const settingsSchema = z.object({
   city: z.string().max(100).nullable().optional(),
   description: z.string().max(1000).nullable().optional(),
   showPrices: z.boolean().optional(),
+  checkoutAddressEnabled: z.boolean().optional(),
+  checkoutCommentEnabled: z.boolean().optional(),
   instagramUrl: z.string().max(200).nullable().optional(),
   phoneNumber: z.string().max(30).nullable().optional(),
 });
@@ -319,7 +321,7 @@ export async function registerRoutes(
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const settings = await storage.getSettings(store.id);
-      res.json(settings || { storeId: store.id, showPrices: true, currency: "KZT", whatsappTemplate: "", instagramUrl: null, phoneNumber: null, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null });
+      res.json(settings || { storeId: store.id, showPrices: true, currency: "KZT", whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
@@ -353,6 +355,8 @@ export async function registerRoutes(
         showPrices: data.showPrices ?? existingSettings?.showPrices ?? true,
         instagramUrl: data.instagramUrl !== undefined ? (data.instagramUrl || null) : (existingSettings?.instagramUrl || null),
         phoneNumber: data.phoneNumber !== undefined ? (data.phoneNumber || null) : (existingSettings?.phoneNumber || null),
+        checkoutAddressEnabled: data.checkoutAddressEnabled ?? existingSettings?.checkoutAddressEnabled ?? false,
+        checkoutCommentEnabled: data.checkoutCommentEnabled ?? existingSettings?.checkoutCommentEnabled ?? false,
         currency: "KZT",
         whatsappTemplate: existingSettings?.whatsappTemplate || "",
         kaspiEnabled: existingSettings?.kaspiEnabled ?? false,
@@ -385,6 +389,8 @@ export async function registerRoutes(
         currency: "KZT",
         instagramUrl: existingSettings?.instagramUrl || null,
         phoneNumber: existingSettings?.phoneNumber || null,
+        checkoutAddressEnabled: existingSettings?.checkoutAddressEnabled ?? false,
+        checkoutCommentEnabled: existingSettings?.checkoutCommentEnabled ?? false,
         kaspiEnabled: existingSettings?.kaspiEnabled ?? false,
         kaspiPayUrl: existingSettings?.kaspiPayUrl || null,
         kaspiRecipientName: existingSettings?.kaspiRecipientName || null,
@@ -481,7 +487,7 @@ export async function registerRoutes(
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
       });
