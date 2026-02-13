@@ -10,9 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Trash2, Palette, CheckCircle2, ImageIcon, ShoppingBag, MapPin, ShoppingCart, Plus } from "lucide-react";
+import { Upload, Trash2, Palette, CheckCircle2, ImageIcon, ShoppingBag, MapPin, ShoppingCart, Plus, Menu, Search } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import type { Store, StoreTheme } from "@shared/schema";
+import { useBusinessLabels } from "@/hooks/use-business-labels";
 
 const PRIMARY_COLORS = [
   { value: "#2563eb", label: "Синий" },
@@ -51,6 +52,7 @@ export default function BrandingPage() {
   const { toast } = useToast();
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: theme, isLoading } = useQuery<StoreTheme>({ queryKey: ["/api/my-store/theme"] });
+  const businessLabels = useBusinessLabels();
 
   const [primaryColor, setPrimaryColor] = useState("#2563eb");
   const [secondaryColor, setSecondaryColor] = useState<string | null>(null);
@@ -338,32 +340,42 @@ export default function BrandingPage() {
         <div className="lg:sticky lg:top-20 lg:self-start">
           <p className="mb-2 text-sm font-semibold text-muted-foreground">Предпросмотр витрины</p>
           <div className="overflow-hidden rounded-2xl border bg-background shadow-lg" style={{ maxWidth: 360 }}>
+            <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/30">
+              <Menu className="h-4 w-4 text-muted-foreground" />
+              <div className="w-4" />
+              <div className="flex items-center gap-1.5">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+              </div>
+            </div>
+
             <div className="relative">
-              <div
-                className="h-28 w-full"
-                style={{
-                  background: bannerUrl
-                    ? `url(${bannerUrl}) center/cover no-repeat`
-                    : `linear-gradient(135deg, ${primaryColor}30, ${primaryColor}10)`,
-                }}
-              >
+              <div className="mx-3 mt-2 overflow-hidden rounded-xl">
+                <div
+                  className="h-24 w-full"
+                  style={{
+                    background: bannerUrl
+                      ? `url(${bannerUrl}) center/cover no-repeat`
+                      : `linear-gradient(135deg, ${primaryColor}20, ${primaryColor}08)`,
+                  }}
+                />
                 {bannerUrl && bannerOverlay && (
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40" style={{ height: "112px" }} />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/30 rounded-xl" style={{ margin: "8px 12px 0 12px", height: "96px" }} />
                 )}
               </div>
-              <div className="flex flex-col items-center -mt-10 relative z-10">
-                <Avatar className="h-20 w-20 border-4 border-background shadow-md">
+              <div className="flex flex-col items-center -mt-8 relative z-10">
+                <Avatar className="h-16 w-16 border-4 border-background shadow-md">
                   {logoUrl ? (
                     <AvatarImage src={logoUrl} alt="Logo" />
                   ) : null}
                   <AvatarFallback
-                    className="text-xl font-bold text-white"
+                    className="text-lg font-bold text-white"
                     style={{ backgroundColor: primaryColor }}
                   >
                     {(store?.name || "М").substring(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <p className={`mt-2 text-base font-extrabold tracking-tight ${fontStyle === "classic" ? "font-serif" : ""}`}>
+                <p className={`mt-1.5 text-sm font-bold tracking-tight ${fontStyle === "classic" ? "font-serif" : ""}`}>
                   {store?.name || "Ваш магазин"}
                 </p>
                 {store?.city && (
@@ -374,34 +386,49 @@ export default function BrandingPage() {
               </div>
             </div>
 
-            <div className="flex border-b border-border/40 mt-2">
+            <div className="flex border-b border-border/30 mt-2">
               <div className="flex flex-1 items-center justify-center gap-1 border-b-2 border-foreground py-2 text-xs font-medium">
-                Обзор
+                {businessLabels.itemLabelPlural}
               </div>
               <div className="flex flex-1 items-center justify-center gap-1 py-2 text-xs font-medium text-muted-foreground">
-                Поиск
+                <Search className="h-3 w-3" /> Поиск
               </div>
             </div>
 
-            <div className="flex gap-2 px-3 py-2">
-              <span className={`${btnRadius} bg-foreground px-3 py-1 text-[10px] font-medium text-background`}>Все</span>
-              <span className={`${btnRadius} bg-muted px-3 py-1 text-[10px] font-medium`}>Категория</span>
-              <span className={`${btnRadius} bg-muted px-3 py-1 text-[10px] font-medium`}>Другая</span>
+            <div className="flex gap-1.5 px-3 py-2.5">
+              <span className="rounded-full px-3 py-1 text-[10px] font-medium text-white" style={{ backgroundColor: primaryColor }}>Все</span>
+              <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-medium">Категория</span>
+              <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-medium">Другая</span>
             </div>
 
-            <div className="space-y-2 px-3 pb-3">
+            <div className="grid grid-cols-2 gap-2 px-3 pb-3">
               {[
                 { name: "Товар 1", price: "4 500 ₸", discount: "3 200 ₸" },
                 { name: "Товар 2", price: "7 800 ₸", discount: null },
+                { name: "Товар 3", price: "2 900 ₸", discount: null },
+                { name: "Товар 4", price: "5 400 ₸", discount: "4 100 ₸" },
               ].map((p, i) => (
                 <div
                   key={i}
-                  className={`flex overflow-hidden rounded-md bg-card ${cardCls}`}
+                  className={`overflow-hidden rounded-xl bg-card ${cardCls}`}
                 >
-                  <div className="flex-1 p-2.5">
-                    <p className={`text-xs font-semibold ${fontStyle === "classic" ? "font-serif" : ""}`}>{p.name}</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground line-clamp-1">Описание товара</p>
-                    <div className="mt-1 flex items-center gap-1">
+                  <div className="relative aspect-square bg-muted">
+                    <ImageIcon className="absolute inset-0 m-auto h-5 w-5 text-muted-foreground/20" />
+                    {p.discount && (
+                      <span
+                        className="absolute top-1.5 left-1.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold text-white"
+                        style={{ backgroundColor: secondaryColor || primaryColor }}
+                      >
+                        -29%
+                      </span>
+                    )}
+                    <button className="absolute bottom-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full border bg-white/90 shadow-sm">
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <div className="p-2">
+                    <p className={`text-[11px] font-semibold leading-tight ${fontStyle === "classic" ? "font-serif" : ""}`}>{p.name}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-1">
                       {p.discount ? (
                         <>
                           <span className="text-[11px] font-bold" style={{ color: secondaryColor || primaryColor }}>{p.discount}</span>
@@ -412,23 +439,14 @@ export default function BrandingPage() {
                       )}
                     </div>
                   </div>
-                  <div className="relative h-16 w-16 shrink-0 bg-muted">
-                    <ImageIcon className="absolute inset-0 m-auto h-4 w-4 text-muted-foreground/20" />
-                    <button className={`absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center ${btnRadius} border bg-background shadow-sm`}>
-                      <Plus className="h-2.5 w-2.5" />
-                    </button>
-                  </div>
                 </div>
               ))}
             </div>
 
             <div className="px-3 pb-3">
-              <div className="flex items-center justify-between rounded-xl bg-foreground px-3 py-2 text-background">
+              <div className="flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-white" style={{ backgroundColor: primaryColor }}>
                 <div className="flex items-center gap-2">
-                  <span
-                    className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[9px] font-bold text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
+                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white/25 px-1 text-[9px] font-bold">
                     2
                   </span>
                   <span className="text-[11px] font-semibold">Корзина</span>
@@ -437,7 +455,7 @@ export default function BrandingPage() {
               </div>
             </div>
 
-            <div className="border-t border-border/40 px-3 py-2 text-center">
+            <div className="border-t border-border/30 px-3 py-2 text-center">
               <div className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
                 <div className="flex h-3.5 w-3.5 items-center justify-center rounded bg-foreground">
                   <ShoppingBag className="h-2 w-2 text-background" />
