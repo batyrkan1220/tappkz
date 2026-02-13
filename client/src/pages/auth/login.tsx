@@ -20,9 +20,9 @@ export default function LoginPage() {
       const res = await apiRequest("POST", "/api/auth/login", { email, password });
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: { isSuperAdmin?: boolean }) => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      window.location.href = "/";
+      window.location.href = data.isSuperAdmin ? "/superadmin" : "/";
     },
     onError: (e: Error) => {
       const msg = e.message.includes("401")
