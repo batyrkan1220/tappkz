@@ -89,7 +89,7 @@ export default function CategoriesPage() {
             <p className="text-xs text-muted-foreground" data-testid="text-categories-count">{categories?.length ?? 0} {labels.group === "fnb" ? "разделов" : "категорий"}</p>
           </div>
         </div>
-        <Button onClick={openCreate} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-add-category">
+        <Button onClick={openCreate} className="rounded-full font-semibold" data-testid="button-add-category">
           <Plus className="mr-1.5 h-4 w-4" /> Добавить
         </Button>
       </div>
@@ -145,7 +145,7 @@ export default function CategoriesPage() {
               <Label className="font-semibold">Активна</Label>
             </div>
             <Button
-              className="w-full bg-green-600 text-white rounded-full font-semibold"
+              className="w-full rounded-full font-semibold"
               onClick={() => saveMutation.mutate()}
               disabled={!name || saveMutation.isPending}
               data-testid="button-save-category"

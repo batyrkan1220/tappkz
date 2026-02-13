@@ -149,8 +149,8 @@ export default function ProductsPage() {
     <div className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 dark:bg-green-950/30">
-            <Package className="h-5 w-5 text-green-600" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/5">
+            <Package className="h-5 w-5 text-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-products-title">{labels.itemLabelPlural}</h1>
@@ -159,7 +159,7 @@ export default function ProductsPage() {
         </div>
         <Button
           onClick={hasCategories ? openCreate : undefined}
-          className="bg-green-600 text-white rounded-full font-semibold"
+          className="rounded-full font-semibold"
           disabled={!hasCategories}
           data-testid="button-add-product"
         >
@@ -216,8 +216,8 @@ export default function ProductsPage() {
 
       {filtered.length === 0 && hasCategories ? (
         <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed" data-testid="card-empty-products">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-50 dark:bg-green-950/30">
-            <Package className="h-7 w-7 text-green-600" />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/5">
+            <Package className="h-7 w-7 text-primary" />
           </div>
           <p className="font-extrabold tracking-tight">Нет позиций</p>
           <p className="mt-1 text-sm text-muted-foreground">Добавьте первую позицию в каталог</p>
@@ -332,7 +332,7 @@ export default function ProductsPage() {
               <Label className="font-semibold">В наличии</Label>
             </div>
             <Button
-              className="w-full bg-green-600 text-white rounded-full font-semibold"
+              className="w-full rounded-full font-semibold"
               onClick={() => saveMutation.mutate()}
               disabled={!form.name || !form.price || saveMutation.isPending}
               data-testid="button-save-product"

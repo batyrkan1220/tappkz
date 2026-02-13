@@ -45,7 +45,7 @@ export default function Dashboard() {
   const stats = [
     { label: "Просмотры", value: analytics?.visits ?? 0, icon: Eye, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
     { label: "В корзину", value: analytics?.addToCarts ?? 0, icon: ShoppingCart, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30" },
-    { label: "Заказы WhatsApp", value: analytics?.checkouts ?? 0, icon: MousePointerClick, color: "text-green-600", bg: "bg-green-50 dark:bg-green-950/30" },
+    { label: "Заказы WhatsApp", value: analytics?.checkouts ?? 0, icon: MousePointerClick, color: "text-primary", bg: "bg-primary/10 dark:bg-primary/5" },
   ];
 
   const productLimit = store.plan === "free" ? 30 : store.plan === "pro" ? 300 : 2000;
@@ -66,8 +66,8 @@ export default function Dashboard() {
       </div>
 
       <Card className="flex flex-wrap items-center gap-3 p-4" data-testid="card-store-url">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950/30">
-          <Copy className="h-4 w-4 text-green-600" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/5">
+          <Copy className="h-4 w-4 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium text-muted-foreground">Ссылка на витрину</p>
@@ -80,9 +80,9 @@ export default function Dashboard() {
       </Card>
 
       {!isOnboarded && (
-        <Card className="p-5 border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/10" data-testid="card-onboarding">
+        <Card className="p-5 border-primary/20 dark:border-primary/30 bg-primary/5 dark:bg-primary/5" data-testid="card-onboarding">
           <div className="flex items-center gap-2 mb-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <ArrowRight className="h-4 w-4 text-white" />
             </div>
             <div>
@@ -92,8 +92,8 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-3">
-            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasCategories ? "bg-background border-green-300 dark:border-green-700" : "bg-background border-border"}`} data-testid="onboarding-step-1">
-              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasCategories ? "bg-green-600" : "bg-muted"}`}>
+            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasCategories ? "bg-background border-primary/30 dark:border-primary/40" : "bg-background border-border"}`} data-testid="onboarding-step-1">
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasCategories ? "bg-primary" : "bg-muted"}`}>
                 {hasCategories ? <Check className="h-4 w-4 text-white" /> : <CircleDot className="h-4 w-4 text-muted-foreground" />}
               </div>
               <div className="flex-1 min-w-0">
@@ -106,7 +106,7 @@ export default function Dashboard() {
               </div>
               {!hasCategories && (
                 <Link href="/admin/categories" data-testid="link-onboarding-categories">
-                  <Button className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-onboarding-categories">
+                  <Button className="rounded-full font-semibold" data-testid="button-onboarding-categories">
                     Создать
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
@@ -114,8 +114,8 @@ export default function Dashboard() {
               )}
             </div>
 
-            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasProducts ? "bg-background border-green-300 dark:border-green-700" : !hasCategories ? "bg-muted/30 border-border opacity-60" : "bg-background border-border"}`} data-testid="onboarding-step-2">
-              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasProducts ? "bg-green-600" : "bg-muted"}`}>
+            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasProducts ? "bg-background border-primary/30 dark:border-primary/40" : !hasCategories ? "bg-muted/30 border-border opacity-60" : "bg-background border-border"}`} data-testid="onboarding-step-2">
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasProducts ? "bg-primary" : "bg-muted"}`}>
                 {hasProducts ? <Check className="h-4 w-4 text-white" /> : <CircleDot className="h-4 w-4 text-muted-foreground" />}
               </div>
               <div className="flex-1 min-w-0">
@@ -128,7 +128,7 @@ export default function Dashboard() {
               </div>
               {!hasProducts && hasCategories && (
                 <Link href="/admin/products" data-testid="link-onboarding-products">
-                  <Button className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-onboarding-products">
+                  <Button className="rounded-full font-semibold" data-testid="button-onboarding-products">
                     Добавить
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Button>
@@ -158,8 +158,8 @@ export default function Dashboard() {
           <Link href="/admin/products" className="block" data-testid="link-products-summary">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950/30">
-                  <Package className="h-5 w-5 text-green-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/5">
+                  <Package className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <span className="text-sm font-medium text-muted-foreground">{labels.itemLabelPlural}</span>
@@ -174,7 +174,7 @@ export default function Dashboard() {
                 <span>{products?.length ?? 0} / {productLimit}</span>
               </div>
               <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${Math.min(((products?.length ?? 0) / productLimit) * 100, 100)}%` }} />
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.min(((products?.length ?? 0) / productLimit) * 100, 100)}%` }} />
               </div>
             </div>
           </Link>

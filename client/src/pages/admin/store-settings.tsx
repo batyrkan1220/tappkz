@@ -131,7 +131,7 @@ export default function StoreSettingsPage() {
         <Button
           onClick={() => saveMutation.mutate()}
           disabled={!name || !slug || saveMutation.isPending}
-          className="bg-green-600 text-white rounded-full font-semibold"
+          className="rounded-full font-semibold"
           data-testid="button-save-settings"
         >
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}

@@ -64,12 +64,12 @@ export default function CreateStorePage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white to-emerald-50/60 dark:from-green-950/20 dark:via-background dark:to-emerald-950/10" />
-      <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-green-100/40 blur-3xl dark:bg-green-900/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/3 dark:from-primary/5 dark:via-background dark:to-primary/3" />
+      <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl dark:bg-primary/5" />
 
       <Card className="relative z-10 w-full max-w-lg space-y-5 p-6">
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary">
             <ShoppingBag className="h-7 w-7 text-white" />
           </div>
           <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-create-store-title">
@@ -81,9 +81,9 @@ export default function CreateStorePage() {
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-2">
-          <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step >= 1 ? "bg-green-600 text-white" : "bg-muted text-muted-foreground"}`} data-testid="step-indicator-1">1</div>
-          <div className={`h-0.5 w-8 ${step >= 2 ? "bg-green-600" : "bg-muted"}`} />
-          <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step >= 2 ? "bg-green-600 text-white" : "bg-muted text-muted-foreground"}`} data-testid="step-indicator-2">2</div>
+          <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step >= 1 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`} data-testid="step-indicator-1">1</div>
+          <div className={`h-0.5 w-8 ${step >= 2 ? "bg-primary" : "bg-muted"}`} />
+          <div className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step >= 2 ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`} data-testid="step-indicator-2">2</div>
         </div>
 
         {step === 1 && (
@@ -94,7 +94,7 @@ export default function CreateStorePage() {
                   key={g.key}
                   onClick={() => { setSelectedGroup(g.key); setBusinessType(null); }}
                   className={`flex flex-col items-center gap-2 rounded-md border p-3 text-center transition-colors ${
-                    selectedGroup === g.key ? "border-green-500 bg-green-50 dark:bg-green-950/20" : "hover-elevate"
+                    selectedGroup === g.key ? "border-primary bg-primary/10 dark:bg-primary/5" : "hover-elevate"
                   }`}
                   data-testid={`button-group-${g.key}`}
                 >
@@ -113,11 +113,11 @@ export default function CreateStorePage() {
                     key={key}
                     onClick={() => setBusinessType(key)}
                     className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm font-medium transition-colors ${
-                      businessType === key ? "border-green-500 bg-green-50 dark:bg-green-950/20" : "hover-elevate"
+                      businessType === key ? "border-primary bg-primary/10 dark:bg-primary/5" : "hover-elevate"
                     }`}
                     data-testid={`button-type-${key}`}
                   >
-                    {businessType === key && <Check className="h-4 w-4 shrink-0 text-green-600" />}
+                    {businessType === key && <Check className="h-4 w-4 shrink-0 text-primary" />}
                     <span className={businessType === key ? "" : "ml-7"}>{val.label}</span>
                   </button>
                 ))}
@@ -125,7 +125,7 @@ export default function CreateStorePage() {
             )}
 
             <Button
-              className="w-full bg-green-600 text-white rounded-full font-semibold"
+              className="w-full rounded-full font-semibold"
               onClick={() => setStep(2)}
               disabled={!businessType}
               data-testid="button-next-step"
@@ -139,8 +139,8 @@ export default function CreateStorePage() {
         {step === 2 && (
           <div className="space-y-4">
             {businessType && (
-              <div className="flex items-center gap-2 rounded-md bg-green-50 dark:bg-green-950/20 px-3 py-2 text-sm">
-                <Check className="h-4 w-4 text-green-600 shrink-0" />
+              <div className="flex items-center gap-2 rounded-md bg-primary/10 dark:bg-primary/5 px-3 py-2 text-sm">
+                <Check className="h-4 w-4 text-primary shrink-0" />
                 <span className="font-medium">{BUSINESS_TYPES[businessType].label}</span>
                 <button onClick={() => setStep(1)} className="ml-auto text-xs text-muted-foreground underline" data-testid="button-change-type">Изменить</button>
               </div>
@@ -175,7 +175,7 @@ export default function CreateStorePage() {
                 <ArrowLeft className="mr-1.5 h-4 w-4" /> Назад
               </Button>
               <Button
-                className="flex-1 bg-green-600 text-white rounded-full font-semibold"
+                className="flex-1 rounded-full font-semibold"
                 onClick={() => createMutation.mutate()}
                 disabled={!name || !slug || !whatsappPhone || createMutation.isPending}
                 data-testid="button-create-store"

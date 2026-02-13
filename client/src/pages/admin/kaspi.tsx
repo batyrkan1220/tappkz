@@ -128,7 +128,7 @@ export default function KaspiPage() {
         <Button
           onClick={() => saveMutation.mutate()}
           disabled={saveMutation.isPending || (kaspiEnabled && !kaspiPayUrl)}
-          className="bg-green-600 text-white rounded-full font-semibold"
+          className="rounded-full font-semibold"
           data-testid="button-save-kaspi"
         >
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}

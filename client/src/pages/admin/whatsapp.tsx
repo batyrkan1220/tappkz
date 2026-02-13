@@ -109,7 +109,7 @@ export default function WhatsAppPage() {
           </div>
         </div>
 
-        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} className="bg-green-600 text-white rounded-full font-semibold" data-testid="button-save-whatsapp">
+        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} className="rounded-full font-semibold" data-testid="button-save-whatsapp">
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </Card>
