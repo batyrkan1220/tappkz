@@ -139,7 +139,7 @@ export default function StorefrontPage() {
         customerAddress: customerAddress || null,
         customerComment: customerComment || null,
         items: orderItems,
-        paymentMethod: settings.kaspiEnabled ? "kaspi" : "whatsapp",
+        paymentMethod: "whatsapp",
       });
 
       const order = await orderRes.json();
@@ -160,7 +160,6 @@ export default function StorefrontPage() {
       msg += `Покупатель: *${customerName}* ${customerPhone}\n`;
       if (customerAddress) msg += `Адрес: ${customerAddress}\n`;
       if (customerComment) msg += `Комментарий: ${customerComment}\n`;
-      if (settings.kaspiEnabled) msg += `\nОплата: *Kaspi*\n`;
       msg += `\nСмотреть счёт:\n${invoiceUrl}`;
 
       const encoded = encodeURIComponent(msg);

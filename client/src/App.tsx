@@ -16,7 +16,7 @@ import ProductsPage from "@/pages/admin/products";
 import CategoriesPage from "@/pages/admin/categories";
 import BrandingPage from "@/pages/admin/branding";
 import WhatsAppPage from "@/pages/admin/whatsapp";
-import KaspiPage from "@/pages/admin/kaspi";
+
 import StoreSettingsPage from "@/pages/admin/store-settings";
 import OrdersPage from "@/pages/admin/orders";
 import CustomersPage from "@/pages/admin/customers";
@@ -65,7 +65,7 @@ function Router() {
       <Route path="/admin/categories" component={() => <AdminRoute component={CategoriesPage} />} />
       <Route path="/admin/branding" component={() => <AdminRoute component={BrandingPage} />} />
       <Route path="/admin/whatsapp" component={() => <AdminRoute component={WhatsAppPage} />} />
-      <Route path="/admin/kaspi" component={() => <AdminRoute component={KaspiPage} />} />
+
       <Route path="/admin/orders" component={() => <AdminRoute component={OrdersPage} />} />
       <Route path="/admin/customers" component={() => <AdminRoute component={CustomersPage} />} />
       <Route path="/admin/analytics" component={() => <AdminRoute component={AnalyticsPage} />} />

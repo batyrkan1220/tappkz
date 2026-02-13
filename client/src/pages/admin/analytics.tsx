@@ -281,7 +281,7 @@ function OrdersReport({ analytics }: { analytics: AnalyticsData }) {
       <ReportRow label="Способы оплаты по заказам" testId="report-row-payment-methods" />
       {analytics.ordersByPayment.map((p) => (
         <div key={p.method} className="flex items-center justify-between py-2 px-4 text-xs text-muted-foreground">
-          <span>{p.method === "kaspi" ? "Kaspi" : p.method === "whatsapp" ? "WhatsApp" : p.method}</span>
+          <span>{p.method === "whatsapp" ? "WhatsApp" : p.method}</span>
           <span>{p.count}</span>
         </div>
       ))}

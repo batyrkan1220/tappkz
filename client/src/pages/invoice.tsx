@@ -169,7 +169,7 @@ export default function InvoicePage() {
               <div>
                 <p className="text-xs text-muted-foreground">Оплата</p>
                 <p className="text-sm font-semibold" data-testid="text-payment-method">
-                  {order.paymentMethod === "kaspi" ? "Kaspi" : order.paymentMethod === "whatsapp" ? "WhatsApp" : order.paymentMethod}
+                  {order.paymentMethod === "whatsapp" ? "WhatsApp" : order.paymentMethod}
                 </p>
               </div>
             )}

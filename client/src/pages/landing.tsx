@@ -17,7 +17,6 @@ import {
   Star,
   ShoppingCart,
   Users,
-  CreditCard,
   FolderOpen,
   Settings,
   LineChart,
@@ -44,7 +43,7 @@ const steps = [
   {
     num: "03",
     title: "Управляйте продажами",
-    desc: "Принимайте заказы через WhatsApp и Kaspi, отслеживайте аналитику и клиентов",
+    desc: "Принимайте заказы через WhatsApp, отслеживайте аналитику и клиентов",
     icon: LineChart,
   },
 ];
@@ -71,9 +70,9 @@ const features = [
     desc: "Клиент собирает корзину и отправляет готовый заказ с деталями прямо в WhatsApp",
   },
   {
-    icon: CreditCard,
-    title: "Kaspi оплата",
-    desc: "Подключите Kaspi Pay для онлайн-оплаты. Клиенты платят удобным способом",
+    icon: Zap,
+    title: "Быстрый старт",
+    desc: "Никакого кода, никаких разработчиков. Готовый магазин за несколько минут",
   },
   {
     icon: ShoppingCart,
@@ -107,7 +106,7 @@ const testimonials = [
   {
     name: "Марат Т.",
     role: "Еда на дом, Астана",
-    text: "Запустил витрину за один вечер. Клиенты довольны, заказов стало в 2 раза больше. Kaspi оплата очень удобна.",
+    text: "Запустил витрину за один вечер. Клиенты довольны - всё понятно, удобно, красиво. Заказов стало в 2 раза больше.",
     rating: 5,
   },
   {
@@ -122,7 +121,7 @@ const adminFeatures = [
   { icon: Receipt, label: "Заказы и статусы" },
   { icon: Users, label: "База клиентов" },
   { icon: LineChart, label: "Графики и отчёты" },
-  { icon: CreditCard, label: "Kaspi Pay" },
+  { icon: ShieldCheck, label: "Безопасность" },
   { icon: Palette, label: "Брендинг" },
   { icon: Truck, label: "Статус доставки" },
   { icon: FolderOpen, label: "Категории" },
@@ -194,7 +193,7 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white/80 dark:bg-background/80 px-4 py-2 mb-7">
               <SiWhatsapp className="h-4 w-4 text-green-600" />
               <span className="text-sm font-semibold">
-                Витрина + WhatsApp + Kaspi = Продажи
+                Витрина + WhatsApp = Продажи
               </span>
             </div>
 
@@ -206,7 +205,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed" data-testid="text-hero-subtitle">
-              Создайте витрину, управляйте заказами, принимайте оплату через Kaspi, ведите клиентскую базу и анализируйте продажи - всё в одном месте.
+              Создайте витрину, управляйте заказами, ведите клиентскую базу и анализируйте продажи - всё в одном месте.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -227,7 +226,7 @@ export default function LandingPage() {
               <span className="flex items-center gap-1.5" data-testid="text-check-free"><CheckCircle2 className="h-4 w-4 text-primary" /> Бесплатно</span>
               <span className="flex items-center gap-1.5" data-testid="text-check-nocode"><CheckCircle2 className="h-4 w-4 text-primary" /> Без кода</span>
               <span className="flex items-center gap-1.5" data-testid="text-check-fast"><CheckCircle2 className="h-4 w-4 text-primary" /> За 5 минут</span>
-              <span className="flex items-center gap-1.5" data-testid="text-check-kaspi"><CheckCircle2 className="h-4 w-4 text-primary" /> Kaspi Pay</span>
+              <span className="flex items-center gap-1.5" data-testid="text-check-26types"><CheckCircle2 className="h-4 w-4 text-primary" /> 26 типов бизнеса</span>
             </div>
           </div>
 
@@ -391,15 +390,15 @@ export default function LandingPage() {
             <Card className="p-6" data-testid="card-admin-payments">
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/5">
-                  <CreditCard className="h-5 w-5 text-primary" />
+                  <Receipt className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold tracking-tight">Приём оплаты</h3>
-                  <p className="text-xs text-muted-foreground">WhatsApp + Kaspi Pay</p>
+                  <h3 className="font-extrabold tracking-tight">Чекаут и инвойсы</h3>
+                  <p className="text-xs text-muted-foreground">Заказы через WhatsApp</p>
                 </div>
               </div>
               <ul className="space-y-2">
-                {["Заказ через WhatsApp с деталями", "Онлайн-оплата через Kaspi Pay", "Настраиваемый шаблон сообщений", "Инвойс/чек для каждого заказа"].map((item) => (
+                {["Заказ через WhatsApp с деталями", "Настраиваемый шаблон сообщений", "Инвойс/чек для каждого заказа", "Контроль статуса оплаты"].map((item) => (
                   <li key={item} className="flex items-start gap-2 text-sm">
                     <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
                     <span>{item}</span>
@@ -486,7 +485,7 @@ export default function LandingPage() {
                 price: "0 ₸",
                 period: "навсегда",
                 products: "до 30 товаров",
-                features: ["Мобильная витрина", "WhatsApp заказы", "Kaspi оплата", "Базовая аналитика", "Брендирование", "Управление заказами", "База клиентов"],
+                features: ["Мобильная витрина", "WhatsApp заказы", "Базовая аналитика", "Брендирование", "Управление заказами", "База клиентов"],
                 highlight: false,
                 cta: "Начать бесплатно",
                 enabled: true,

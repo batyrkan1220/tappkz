@@ -79,15 +79,6 @@ const settingsSchema = z.object({
   phoneNumber: z.string().max(30).nullable().optional(),
 });
 
-const kaspiSchema = z.object({
-  kaspiEnabled: z.boolean(),
-  kaspiPayUrl: z.string().max(500).nullable().optional(),
-  kaspiRecipientName: z.string().max(200).nullable().optional(),
-}).refine(
-  (data) => !data.kaspiEnabled || (data.kaspiPayUrl && data.kaspiPayUrl.trim().length > 0),
-  { message: "Ссылка на платеж Kaspi обязательна при включении Kaspi", path: ["kaspiPayUrl"] }
-);
-
 const whatsappSchema = z.object({
   phone: z.string().min(5).max(20).regex(/^[0-9]+$/),
   template: z.string().min(1).max(2000),
@@ -397,35 +388,6 @@ export async function registerRoutes(
         kaspiEnabled: existingSettings?.kaspiEnabled ?? false,
         kaspiPayUrl: existingSettings?.kaspiPayUrl || null,
         kaspiRecipientName: existingSettings?.kaspiRecipientName || null,
-      });
-      res.json(settings);
-    } catch (e: any) {
-      if (e instanceof z.ZodError) {
-        return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
-      }
-      res.status(500).json({ message: e.message });
-    }
-  });
-
-  app.put("/api/my-store/kaspi", isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.session.userId;
-      const store = await storage.getStoreByOwner(userId);
-      if (!store) return res.status(404).json({ message: "Магазин не найден" });
-
-      const data = validate(kaspiSchema, req.body);
-
-      const existingSettings = await storage.getSettings(store.id);
-      const settings = await storage.upsertSettings({
-        storeId: store.id,
-        kaspiEnabled: data.kaspiEnabled,
-        kaspiPayUrl: data.kaspiPayUrl || null,
-        kaspiRecipientName: data.kaspiRecipientName || null,
-        showPrices: existingSettings?.showPrices ?? true,
-        currency: "KZT",
-        whatsappTemplate: existingSettings?.whatsappTemplate || "",
-        instagramUrl: existingSettings?.instagramUrl || null,
-        phoneNumber: existingSettings?.phoneNumber || null,
       });
       res.json(settings);
     } catch (e: any) {

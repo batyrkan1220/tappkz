@@ -24,7 +24,6 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `/admin/categories` - Category CRUD
 - `/admin/branding` - Logo, banner, colors
 - `/admin/whatsapp` - Phone number + message template
-- `/admin/kaspi` - Kaspi payment settings (toggle, pay URL, recipient name)
 - `/admin/analytics` - Analytics with charts (Page views, Sales, Orders) and tab reports
 - `/admin/orders` - Orders management with status/payment/fulfillment controls
 - `/admin/customers` - Customer management (auto-created from orders, manual CRUD)
@@ -44,7 +43,6 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `GET/PUT /api/my-store/theme` - Store theme/branding (validated)
 - `GET/PUT /api/my-store/settings` - Store settings (validated)
 - `PUT /api/my-store/whatsapp` - WhatsApp settings (validated)
-- `PUT /api/my-store/kaspi` - Kaspi payment settings (validated)
 - `GET /api/my-store/analytics` - Store analytics
 - `GET /api/storefront/:slug` - Public store data
 - `GET /api/my-store/analytics/detailed` - Detailed analytics with daily data (auth)
@@ -109,5 +107,6 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Added admin customers page at /admin/customers
 - Added admin orders page at /admin/orders
 - Added order/invoice system with WhatsApp integration
-- Added Kaspi payment integration
+- Removed Kaspi payment integration (temporarily disabled, DB schema preserved)
 - Added Zod validation schemas on all API routes
+- Unified color scheme: primary blue across all admin pages, landing page updated with full feature set

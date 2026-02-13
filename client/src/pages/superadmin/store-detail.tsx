@@ -291,7 +291,6 @@ export default function SuperAdminStoreDetail() {
                 <p className="text-muted-foreground mt-2">{store.description}</p>
               )}
               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <Badge variant="secondary">Kaspi: {settings?.kaspiEnabled ? "Вкл" : "Выкл"}</Badge>
                 <Badge variant="secondary">Цены: {settings?.showPrices ? "Показаны" : "Скрыты"}</Badge>
               </div>
               {store.createdAt && (
