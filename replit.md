@@ -81,15 +81,19 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 
 ## Super Admin Panel
 - Accessible at /superadmin/* routes (only for users with isSuperAdmin=true)
-- Dashboard: platform-wide analytics (stores, users, orders, revenue, products, customers)
-- Stores page: view all stores with stats, change plans (free/pro/business), toggle active/inactive
+- Dashboard: platform-wide analytics with trend charts (orders, revenue, stores, users over time), period selector (7d/30d/90d)
+- Stores page: view all stores with stats, search by name/slug/owner/city, change plans, toggle active/inactive
+- Store detail page: /superadmin/stores/:id - full store overview with info, design, top products, tabs for orders/customers/products
+- Orders page: view ALL platform orders with search by name/phone/number, filter by status/payment
 - Users page: view all users, grant/revoke SuperAdmin role
-- API routes: GET /api/superadmin/analytics, GET /api/superadmin/stores, PATCH /api/superadmin/stores/:id/plan, PATCH /api/superadmin/stores/:id/active, GET /api/superadmin/users, PATCH /api/superadmin/users/:id/superadmin
+- Events page: platform-wide activity log with event type filter (visits, cart, checkout)
+- API routes: GET /api/superadmin/analytics, GET /api/superadmin/trends, GET /api/superadmin/stores, GET /api/superadmin/stores/:id, GET /api/superadmin/orders, GET /api/superadmin/events, PATCH /api/superadmin/stores/:id/plan, PATCH /api/superadmin/stores/:id/active, GET /api/superadmin/users, PATCH /api/superadmin/users/:id/superadmin
 - isSuperAdmin field on users table, isSuperAdminMiddleware in server/auth.ts
 - SuperAdmin link visible in merchant sidebar for admin users
+- Super Admin login redirects to /superadmin, regular users to /
 
 ## Recent Changes
-- Added SuperAdmin panel with platform-wide analytics, store/user management
+- Enhanced SuperAdmin panel with trend charts, orders page, store detail view, events log, search/filters
 - Replaced Replit Auth (OIDC) with local email/password authentication (bcrypt + express-session)
 - Added /login and /register pages with Russian UI
 - Auth module: server/auth.ts (setupSession, registerAuthRoutes, isAuthenticated)

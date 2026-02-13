@@ -24,7 +24,10 @@ import AnalyticsPage from "@/pages/admin/analytics";
 import SuperAdminLayout from "@/pages/superadmin/superadmin-layout";
 import SuperAdminDashboard from "@/pages/superadmin/dashboard";
 import SuperAdminStores from "@/pages/superadmin/stores";
+import SuperAdminStoreDetail from "@/pages/superadmin/store-detail";
+import SuperAdminOrders from "@/pages/superadmin/orders";
 import SuperAdminUsers from "@/pages/superadmin/users";
+import SuperAdminEvents from "@/pages/superadmin/events";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (
@@ -68,8 +71,11 @@ function Router() {
       <Route path="/admin/analytics" component={() => <AdminRoute component={AnalyticsPage} />} />
       <Route path="/admin/settings" component={() => <AdminRoute component={StoreSettingsPage} />} />
       <Route path="/superadmin" component={() => <SuperAdminRoute component={SuperAdminDashboard} />} />
+      <Route path="/superadmin/stores/:id" component={() => <SuperAdminRoute component={SuperAdminStoreDetail} />} />
       <Route path="/superadmin/stores" component={() => <SuperAdminRoute component={SuperAdminStores} />} />
+      <Route path="/superadmin/orders" component={() => <SuperAdminRoute component={SuperAdminOrders} />} />
       <Route path="/superadmin/users" component={() => <SuperAdminRoute component={SuperAdminUsers} />} />
+      <Route path="/superadmin/events" component={() => <SuperAdminRoute component={SuperAdminEvents} />} />
       <Route path="/s/:slug" component={StorefrontPage} />
       <Route path="/invoice/:id" component={InvoicePage} />
       <Route component={NotFound} />

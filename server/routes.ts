@@ -750,5 +750,54 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/superadmin/trends", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const now = new Date();
+      const startDate = req.query.startDate ? new Date(req.query.startDate as string) : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const endDate = req.query.endDate ? new Date(req.query.endDate as string) : now;
+      const data = await storage.getPlatformTrends(startDate, endDate);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/orders", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const filters: any = {};
+      if (req.query.search) filters.search = req.query.search;
+      if (req.query.status) filters.status = req.query.status;
+      if (req.query.paymentStatus) filters.paymentStatus = req.query.paymentStatus;
+      if (req.query.storeId) filters.storeId = parseInt(req.query.storeId as string);
+      const data = await storage.getAllOrders(filters);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/stores/:id", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const data = await storage.getStoreDetail(parseInt(req.params.id));
+      if (!data) return res.status(404).json({ message: "Магазин не найден" });
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/events", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const filters: any = {};
+      if (req.query.storeId) filters.storeId = parseInt(req.query.storeId as string);
+      if (req.query.eventType) filters.eventType = req.query.eventType;
+      if (req.query.limit) filters.limit = parseInt(req.query.limit as string);
+      const data = await storage.getPlatformEvents(filters);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   return httpServer;
 }

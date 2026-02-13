@@ -87,6 +87,31 @@ export interface IStorage {
   updateStorePlan(storeId: number, plan: string): Promise<Store | undefined>;
   toggleStoreActive(storeId: number, isActive: boolean): Promise<Store | undefined>;
   setUserSuperAdmin(userId: string, isSuperAdmin: boolean): Promise<void>;
+
+  getPlatformTrends(startDate: Date, endDate: Date): Promise<{
+    dailyStores: { date: string; count: number }[];
+    dailyOrders: { date: string; count: number }[];
+    dailyRevenue: { date: string; total: number }[];
+    dailyUsers: { date: string; count: number }[];
+  }>;
+
+  getAllOrders(filters?: { search?: string; status?: string; paymentStatus?: string; storeId?: number }): Promise<(Order & { storeName: string; storeSlug: string })[]>;
+
+  getStoreDetail(storeId: number): Promise<{
+    store: Store;
+    ownerEmail: string | null;
+    settings: StoreSettings | null;
+    theme: StoreTheme | null;
+    productsCount: number;
+    ordersCount: number;
+    revenue: number;
+    customersCount: number;
+    recentOrders: Order[];
+    recentCustomers: Customer[];
+    topProducts: { name: string; quantity: number; revenue: number }[];
+  } | null>;
+
+  getPlatformEvents(filters?: { storeId?: number; eventType?: string; limit?: number }): Promise<{ id: number; storeId: number; storeName: string; eventType: string; createdAt: Date | null }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -467,6 +492,129 @@ export class DatabaseStorage implements IStorage {
 
   async setUserSuperAdmin(userId: string, isSuperAdmin: boolean): Promise<void> {
     await db.update(users).set({ isSuperAdmin }).where(eq(users.id, userId));
+  }
+
+  async getPlatformTrends(startDate: Date, endDate: Date) {
+    const start = startDate.toISOString().split("T")[0];
+    const end = endDate.toISOString().split("T")[0];
+
+    const dailyStoresRows = await db.execute(
+      sql`SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, COUNT(*)::int as cnt FROM stores WHERE created_at >= ${start}::date AND created_at <= ${end}::date + interval '1 day' GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD') ORDER BY date`
+    );
+    const dailyOrdersRows = await db.execute(
+      sql`SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, COUNT(*)::int as cnt FROM orders WHERE created_at >= ${start}::date AND created_at <= ${end}::date + interval '1 day' GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD') ORDER BY date`
+    );
+    const dailyRevenueRows = await db.execute(
+      sql`SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, COALESCE(SUM(total), 0)::int as total FROM orders WHERE created_at >= ${start}::date AND created_at <= ${end}::date + interval '1 day' GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD') ORDER BY date`
+    );
+    const dailyUsersRows = await db.execute(
+      sql`SELECT TO_CHAR(created_at, 'YYYY-MM-DD') as date, COUNT(*)::int as cnt FROM users WHERE created_at >= ${start}::date AND created_at <= ${end}::date + interval '1 day' GROUP BY TO_CHAR(created_at, 'YYYY-MM-DD') ORDER BY date`
+    );
+
+    return {
+      dailyStores: (dailyStoresRows.rows as any[]).map(r => ({ date: r.date, count: r.cnt })),
+      dailyOrders: (dailyOrdersRows.rows as any[]).map(r => ({ date: r.date, count: r.cnt })),
+      dailyRevenue: (dailyRevenueRows.rows as any[]).map(r => ({ date: r.date, total: r.total })),
+      dailyUsers: (dailyUsersRows.rows as any[]).map(r => ({ date: r.date, count: r.cnt })),
+    };
+  }
+
+  async getAllOrders(filters?: { search?: string; status?: string; paymentStatus?: string; storeId?: number }) {
+    let query = sql`
+      SELECT o.*, s.name as store_name, s.slug as store_slug
+      FROM orders o
+      JOIN stores s ON o.store_id = s.id
+      WHERE 1=1
+    `;
+    if (filters?.storeId) query = sql`${query} AND o.store_id = ${filters.storeId}`;
+    if (filters?.status) query = sql`${query} AND o.status = ${filters.status}`;
+    if (filters?.paymentStatus) query = sql`${query} AND o.payment_status = ${filters.paymentStatus}`;
+    if (filters?.search) {
+      const term = `%${filters.search}%`;
+      query = sql`${query} AND (o.customer_name ILIKE ${term} OR o.customer_phone ILIKE ${term} OR CAST(o.order_number AS TEXT) ILIKE ${term})`;
+    }
+    query = sql`${query} ORDER BY o.created_at DESC LIMIT 200`;
+
+    const rows = await db.execute(query);
+    return (rows.rows as any[]).map(r => ({
+      id: r.id,
+      storeId: r.store_id,
+      orderNumber: r.order_number,
+      customerName: r.customer_name,
+      customerPhone: r.customer_phone,
+      customerAddress: r.customer_address,
+      customerComment: r.customer_comment,
+      items: r.items,
+      subtotal: r.subtotal,
+      total: r.total,
+      paymentMethod: r.payment_method,
+      status: r.status,
+      paymentStatus: r.payment_status,
+      fulfillmentStatus: r.fulfillment_status,
+      internalNote: r.internal_note,
+      createdAt: r.created_at,
+      storeName: r.store_name,
+      storeSlug: r.store_slug,
+    }));
+  }
+
+  async getStoreDetail(storeId: number) {
+    const [store] = await db.select().from(stores).where(eq(stores.id, storeId));
+    if (!store) return null;
+
+    const [owner] = await db.select({ email: users.email }).from(users).where(eq(users.id, store.ownerUserId));
+    const [settings] = await db.select().from(storeSettings).where(eq(storeSettings.storeId, storeId));
+    const [theme] = await db.select().from(storeThemes).where(eq(storeThemes.storeId, storeId));
+    const [prodCount] = await db.select({ count: count() }).from(products).where(eq(products.storeId, storeId));
+    const [orderStats] = await db.execute(sql`SELECT COUNT(*)::int as cnt, COALESCE(SUM(total), 0)::int as revenue FROM orders WHERE store_id = ${storeId}`).then(r => r.rows as any[]);
+    const [custCount] = await db.select({ count: count() }).from(customers).where(eq(customers.storeId, storeId));
+    const recentOrders = await db.select().from(orders).where(eq(orders.storeId, storeId)).orderBy(desc(orders.createdAt)).limit(10);
+    const recentCustomers = await db.select().from(customers).where(eq(customers.storeId, storeId)).orderBy(desc(customers.createdAt)).limit(10);
+
+    const topProductsRows = await db.execute(sql`
+      SELECT item->>'name' as name, SUM((item->>'quantity')::int)::int as quantity, SUM((item->>'price')::int * (item->>'quantity')::int)::int as revenue
+      FROM orders, jsonb_array_elements(items::jsonb) as item
+      WHERE store_id = ${storeId}
+      GROUP BY item->>'name'
+      ORDER BY revenue DESC
+      LIMIT 10
+    `);
+
+    return {
+      store,
+      ownerEmail: owner?.email ?? null,
+      settings: settings || null,
+      theme: theme || null,
+      productsCount: prodCount?.count ?? 0,
+      ordersCount: orderStats?.cnt ?? 0,
+      revenue: orderStats?.revenue ?? 0,
+      customersCount: custCount?.count ?? 0,
+      recentOrders,
+      recentCustomers,
+      topProducts: (topProductsRows.rows as any[]).map(r => ({ name: r.name, quantity: r.quantity, revenue: r.revenue })),
+    };
+  }
+
+  async getPlatformEvents(filters?: { storeId?: number; eventType?: string; limit?: number }) {
+    const lim = filters?.limit || 100;
+    let query = sql`
+      SELECT e.id, e.store_id, s.name as store_name, e.event_type, e.created_at
+      FROM store_events e
+      JOIN stores s ON e.store_id = s.id
+      WHERE 1=1
+    `;
+    if (filters?.storeId) query = sql`${query} AND e.store_id = ${filters.storeId}`;
+    if (filters?.eventType) query = sql`${query} AND e.event_type = ${filters.eventType}`;
+    query = sql`${query} ORDER BY e.created_at DESC LIMIT ${lim}`;
+
+    const rows = await db.execute(query);
+    return (rows.rows as any[]).map(r => ({
+      id: r.id,
+      storeId: r.store_id,
+      storeName: r.store_name,
+      eventType: r.event_type,
+      createdAt: r.created_at,
+    }));
   }
 }
 

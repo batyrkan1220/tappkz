@@ -1,14 +1,16 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Store, Package, ShoppingCart, Users, ExternalLink, Power, PowerOff } from "lucide-react";
+import { Store, Package, ShoppingCart, Users, ExternalLink, Power, PowerOff, Search, DollarSign } from "lucide-react";
 import { BUSINESS_TYPES } from "@shared/schema";
 import { useState } from "react";
+import { Link } from "wouter";
 
 interface StoreWithStats {
   id: number;
@@ -37,6 +39,7 @@ const planColors: Record<string, string> = {
 export default function SuperAdminStores() {
   const { toast } = useToast();
   const [filter, setFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
   const { data: stores, isLoading } = useQuery<StoreWithStats[]>({ queryKey: ["/api/superadmin/stores"] });
 
   const changePlanMutation = useMutation({
@@ -72,11 +75,24 @@ export default function SuperAdminStores() {
     );
   }
 
+  const totalRevenue = stores?.reduce((sum, s) => sum + s.revenue, 0) || 0;
+
   const filtered = stores?.filter((s) => {
-    if (filter === "all") return true;
-    if (filter === "active") return s.isActive;
-    if (filter === "inactive") return !s.isActive;
-    return s.plan === filter;
+    let passFilter = true;
+    if (filter === "active") passFilter = s.isActive;
+    else if (filter === "inactive") passFilter = !s.isActive;
+    else if (filter !== "all") passFilter = s.plan === filter;
+
+    if (!passFilter) return false;
+    if (!search) return true;
+
+    const q = search.toLowerCase();
+    return (
+      s.name.toLowerCase().includes(q) ||
+      s.slug.toLowerCase().includes(q) ||
+      (s.ownerEmail && s.ownerEmail.toLowerCase().includes(q)) ||
+      (s.city && s.city.toLowerCase().includes(q))
+    );
   }) || [];
 
   return (
@@ -84,21 +100,35 @@ export default function SuperAdminStores() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-superadmin-stores-title">Магазины</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Всего: {stores?.length || 0}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Всего: {stores?.length || 0} · Общая выручка: {totalRevenue.toLocaleString("ru-RU")} ₸
+          </p>
         </div>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-40" data-testid="select-store-filter">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все</SelectItem>
-            <SelectItem value="active">Активные</SelectItem>
-            <SelectItem value="inactive">Отключённые</SelectItem>
-            <SelectItem value="free">Free</SelectItem>
-            <SelectItem value="pro">Pro</SelectItem>
-            <SelectItem value="business">Business</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Поиск..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 w-48"
+              data-testid="input-store-search"
+            />
+          </div>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-36" data-testid="select-store-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все</SelectItem>
+              <SelectItem value="active">Активные</SelectItem>
+              <SelectItem value="inactive">Отключённые</SelectItem>
+              <SelectItem value="free">Free</SelectItem>
+              <SelectItem value="pro">Pro</SelectItem>
+              <SelectItem value="business">Business</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -107,21 +137,23 @@ export default function SuperAdminStores() {
           return (
             <Card key={store.id} className="p-5" data-testid={`card-store-${store.id}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-base font-bold" data-testid={`text-store-name-${store.id}`}>{store.name}</h3>
-                    <Badge variant={store.isActive ? "secondary" : "destructive"} data-testid={`badge-store-active-${store.id}`}>
-                      {store.isActive ? "Активен" : "Отключён"}
-                    </Badge>
-                    <Badge variant="secondary" className={planColors[store.plan] || ""} data-testid={`badge-store-plan-${store.id}`}>
-                      {planLabels[store.plan] || store.plan}
-                    </Badge>
+                <Link href={`/superadmin/stores/${store.id}`}>
+                  <div className="min-w-0 flex-1 cursor-pointer">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-base font-bold hover:text-blue-600 transition-colors" data-testid={`text-store-name-${store.id}`}>{store.name}</h3>
+                      <Badge variant={store.isActive ? "secondary" : "destructive"} data-testid={`badge-store-active-${store.id}`}>
+                        {store.isActive ? "Активен" : "Отключён"}
+                      </Badge>
+                      <Badge variant="secondary" className={planColors[store.plan] || ""} data-testid={`badge-store-plan-${store.id}`}>
+                        {planLabels[store.plan] || store.plan}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">/s/{store.slug} {store.city ? `· ${store.city}` : ""}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {bt?.label || "Не указан"} · Владелец: {store.ownerEmail || "—"}
+                    </p>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">/s/{store.slug} {store.city ? `· ${store.city}` : ""}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {bt?.label || "Не указан"} · Владелец: {store.ownerEmail || "—"}
-                  </p>
-                </div>
+                </Link>
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer">
@@ -170,7 +202,7 @@ export default function SuperAdminStores() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-md border px-3 py-2">
-                  <Store className="h-4 w-4 text-muted-foreground" />
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-xs text-muted-foreground">Выручка</p>
                     <p className="text-sm font-bold" data-testid={`text-store-revenue-${store.id}`}>{store.revenue.toLocaleString("ru-RU")} ₸</p>

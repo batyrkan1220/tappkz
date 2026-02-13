@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Store, Users, LogOut, Shield, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Store, Users, LogOut, Shield, ArrowLeft, ShoppingCart, Activity } from "lucide-react";
 import { useLocation, Link } from "wouter";
 
 function SuperAdminSidebar() {
@@ -27,7 +27,9 @@ function SuperAdminSidebar() {
   const menuItems = [
     { title: "Дашборд", url: "/superadmin", icon: LayoutDashboard },
     { title: "Магазины", url: "/superadmin/stores", icon: Store },
+    { title: "Заказы", url: "/superadmin/orders", icon: ShoppingCart },
     { title: "Пользователи", url: "/superadmin/users", icon: Users },
+    { title: "Активность", url: "/superadmin/events", icon: Activity },
   ];
 
   return (
@@ -50,7 +52,7 @@ function SuperAdminSidebar() {
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url} data-testid={`link-superadmin-${item.title}`}>
+                  <SidebarMenuButton asChild isActive={item.url === "/superadmin" ? location === "/superadmin" : location.startsWith(item.url)} data-testid={`link-superadmin-${item.title}`}>
                     <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
                       <span className="font-medium">{item.title}</span>
