@@ -415,30 +415,28 @@ export default function StorefrontPage() {
         )}
 
         {activeTab === "overview" && categories.length > 0 && (
-          <div className="mb-4">
-            <ScrollArea className="w-full">
-              <div className="flex gap-2 pb-1">
+          <div className="mb-4 -mx-4 px-4 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+            <div className="flex gap-2 pb-1 w-max">
+              <button
+                className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
+                onClick={() => setActiveCategory(null)}
+                data-testid="button-category-all"
+              >
+                Все
+              </button>
+              {categories.map((c) => (
                 <button
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
-                  style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
-                  onClick={() => setActiveCategory(null)}
-                  data-testid="button-category-all"
+                  key={c.id}
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                  style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
+                  onClick={() => setActiveCategory(c.id)}
+                  data-testid={`button-category-${c.id}`}
                 >
-                  Все
+                  {c.name}
                 </button>
-                {categories.map((c) => (
-                  <button
-                    key={c.id}
-                    className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
-                    style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
-                    onClick={() => setActiveCategory(c.id)}
-                    data-testid={`button-category-${c.id}`}
-                  >
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-            </ScrollArea>
+              ))}
+            </div>
           </div>
         )}
 
