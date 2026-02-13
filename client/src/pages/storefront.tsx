@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Home, Menu, X, ShoppingBag } from "lucide-react";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
+import { PhoneInput } from "@/components/phone-input";
 import type { Store, Product, Category, StoreTheme, StoreSettings } from "@shared/schema";
 
 interface CartItem {
@@ -774,7 +775,7 @@ export default function StorefrontPage() {
             </div>
             <div>
               <Label>Телефон *</Label>
-              <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="+7 777 123 45 67" data-testid="input-checkout-phone" />
+              <PhoneInput value={customerPhone} onValueChange={setCustomerPhone} data-testid="input-checkout-phone" />
             </div>
             <div>
               <Label>Адрес доставки</Label>
@@ -803,7 +804,7 @@ export default function StorefrontPage() {
             <Button
               className={`w-full gap-2 text-white ${btnRadius}`}
               style={{ backgroundColor: "#25D366" }}
-              disabled={!customerName || !customerPhone || isSubmitting}
+              disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting}
               onClick={handleCheckout}
               data-testid="button-send-whatsapp"
             >

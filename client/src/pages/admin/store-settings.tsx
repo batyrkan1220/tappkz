@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Settings, Crown } from "lucide-react";
@@ -113,7 +114,7 @@ export default function StoreSettingsPage() {
             </div>
             <div>
               <Label className="font-semibold">Телефон для связи</Label>
-              <Input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+7 777 123 45 67" data-testid="input-store-phone" />
+              <PhoneInput value={phoneNumber} onValueChange={setPhoneNumber} data-testid="input-store-phone" />
             </div>
           </div>
         </div>

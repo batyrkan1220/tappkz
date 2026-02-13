@@ -10,6 +10,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { SiWhatsapp } from "react-icons/si";
 import { MessageCircle } from "lucide-react";
+import { PhoneInput } from "@/components/phone-input";
 import type { Store, StoreSettings } from "@shared/schema";
 
 const DEFAULT_TEMPLATE = "Новый заказ из {store_name}!\n\nКлиент: {customer_name}\nТелефон: {customer_phone}\nАдрес: {address}\nКомментарий: {comment}\n\nТовары:\n{items}\n\nИтого: {total} ₸";
@@ -74,15 +75,14 @@ export default function WhatsAppPage() {
       <Card className="space-y-5 p-5">
         <div>
           <Label className="mb-1 block font-semibold">Номер WhatsApp</Label>
-          <p className="mb-2 text-xs text-muted-foreground">Формат: 77771234567 (без +, без пробелов)</p>
+          <p className="mb-2 text-xs text-muted-foreground">Введите номер в формате +7 (XXX) XXX-XX-XX</p>
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-600 text-white">
               <SiWhatsapp className="h-4 w-4" />
             </div>
-            <Input
+            <PhoneInput
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="77771234567"
+              onValueChange={setPhone}
               data-testid="input-whatsapp-phone"
             />
           </div>
@@ -109,7 +109,7 @@ export default function WhatsAppPage() {
           </div>
         </div>
 
-        <Button onClick={() => saveMutation.mutate()} disabled={!phone || saveMutation.isPending} className="rounded-full font-semibold" data-testid="button-save-whatsapp">
+        <Button onClick={() => saveMutation.mutate()} disabled={!phone || phone.replace(/\D/g, "").length < 11 || saveMutation.isPending} className="rounded-full font-semibold" data-testid="button-save-whatsapp">
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </Card>

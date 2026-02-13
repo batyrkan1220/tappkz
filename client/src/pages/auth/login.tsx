@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag, LogIn, Eye, EyeOff } from "lucide-react";
+import { ShoppingBag, LogIn, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 
 export default function LoginPage() {
@@ -41,77 +41,81 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white to-emerald-50/60 dark:from-green-950/20 dark:via-background dark:to-emerald-950/10" />
-      <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-green-100/40 blur-3xl dark:bg-green-900/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/3 dark:from-primary/5 dark:via-background dark:to-primary/3" />
+      <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl dark:bg-primary/5" />
+      <div className="absolute -bottom-20 -left-32 h-80 w-80 rounded-full bg-primary/8 blur-3xl dark:bg-primary/3" />
 
-      <Card className="relative z-10 w-full max-w-sm space-y-5 p-6">
-        <div className="text-center">
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="text-center mb-6">
           <Link href="/">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600">
-              <ShoppingBag className="h-7 w-7 text-white" />
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground">
+              <ShoppingBag className="h-7 w-7 text-background" />
             </div>
           </Link>
-          <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-login-title">Войти в TakeSale</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Введите email и пароль для входа</p>
+          <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-login-title">Войти в TakeSale</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">Введите email и пароль для входа</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label className="font-semibold">Email *</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-              data-testid="input-login-email"
-            />
-          </div>
-          <div>
-            <Label className="font-semibold">Пароль *</Label>
-            <div className="relative">
+        <Card className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Email</Label>
               <Input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Введите пароль"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 required
-                autoComplete="current-password"
-                data-testid="input-login-password"
+                autoComplete="email"
+                className="mt-1.5"
+                data-testid="input-login-email"
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                onClick={() => setShowPassword(!showPassword)}
-                data-testid="button-toggle-password"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
             </div>
-          </div>
+            <div>
+              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Пароль</Label>
+              <div className="relative mt-1.5">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Введите пароль"
+                  required
+                  autoComplete="current-password"
+                  data-testid="input-login-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  onClick={() => setShowPassword(!showPassword)}
+                  data-testid="button-toggle-password"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-green-600 text-white rounded-full font-semibold"
-            disabled={!email || !password || loginMutation.isPending}
-            data-testid="button-login-submit"
-          >
-            {loginMutation.isPending ? "Вход..." : (
-              <>
-                <LogIn className="mr-1.5 h-4 w-4" /> Войти
-              </>
-            )}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              className="w-full rounded-full font-semibold"
+              disabled={!email || !password || loginMutation.isPending}
+              data-testid="button-login-submit"
+            >
+              {loginMutation.isPending ? "Вход..." : (
+                <>
+                  <LogIn className="mr-1.5 h-4 w-4" /> Войти
+                </>
+              )}
+            </Button>
+          </form>
+        </Card>
 
-        <div className="text-center text-sm">
+        <div className="mt-5 text-center text-sm">
           <span className="text-muted-foreground">Нет аккаунта? </span>
-          <Link href="/register" className="font-semibold text-green-600 underline" data-testid="link-to-register">
-            Зарегистрироваться
+          <Link href="/register" className="font-semibold text-primary" data-testid="link-to-register">
+            Зарегистрироваться <ArrowRight className="inline h-3.5 w-3.5" />
           </Link>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

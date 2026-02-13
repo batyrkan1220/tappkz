@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingBag, ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase } from "lucide-react";
+import { PhoneInput } from "@/components/phone-input";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
 
 const GROUPS = [
@@ -159,7 +160,7 @@ export default function CreateStorePage() {
             </div>
             <div>
               <Label className="font-semibold">Номер WhatsApp *</Label>
-              <Input value={whatsappPhone} onChange={(e) => setWhatsappPhone(e.target.value)} placeholder="77771234567" data-testid="input-create-store-phone" />
+              <PhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-create-store-phone" />
             </div>
             <div>
               <Label className="font-semibold">Город</Label>
@@ -177,7 +178,7 @@ export default function CreateStorePage() {
               <Button
                 className="flex-1 rounded-full font-semibold"
                 onClick={() => createMutation.mutate()}
-                disabled={!name || !slug || !whatsappPhone || createMutation.isPending}
+                disabled={!name || !slug || !whatsappPhone || whatsappPhone.replace(/\D/g, "").length < 11 || createMutation.isPending}
                 data-testid="button-create-store"
               >
                 {createMutation.isPending ? "Создание..." : "Создать магазин"}

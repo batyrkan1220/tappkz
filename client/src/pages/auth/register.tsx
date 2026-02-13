@@ -6,8 +6,14 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag, UserPlus, Eye, EyeOff } from "lucide-react";
+import { ShoppingBag, UserPlus, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
+
+const benefits = [
+  "Бесплатный магазин за 5 минут",
+  "WhatsApp-чекаут для заказов",
+  "Аналитика и база клиентов",
+];
 
 export default function RegisterPage() {
   const { toast } = useToast();
@@ -44,90 +50,118 @@ export default function RegisterPage() {
     registerMutation.mutate();
   };
 
+  const passwordStrength = password.length >= 8 ? "strong" : password.length >= 6 ? "ok" : "weak";
+
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gradient-to-br from-green-50/80 via-white to-emerald-50/60 dark:from-green-950/20 dark:via-background dark:to-emerald-950/10" />
-      <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-green-100/40 blur-3xl dark:bg-green-900/10" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/3 dark:from-primary/5 dark:via-background dark:to-primary/3" />
+      <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl dark:bg-primary/5" />
+      <div className="absolute -bottom-20 -left-32 h-80 w-80 rounded-full bg-primary/8 blur-3xl dark:bg-primary/3" />
 
-      <Card className="relative z-10 w-full max-w-sm space-y-5 p-6">
-        <div className="text-center">
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="text-center mb-6">
           <Link href="/">
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-600 to-emerald-600">
-              <ShoppingBag className="h-7 w-7 text-white" />
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground">
+              <ShoppingBag className="h-7 w-7 text-background" />
             </div>
           </Link>
-          <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-register-title">Создать аккаунт</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Зарегистрируйтесь и создайте свой магазин</p>
+          <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-register-title">Создать аккаунт</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">Зарегистрируйтесь и создайте свой магазин</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label className="font-semibold">Имя</Label>
-            <Input
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Ваше имя"
-              autoComplete="given-name"
-              data-testid="input-register-name"
-            />
-          </div>
-          <div>
-            <Label className="font-semibold">Email *</Label>
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              autoComplete="email"
-              data-testid="input-register-email"
-            />
-          </div>
-          <div>
-            <Label className="font-semibold">Пароль *</Label>
-            <div className="relative">
+        <Card className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Ваше имя</Label>
               <Input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Минимум 6 символов"
-                required
-                minLength={6}
-                autoComplete="new-password"
-                data-testid="input-register-password"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Айгерим"
+                autoComplete="given-name"
+                className="mt-1.5"
+                data-testid="input-register-name"
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                onClick={() => setShowPassword(!showPassword)}
-                data-testid="button-toggle-password"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
             </div>
-          </div>
+            <div>
+              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Email *</Label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                autoComplete="email"
+                className="mt-1.5"
+                data-testid="input-register-email"
+              />
+            </div>
+            <div>
+              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Пароль *</Label>
+              <div className="relative mt-1.5">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Минимум 6 символов"
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  data-testid="input-register-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  onClick={() => setShowPassword(!showPassword)}
+                  data-testid="button-toggle-password"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {password.length > 0 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="flex flex-1 gap-1">
+                    <div className={`h-1 flex-1 rounded-full ${passwordStrength === "weak" ? "bg-red-400" : "bg-primary"}`} />
+                    <div className={`h-1 flex-1 rounded-full ${passwordStrength === "ok" || passwordStrength === "strong" ? "bg-primary" : "bg-muted"}`} />
+                    <div className={`h-1 flex-1 rounded-full ${passwordStrength === "strong" ? "bg-primary" : "bg-muted"}`} />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {passwordStrength === "weak" ? "Слабый" : passwordStrength === "ok" ? "Нормальный" : "Надёжный"}
+                  </span>
+                </div>
+              )}
+            </div>
 
-          <Button
-            type="submit"
-            className="w-full bg-green-600 text-white rounded-full font-semibold"
-            disabled={!email || !password || password.length < 6 || registerMutation.isPending}
-            data-testid="button-register-submit"
-          >
-            {registerMutation.isPending ? "Создание..." : (
-              <>
-                <UserPlus className="mr-1.5 h-4 w-4" /> Создать аккаунт
-              </>
-            )}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              className="w-full rounded-full font-semibold"
+              disabled={!email || !password || password.length < 6 || registerMutation.isPending}
+              data-testid="button-register-submit"
+            >
+              {registerMutation.isPending ? "Создание..." : (
+                <>
+                  <UserPlus className="mr-1.5 h-4 w-4" /> Создать аккаунт
+                </>
+              )}
+            </Button>
+          </form>
+        </Card>
 
-        <div className="text-center text-sm">
+        <div className="mt-5 space-y-2.5">
+          {benefits.map((b) => (
+            <div key={b} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+              <span>{b}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 text-center text-sm">
           <span className="text-muted-foreground">Уже есть аккаунт? </span>
-          <Link href="/login" className="font-semibold text-green-600 underline" data-testid="link-to-login">
-            Войти
+          <Link href="/login" className="font-semibold text-primary" data-testid="link-to-login">
+            Войти <ArrowRight className="inline h-3.5 w-3.5" />
           </Link>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

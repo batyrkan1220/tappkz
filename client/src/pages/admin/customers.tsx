@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Plus, UserPlus, Trash2, Pencil } from "lucide-react";
+import { PhoneInput } from "@/components/phone-input";
 import {
   Dialog,
   DialogContent,
@@ -318,10 +319,9 @@ function CustomerForm({
       </div>
       <div className="space-y-2">
         <Label>Телефон</Label>
-        <Input
+        <PhoneInput
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="+7 777 123 4567"
+          onValueChange={setPhone}
           data-testid="input-customer-phone"
         />
       </div>
