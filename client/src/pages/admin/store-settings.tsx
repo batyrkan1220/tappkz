@@ -96,11 +96,11 @@ export default function StoreSettingsPage() {
           <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-store-name" />
         </div>
         <div>
-          <Label className="font-semibold">URL (slug) *</Label>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <span>{window.location.origin}/s/</span>
-            <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} className="flex-1" data-testid="input-store-slug" />
-          </div>
+          <Label className="font-semibold">Адрес витрины (slug) *</Label>
+          <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-shop" data-testid="input-store-slug" />
+          {slug && (
+            <p className="mt-1 text-xs text-muted-foreground break-all">{window.location.origin}/s/{slug}</p>
+          )}
         </div>
         <div>
           <Label className="font-semibold">Город</Label>
