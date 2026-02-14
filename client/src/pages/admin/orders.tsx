@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Search, FileText, ChevronDown, ChevronUp, Bell, BellOff, Volume2, AlertCircle } from "lucide-react";
+import { Search, FileText, ChevronDown, ChevronUp, Bell, BellOff, Volume2, AlertCircle, ExternalLink } from "lucide-react";
 import type { Order } from "@shared/schema";
 
 type OrderItem = {
@@ -272,12 +272,13 @@ export default function OrdersPage() {
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Выполнение</th>
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Товары</th>
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Дата</th>
+                <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap"></th>
               </tr>
             </thead>
             <tbody>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="p-8 text-center text-muted-foreground">
                     {orders.length === 0 ? "Заказов пока нет" : "Ничего не найдено"}
                   </td>
                 </tr>
@@ -380,6 +381,13 @@ export default function OrdersPage() {
                       <td className="p-3 text-center" data-testid={`text-items-count-${order.id}`}>{totalItems}</td>
                       <td className="p-3 whitespace-nowrap text-xs text-muted-foreground" data-testid={`text-date-${order.id}`}>
                         {formatDate(order.createdAt)}
+                      </td>
+                      <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                        <a href={`/invoice/${order.id}`} target="_blank" rel="noopener noreferrer">
+                          <Button size="icon" variant="ghost" data-testid={`button-invoice-${order.id}`} title="Посмотреть чек">
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                        </a>
                       </td>
                     </tr>
                   );
