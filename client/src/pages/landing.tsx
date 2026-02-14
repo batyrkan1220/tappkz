@@ -39,16 +39,16 @@ import mockBanner from "@/assets/images/mock-confectionery-banner.png";
 const MOCK_CATEGORIES = ["Все", "Торты", "Пирожные", "Выпечка", "Конфеты", "Десерты"];
 
 const MOCK_PRODUCTS = [
-  { name: "Торт Наполеон", price: "4 500", old: "5 200", cat: "Торты", img: mockNapoleon },
-  { name: "Макаронс набор", price: "3 800", cat: "Пирожные", img: mockMacarons },
-  { name: "Эклер шоколадный", price: "1 200", cat: "Пирожные", img: mockEclair },
-  { name: "Чизкейк клубника", price: "3 200", cat: "Десерты", img: mockCheesecake },
-  { name: "Медовик", price: "4 200", cat: "Торты", img: mockMedovik },
-  { name: "Круассан", price: "980", cat: "Выпечка", img: mockCroissant },
-  { name: "Трюфели набор", price: "5 600", old: "6 200", cat: "Конфеты", img: mockTruffles },
-  { name: "Тарт ягодный", price: "2 800", cat: "Десерты", img: mockBerryTart },
-  { name: "Тирамису", price: "2 400", cat: "Десерты", img: mockTiramisu },
-  { name: "Синнабон", price: "1 500", cat: "Выпечка", img: mockCinnamonRoll },
+  { name: "Торт Наполеон", price: "6 500", old: "7 800", cat: "Торты", img: mockNapoleon },
+  { name: "Макаронс набор", price: "5 200", cat: "Пирожные", img: mockMacarons },
+  { name: "Эклер шоколадный", price: "890", cat: "Пирожные", img: mockEclair },
+  { name: "Чизкейк клубника", price: "1 800", cat: "Десерты", img: mockCheesecake },
+  { name: "Медовик", price: "5 800", cat: "Торты", img: mockMedovik },
+  { name: "Круассан", price: "750", cat: "Выпечка", img: mockCroissant },
+  { name: "Трюфели набор", price: "7 400", old: "8 900", cat: "Конфеты", img: mockTruffles },
+  { name: "Тарт ягодный", price: "3 900", cat: "Десерты", img: mockBerryTart },
+  { name: "Тирамису", price: "2 200", cat: "Десерты", img: mockTiramisu },
+  { name: "Синнабон", price: "1 400", cat: "Выпечка", img: mockCinnamonRoll },
 ];
 
 const STEP_DURATIONS = [2200, 1400, 1400, 1400, 2000, 1800, 1800, 2200, 3000];
@@ -95,7 +95,7 @@ function AnimatedPhoneMockup() {
         : 2;
 
   const cartTotal =
-    cartCount === 0 ? "" : cartCount === 1 ? "4 500 ₸" : "8 300 ₸";
+    cartCount === 0 ? "" : cartCount === 1 ? "6 500 ₸" : "11 700 ₸";
 
   const showStorefront = [
     "browse",
@@ -233,9 +233,9 @@ function AnimatedPhoneMockup() {
                 ))}
               </div>
               <div className="mx-3 mt-4 pt-3 border-t border-border/30 space-y-1">
-                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Торт Наполеон</span><span>4 500 ₸</span></div>
-                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Макаронс набор</span><span>3 800 ₸</span></div>
-                <div className="flex justify-between text-[10px] font-bold mt-2 pt-2 border-t border-border/30"><span>Итого</span><span>8 300 ₸</span></div>
+                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Торт Наполеон</span><span>6 500 ₸</span></div>
+                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Макаронс набор</span><span>5 200 ₸</span></div>
+                <div className="flex justify-between text-[10px] font-bold mt-2 pt-2 border-t border-border/30"><span>Итого</span><span>11 700 ₸</span></div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
                 <div className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px]" style={{ backgroundColor: "hsl(var(--primary))" }}>Оформить заказ <ArrowRight className="h-3 w-3" /></div>
@@ -275,7 +275,7 @@ function AnimatedPhoneMockup() {
                   ))}
                   <div className="flex justify-between pt-1.5 border-t border-border/30">
                     <span className="text-[9px] font-bold">Итого</span>
-                    <span className="text-[9px] font-bold text-primary">8 300 ₸</span>
+                    <span className="text-[9px] font-bold text-primary">11 700 ₸</span>
                   </div>
                 </div>
               </div>
@@ -300,9 +300,9 @@ function AnimatedPhoneMockup() {
                 <div className="flex justify-end">
                   <div className="max-w-[88%] rounded-lg px-2 py-1.5 text-[8px] leading-relaxed shadow-sm" style={{ backgroundColor: "#dcf8c6" }}>
                     <p className="font-semibold mb-0.5">Заказ №285</p>
-                    <p>1x Торт Наполеон — 4 500 ₸</p>
-                    <p>1x Макаронс набор — 3 800 ₸</p>
-                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 8 300 ₸</p>
+                    <p>1x Торт Наполеон — 6 500 ₸</p>
+                    <p>1x Макаронс набор — 5 200 ₸</p>
+                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 11 700 ₸</p>
                     <p className="mt-1">Имя: Айгуль</p>
                     <p>Тел: +7 701 456 78 90</p>
                     <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: takesale.kz/invoice/285</p>
@@ -494,11 +494,11 @@ export default function LandingPage() {
                       <p className="text-sm font-semibold" data-testid="text-order-number">Новый заказ #285</p>
                       <p className="text-xs text-muted-foreground mt-0.5">Айгуль М. · +7 701 ***-**-90</p>
                       <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
-                        <p>1x Торт Наполеон — 4 500 ₸</p>
-                        <p>2x Макаронс набор — 7 600 ₸</p>
+                        <p>1x Торт Наполеон — 6 500 ₸</p>
+                        <p>2x Макаронс набор — 10 400 ₸</p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold">Итого: 12 100 ₸</p>
+                        <p className="text-sm font-bold">Итого: 16 900 ₸</p>
                         <Badge variant="secondary" className="bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20 text-[10px]">Новый</Badge>
                       </div>
                     </div>
@@ -516,10 +516,10 @@ export default function LandingPage() {
               <Card className="p-6 lg:p-8 lg:order-first order-last bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60" data-testid="card-feature-catalog">
                 <div className="space-y-3">
                   {[
-                    { name: "Торт Наполеон", cat: "Торты", price: "4 500 ₸", img: mockNapoleon },
-                    { name: "Макаронс набор", cat: "Пирожные", price: "3 800 ₸", img: mockMacarons },
-                    { name: "Эклер шоколадный", cat: "Пирожные", price: "1 200 ₸", img: mockEclair },
-                    { name: "Медовик", cat: "Торты", price: "4 200 ₸", img: mockMedovik },
+                    { name: "Торт Наполеон", cat: "Торты", price: "6 500 ₸", img: mockNapoleon },
+                    { name: "Макаронс набор", cat: "Пирожные", price: "5 200 ₸", img: mockMacarons },
+                    { name: "Эклер шоколадный", cat: "Пирожные", price: "890 ₸", img: mockEclair },
+                    { name: "Медовик", cat: "Торты", price: "5 800 ₸", img: mockMedovik },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between gap-3 rounded-xl border p-3" data-testid={`catalog-item-${i}`}>
                       <div className="flex items-center gap-3">
