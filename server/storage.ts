@@ -1,5 +1,5 @@
 import {
-  stores, storeThemes, storeSettings, categories, products, storeEvents, orders, customers,
+  stores, storeThemes, storeSettings, categories, products, storeEvents, orders, customers, platformSettings,
   type Store, type InsertStore,
   type StoreTheme, type InsertStoreTheme,
   type StoreSettings, type InsertStoreSettings,
@@ -112,6 +112,10 @@ export interface IStorage {
   } | null>;
 
   getPlatformEvents(filters?: { storeId?: number; eventType?: string; limit?: number }): Promise<{ id: number; storeId: number; storeName: string; eventType: string; createdAt: Date | null }[]>;
+
+  getPlatformSetting(key: string): Promise<any | null>;
+  setPlatformSetting(key: string, value: any): Promise<void>;
+  getAllPlatformSettings(): Promise<{ key: string; value: any }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -618,6 +622,24 @@ export class DatabaseStorage implements IStorage {
       eventType: r.event_type,
       createdAt: r.created_at,
     }));
+  }
+  async getPlatformSetting(key: string): Promise<any | null> {
+    const [row] = await db.select().from(platformSettings).where(eq(platformSettings.key, key));
+    return row ? row.value : null;
+  }
+
+  async setPlatformSetting(key: string, value: any): Promise<void> {
+    const [existing] = await db.select().from(platformSettings).where(eq(platformSettings.key, key));
+    if (existing) {
+      await db.update(platformSettings).set({ value, updatedAt: new Date() }).where(eq(platformSettings.key, key));
+    } else {
+      await db.insert(platformSettings).values({ key, value });
+    }
+  }
+
+  async getAllPlatformSettings(): Promise<{ key: string; value: any }[]> {
+    const rows = await db.select().from(platformSettings);
+    return rows.map(r => ({ key: r.key, value: r.value }));
   }
 }
 

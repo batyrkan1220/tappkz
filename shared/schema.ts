@@ -151,6 +151,42 @@ export const storeEvents = pgTable("store_events", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [index("idx_store_events_store").on(table.storeId, table.eventType)]);
 
+export const platformSettings = pgTable("platform_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPlatformSettingsSchema = createInsertSchema(platformSettings).omit({ id: true, updatedAt: true });
+export type PlatformSetting = typeof platformSettings.$inferSelect;
+
+export const PLAN_FEATURES: Record<string, string[]> = {
+  free: [
+    "До 30 товаров",
+    "1 магазин",
+    "WhatsApp заказы",
+    "Базовая аналитика",
+  ],
+  pro: [
+    "До 300 товаров",
+    "1 магазин",
+    "WhatsApp заказы",
+    "Подробная аналитика",
+    "Кастомный домен",
+    "Приоритетная поддержка",
+  ],
+  business: [
+    "До 2000 товаров",
+    "1 магазин",
+    "WhatsApp заказы",
+    "Расширенная аналитика",
+    "Кастомный домен",
+    "API доступ",
+    "Персональный менеджер",
+  ],
+};
+
 export const ordersRelations = relations(orders, ({ one }) => ({
   store: one(stores, { fields: [orders.storeId], references: [stores.id] }),
 }));

@@ -28,6 +28,7 @@ import SuperAdminStoreDetail from "@/pages/superadmin/store-detail";
 import SuperAdminOrders from "@/pages/superadmin/orders";
 import SuperAdminUsers from "@/pages/superadmin/users";
 import SuperAdminEvents from "@/pages/superadmin/events";
+import SuperAdminTariffs from "@/pages/superadmin/tariffs";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (
@@ -76,6 +77,7 @@ function Router() {
       <Route path="/superadmin/orders" component={() => <SuperAdminRoute component={SuperAdminOrders} />} />
       <Route path="/superadmin/users" component={() => <SuperAdminRoute component={SuperAdminUsers} />} />
       <Route path="/superadmin/events" component={() => <SuperAdminRoute component={SuperAdminEvents} />} />
+      <Route path="/superadmin/tariffs" component={() => <SuperAdminRoute component={SuperAdminTariffs} />} />
       <Route path="/s/:slug" component={StorefrontPage} />
       <Route path="/invoice/:id" component={InvoicePage} />
       <Route component={NotFound} />

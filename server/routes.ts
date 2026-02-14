@@ -773,5 +773,41 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/superadmin/tariffs", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const settings = await storage.getAllPlatformSettings();
+      const planConfig: Record<string, any> = {};
+      for (const s of settings) {
+        if (s.key.startsWith("plan_")) {
+          planConfig[s.key] = s.value;
+        }
+      }
+      res.json(planConfig);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/superadmin/tariffs/:plan", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const planKey = req.params.plan;
+      if (!["free", "pro", "business"].includes(planKey)) {
+        return res.status(400).json({ message: "Неизвестный тариф" });
+      }
+      const schema = z.object({
+        price: z.number().min(0),
+        limit: z.number().min(1),
+        name: z.string().min(1),
+        features: z.array(z.string()),
+      });
+      const data = validate(schema, req.body);
+      await storage.setPlatformSetting(`plan_${planKey}`, data);
+      res.json({ ok: true });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   return httpServer;
 }

@@ -55,7 +55,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `POST /api/upload` - Image upload (auth required)
 
 ## Database Tables
-users, sessions, stores, store_themes, store_settings, categories, products, orders, customers, store_events
+users, sessions, stores, store_themes, store_settings, categories, products, orders, customers, store_events, platform_settings
 
 ## Demo Store
 Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) with 8 products across 4 categories
@@ -115,7 +115,10 @@ Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) 
 - Added Zod validation schemas on all API routes
 - Unified color scheme: primary blue across all admin pages, landing page updated with full feature set
 - Plan/tariff management: planStartedAt, planExpiresAt fields in stores table, PLAN_PRICES/PLAN_NAMES constants
-- Super Admin stores page: MRR summary cards, plan pricing badges, expiry warnings, creation dates
+- Super Admin stores page: color-coded active/inactive badges (green/red), plan stripe colors (zinc/blue/purple), MRR summary cards with color dots, improved visual hierarchy
+- Super Admin tariffs page (/superadmin/tariffs): edit plan prices, limits, features; comparison table; stored in platform_settings table
+- API routes: GET /api/superadmin/tariffs, PUT /api/superadmin/tariffs/:plan
+- Database: platform_settings table (key/value jsonb) for configurable platform settings
 - Super Admin store detail: dedicated plan/subscription card with dates, pricing, usage stats
 - Merchant admin settings: enhanced plan card with limits, start/expiry dates, pricing info
 - API auto-sets plan dates when changing plans (start=now, expires=+30d for paid plans, clears for free)
