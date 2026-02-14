@@ -198,23 +198,27 @@ export const isAuthenticated: RequestHandler = (req, res, next) => {
 };
 
 export async function ensureSuperAdmin() {
-  const emails = ["batyrhan.aff@gmail.com", "batyrkhan.aff@gmail.com"];
+  const email = "batyrkhan.aff@gmail.com";
   const password = "Expo2017!";
   const passwordHash = await bcrypt.hash(password, 10);
 
-  for (const email of emails) {
-    const [existing] = await db.select().from(users).where(eq(users.email, email));
-    if (existing) {
-      await db.update(users).set({ passwordHash, isSuperAdmin: true }).where(eq(users.id, existing.id));
-      console.log(`SuperAdmin updated: ${email}`);
-    } else if (email === "batyrhan.aff@gmail.com") {
-      await db.insert(users).values({
-        email,
-        passwordHash,
-        firstName: "BATYRKHAN",
-        isSuperAdmin: true,
-      });
-      console.log(`SuperAdmin created: ${email}`);
-    }
+  const [existing] = await db.select().from(users).where(eq(users.email, email));
+  if (existing) {
+    await db.update(users).set({ passwordHash, isSuperAdmin: true }).where(eq(users.id, existing.id));
+    console.log(`SuperAdmin updated: ${email}`);
+  } else {
+    await db.insert(users).values({
+      email,
+      passwordHash,
+      firstName: "BATYRKHAN",
+      isSuperAdmin: true,
+    });
+    console.log(`SuperAdmin created: ${email}`);
+  }
+
+  const [nonAdmin] = await db.select().from(users).where(eq(users.email, "batyrhan.aff@gmail.com"));
+  if (nonAdmin && nonAdmin.isSuperAdmin) {
+    await db.update(users).set({ isSuperAdmin: false }).where(eq(users.id, nonAdmin.id));
+    console.log(`Removed superadmin from batyrhan.aff@gmail.com`);
   }
 }
