@@ -23,7 +23,7 @@ import {
   Check,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import mockPlov from "@/assets/images/mock-food-plov.png";
 import mockLagman from "@/assets/images/mock-food-lagman.png";
 import mockShashlik from "@/assets/images/mock-food-shashlik.png";
