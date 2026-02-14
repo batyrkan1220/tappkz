@@ -24,16 +24,17 @@ import {
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useState, useEffect } from "react";
-import mockPlov from "@/assets/images/mock-food-plov.png";
-import mockLagman from "@/assets/images/mock-food-lagman.png";
-import mockShashlik from "@/assets/images/mock-food-shashlik.png";
-import mockBanner from "@/assets/images/mock-restaurant-banner.png";
+import mockNapoleon from "@/assets/images/mock-cake-napoleon.png";
+import mockMacarons from "@/assets/images/mock-macarons.png";
+import mockEclair from "@/assets/images/mock-eclair.png";
+import mockCheesecake from "@/assets/images/mock-cheesecake.png";
+import mockBanner from "@/assets/images/mock-confectionery-banner.png";
 
 const MOCK_PRODUCTS = [
-  { name: "Плов по-узбекски", price: "2 800", old: "3 200", img: mockPlov },
-  { name: "Лагман домашний", price: "2 200", img: mockLagman },
-  { name: "Шашлык из баранины", price: "3 500", img: mockShashlik },
-  { name: "Манты домашние", price: "2 400", img: mockPlov },
+  { name: "Торт Наполеон", price: "4 500", old: "5 200", img: mockNapoleon },
+  { name: "Макаронс набор", price: "3 800", img: mockMacarons },
+  { name: "Эклер шоколадный", price: "1 200", img: mockEclair },
+  { name: "Чизкейк клубника", price: "3 200", img: mockCheesecake },
 ];
 
 const STEP_DURATIONS = [2200, 1400, 1400, 1400, 2000, 1800, 1800, 2200, 3000];
@@ -80,7 +81,7 @@ function AnimatedPhoneMockup() {
         : 2;
 
   const cartTotal =
-    cartCount === 0 ? "" : cartCount === 1 ? "2 800 ₸" : "5 000 ₸";
+    cartCount === 0 ? "" : cartCount === 1 ? "4 500 ₸" : "8 300 ₸";
 
   const showStorefront = [
     "browse",
@@ -137,21 +138,21 @@ function AnimatedPhoneMockup() {
                 </div>
               </div>
               <div className="flex flex-col items-center -mt-5 relative z-10">
-                <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md flex items-center justify-center text-white text-[10px] font-bold bg-primary">DA</div>
-                <p className="text-[10px] font-bold tracking-tight mt-1">Достархан</p>
+                <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md flex items-center justify-center text-white text-[10px] font-bold bg-primary">SB</div>
+                <p className="text-[10px] font-bold tracking-tight mt-1">Sweet Baker</p>
                 <p className="text-[7px] text-muted-foreground flex items-center gap-0.5"><MapPin className="h-1.5 w-1.5" /> Алматы</p>
               </div>
               <div className="mx-3 mt-2 border-b border-border/30 pb-0">
                 <div className="flex">
-                  <div className="flex-1 text-center pb-1.5 border-b-2 border-foreground"><span className="text-[9px] font-semibold">Меню</span></div>
+                  <div className="flex-1 text-center pb-1.5 border-b-2 border-foreground"><span className="text-[9px] font-semibold">Товары</span></div>
                   <div className="flex-1 text-center pb-1.5 text-muted-foreground"><span className="text-[9px] font-medium flex items-center justify-center gap-0.5"><Search className="h-2 w-2" /> Поиск</span></div>
                 </div>
               </div>
               <div className="px-3 pt-2 pb-1.5">
                 <div className="flex gap-1.5 overflow-hidden">
                   <span className="shrink-0 rounded-full bg-primary text-white px-2 py-[3px] text-[8px] font-semibold">Все</span>
-                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Горячее</span>
-                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Шашлыки</span>
+                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Торты</span>
+                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Пирожные</span>
                 </div>
               </div>
               <div className="px-3 pb-2">
@@ -217,9 +218,9 @@ function AnimatedPhoneMockup() {
                 ))}
               </div>
               <div className="mx-3 mt-4 pt-3 border-t border-border/30 space-y-1">
-                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Плов по-узбекски</span><span>2 800 ₸</span></div>
-                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Лагман домашний</span><span>2 200 ₸</span></div>
-                <div className="flex justify-between text-[10px] font-bold mt-2 pt-2 border-t border-border/30"><span>Итого</span><span>5 000 ₸</span></div>
+                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Торт Наполеон</span><span>4 500 ₸</span></div>
+                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Макаронс набор</span><span>3 800 ₸</span></div>
+                <div className="flex justify-between text-[10px] font-bold mt-2 pt-2 border-t border-border/30"><span>Итого</span><span>8 300 ₸</span></div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
                 <div className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px]" style={{ backgroundColor: "hsl(var(--primary))" }}>Оформить заказ <ArrowRight className="h-3 w-3" /></div>
@@ -236,13 +237,13 @@ function AnimatedPhoneMockup() {
                   <div>
                     <label className="text-[8px] text-muted-foreground font-medium mb-0.5 block">Ваше имя</label>
                     <div className={`rounded-lg border px-2 py-1.5 text-[9px] transition-all duration-700 ${step === "fill-form" ? "border-primary bg-primary/5" : "border-border/40 bg-muted/30"}`}>
-                      <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>{step === "fill-form" ? "Асель" : "Введите имя"}</span>
+                      <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>{step === "fill-form" ? "Айгуль" : "Введите имя"}</span>
                     </div>
                   </div>
                   <div>
                     <label className="text-[8px] text-muted-foreground font-medium mb-0.5 block">Телефон</label>
                     <div className={`rounded-lg border px-2 py-1.5 text-[9px] transition-all duration-700 ${step === "fill-form" ? "border-primary bg-primary/5" : "border-border/40 bg-muted/30"}`}>
-                      <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>{step === "fill-form" ? "+7 707 123 45 67" : "+7 (___) ___ __ __"}</span>
+                      <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>{step === "fill-form" ? "+7 701 456 78 90" : "+7 (___) ___ __ __"}</span>
                     </div>
                   </div>
                 </div>
@@ -259,7 +260,7 @@ function AnimatedPhoneMockup() {
                   ))}
                   <div className="flex justify-between pt-1.5 border-t border-border/30">
                     <span className="text-[9px] font-bold">Итого</span>
-                    <span className="text-[9px] font-bold text-primary">5 000 ₸</span>
+                    <span className="text-[9px] font-bold text-primary">8 300 ₸</span>
                   </div>
                 </div>
               </div>
@@ -273,9 +274,9 @@ function AnimatedPhoneMockup() {
             <div className="absolute inset-0 transition-all duration-500 flex flex-col" style={{ opacity: showWhatsapp ? 1 : 0, transform: showWhatsapp ? "scale(1)" : "scale(0.95)", pointerEvents: showWhatsapp ? "auto" : "none" }}>
               <div className="flex items-center gap-2 px-3 pt-[48px] pb-2 border-b" style={{ borderColor: "#25D366", backgroundColor: "#dcf8c6" }}>
                 <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ color: "#075E54" }} />
-                <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-[7px] font-bold">DA</div>
+                <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-[7px] font-bold">SB</div>
                 <div className="flex-1">
-                  <p className="text-[9px] font-bold" style={{ color: "#075E54" }}>Достархан</p>
+                  <p className="text-[9px] font-bold" style={{ color: "#075E54" }}>Sweet Baker</p>
                   <p className="text-[7px]" style={{ color: "#128C7E" }}>онлайн</p>
                 </div>
                 <Phone className="h-3 w-3" style={{ color: "#075E54" }} />
@@ -283,13 +284,13 @@ function AnimatedPhoneMockup() {
               <div className="flex-1 px-3 pt-3 space-y-2 overflow-hidden" style={{ backgroundColor: "#ece5dd" }}>
                 <div className="flex justify-end">
                   <div className="max-w-[88%] rounded-lg px-2 py-1.5 text-[8px] leading-relaxed shadow-sm" style={{ backgroundColor: "#dcf8c6" }}>
-                    <p className="font-semibold mb-0.5">Заказ №142</p>
-                    <p>1x Плов по-узбекски — 2 800 ₸</p>
-                    <p>1x Лагман домашний — 2 200 ₸</p>
-                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 5 000 ₸</p>
-                    <p className="mt-1">Имя: Асель</p>
-                    <p>Тел: +7 707 123 45 67</p>
-                    <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: takesale.kz/invoice/142</p>
+                    <p className="font-semibold mb-0.5">Заказ №285</p>
+                    <p>1x Торт Наполеон — 4 500 ₸</p>
+                    <p>1x Макаронс набор — 3 800 ₸</p>
+                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 8 300 ₸</p>
+                    <p className="mt-1">Имя: Айгуль</p>
+                    <p>Тел: +7 701 456 78 90</p>
+                    <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: takesale.kz/invoice/285</p>
                     <div className="flex items-center justify-end gap-0.5 mt-1">
                       <span className="text-[6px]" style={{ color: "#999" }}>12:34</span>
                       <Check className="h-2 w-2" style={{ color: "#53bdeb" }} />
@@ -299,7 +300,7 @@ function AnimatedPhoneMockup() {
                 </div>
                 <div className="flex justify-start">
                   <div className="max-w-[75%] rounded-lg px-2 py-1.5 text-[8px] bg-white shadow-sm">
-                    <p>Ваш заказ принят, готовим!</p>
+                    <p>Спасибо за заказ! Готовим ваши сладости!</p>
                     <div className="flex items-center justify-end gap-0.5 mt-1">
                       <span className="text-[6px]" style={{ color: "#999" }}>12:35</span>
                     </div>
@@ -475,14 +476,14 @@ export default function LandingPage() {
                       <SiWhatsapp className="h-5 w-5 text-[#25D366]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold" data-testid="text-order-number">Новый заказ #142</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Айгерим К. · +7 701 ***-**-45</p>
+                      <p className="text-sm font-semibold" data-testid="text-order-number">Новый заказ #285</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Айгуль М. · +7 701 ***-**-90</p>
                       <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
-                        <p>2x Плов по-узбекски — 5 600 ₸</p>
-                        <p>1x Шашлык из баранины — 3 500 ₸</p>
+                        <p>1x Торт Наполеон — 4 500 ₸</p>
+                        <p>2x Макаронс набор — 7 600 ₸</p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold">Итого: 9 100 ₸</p>
+                        <p className="text-sm font-bold">Итого: 12 100 ₸</p>
                         <Badge variant="secondary" className="bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20 text-[10px]">Новый</Badge>
                       </div>
                     </div>
@@ -500,9 +501,9 @@ export default function LandingPage() {
               <Card className="p-6 lg:p-8 lg:order-first order-last bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60" data-testid="card-feature-catalog">
                 <div className="space-y-3">
                   {[
-                    { name: "Плов по-узбекски", cat: "Горячее", price: "2 800 ₸", img: mockPlov },
-                    { name: "Лагман домашний", cat: "Горячее", price: "2 200 ₸", img: mockLagman },
-                    { name: "Шашлык из баранины", cat: "Шашлыки", price: "3 500 ₸", img: mockShashlik },
+                    { name: "Торт Наполеон", cat: "Торты", price: "4 500 ₸", img: mockNapoleon },
+                    { name: "Макаронс набор", cat: "Пирожные", price: "3 800 ₸", img: mockMacarons },
+                    { name: "Эклер шоколадный", cat: "Пирожные", price: "1 200 ₸", img: mockEclair },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between gap-3 rounded-xl border p-3" data-testid={`catalog-item-${i}`}>
                       <div className="flex items-center gap-3">
