@@ -79,7 +79,7 @@ function getPresets(): Preset[] {
 }
 
 function formatRuDate(d: Date) {
-  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Almaty" });
 }
 
 function matchPreset(range: DateRange, presets: Preset[]): PresetKey | null {

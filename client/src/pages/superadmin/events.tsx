@@ -48,7 +48,7 @@ export default function SuperAdminEvents() {
 
   const grouped: Record<string, PlatformEvent[]> = {};
   events?.forEach((ev) => {
-    const date = ev.createdAt ? new Date(ev.createdAt).toLocaleDateString("ru-RU") : "Без даты";
+    const date = ev.createdAt ? new Date(ev.createdAt).toLocaleDateString("ru-RU", { timeZone: "Asia/Almaty" }) : "Без даты";
     if (!grouped[date]) grouped[date] = [];
     grouped[date].push(ev);
   });
@@ -107,7 +107,7 @@ export default function SuperAdminEvents() {
                     </Link>
                     <Badge variant="secondary" className={cfg.color}>{cfg.label}</Badge>
                     <span className="ml-auto text-xs text-muted-foreground shrink-0">
-                      {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "—"}
+                      {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "Asia/Almaty" }) : "—"}
                     </span>
                   </div>
                 );

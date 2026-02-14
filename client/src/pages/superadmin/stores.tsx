@@ -45,7 +45,7 @@ const planDotColors: Record<string, string> = {
 
 function formatDate(d: string | null) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Almaty" });
 }
 
 function getPlanExpiry(plan: string, expiresAt: string | null) {

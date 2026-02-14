@@ -43,7 +43,7 @@ function formatPrice(amount: number) {
 
 function formatDateShort(dateStr: string) {
   const d = new Date(dateStr);
-  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "short" });
+  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "short", timeZone: "Asia/Almaty" });
 }
 
 function toLocalDateStr(d: Date) {

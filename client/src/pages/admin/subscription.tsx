@@ -92,7 +92,7 @@ export default function SubscriptionPage() {
             </div>
             <p className="text-sm font-bold">
               {store?.planStartedAt
-                ? new Date(store.planStartedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" })
+                ? new Date(store.planStartedAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Almaty" })
                 : currentPlan === "free" ? "—" : "—"}
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function SubscriptionPage() {
               {currentPlan === "free"
                 ? "Бессрочно"
                 : store?.planExpiresAt
-                  ? new Date(store.planExpiresAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" })
+                  ? new Date(store.planExpiresAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Almaty" })
                   : "—"}
             </p>
           </div>

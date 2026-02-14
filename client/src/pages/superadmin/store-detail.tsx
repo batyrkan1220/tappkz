@@ -92,12 +92,12 @@ const statusColors: Record<string, string> = {
 
 function formatDate(d: string | null) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(d).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Almaty" });
 }
 
 function formatDateTime(d: string | null) {
   if (!d) return "—";
-  return new Date(d).toLocaleString("ru-RU", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return new Date(d).toLocaleString("ru-RU", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Almaty" });
 }
 
 type TabKey = "overview" | "orders" | "customers" | "products";
@@ -434,7 +434,7 @@ export default function SuperAdminStoreDetail() {
                   <p className="text-sm mt-0.5">{o.customerName} · {o.customerPhone}</p>
                   {o.createdAt && (
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(o.createdAt).toLocaleString("ru-RU")}
+                      {new Date(o.createdAt).toLocaleString("ru-RU", { timeZone: "Asia/Almaty" })}
                     </p>
                   )}
                 </div>

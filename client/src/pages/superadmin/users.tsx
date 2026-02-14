@@ -55,7 +55,7 @@ export default function SuperAdminUsers() {
           const isSelf = u.id === currentUser?.id;
           const displayName = u.firstName ? `${u.firstName} ${u.lastName || ""}`.trim() : (u.email || "—");
           const initials = u.firstName?.[0] || u.email?.[0] || "U";
-          const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString("ru-RU") : "—";
+          const createdDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString("ru-RU", { timeZone: "Asia/Almaty" }) : "—";
 
           return (
             <Card key={u.id} className="p-4" data-testid={`card-user-${u.id}`}>

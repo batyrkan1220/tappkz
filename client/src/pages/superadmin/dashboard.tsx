@@ -329,7 +329,7 @@ export default function SuperAdminDashboard() {
                 </div>
                 <Badge variant="secondary">{eventLabels[ev.eventType] || ev.eventType}</Badge>
                 <span className="text-xs text-muted-foreground shrink-0">
-                  {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) : "—"}
+                  {ev.createdAt ? new Date(ev.createdAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Almaty" }) : "—"}
                 </span>
               </div>
             ))}

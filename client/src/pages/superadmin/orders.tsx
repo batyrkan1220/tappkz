@@ -168,7 +168,7 @@ export default function SuperAdminOrders() {
                   </Link>
                   {order.createdAt && (
                     <span className="text-xs text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      {new Date(order.createdAt).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Almaty" })}
                     </span>
                   )}
                 </div>
