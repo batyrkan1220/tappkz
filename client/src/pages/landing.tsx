@@ -54,12 +54,10 @@ const MOCK_PRODUCTS = [
 type DemoStep =
   | "browse"
   | "tap1" | "added1"
-  | "tap2" | "added2"
   | "scroll-down"
-  | "tap3" | "added3"
   | "switch-cat"
-  | "tap4" | "added4"
-  | "tap5" | "added5"
+  | "tap2" | "added2"
+  | "tap3" | "added3"
   | "cart-open"
   | "checkout"
   | "fill-form"
@@ -68,12 +66,10 @@ type DemoStep =
 const STEP_ORDER: DemoStep[] = [
   "browse",
   "tap1", "added1",
-  "tap2", "added2",
   "scroll-down",
-  "tap3", "added3",
   "switch-cat",
-  "tap4", "added4",
-  "tap5", "added5",
+  "tap2", "added2",
+  "tap3", "added3",
   "cart-open",
   "checkout",
   "fill-form",
@@ -81,14 +77,12 @@ const STEP_ORDER: DemoStep[] = [
 ];
 
 const STEP_DURATIONS: Record<DemoStep, number> = {
-  browse: 2000,
-  tap1: 800, added1: 1000,
-  tap2: 800, added2: 1000,
-  "scroll-down": 1600,
-  tap3: 800, added3: 1000,
+  browse: 2200,
+  tap1: 900, added1: 1100,
+  "scroll-down": 1500,
   "switch-cat": 1600,
-  tap4: 800, added4: 1000,
-  tap5: 800, added5: 1000,
+  tap2: 900, added2: 1100,
+  tap3: 900, added3: 1100,
   "cart-open": 2200,
   checkout: 1800,
   "fill-form": 2200,
@@ -99,8 +93,6 @@ const DESSERT_PRODUCTS = MOCK_PRODUCTS.filter(p => p.cat === "Десерты");
 
 const CART_ITEMS = [
   MOCK_PRODUCTS[0],
-  MOCK_PRODUCTS[1],
-  MOCK_PRODUCTS[4],
   MOCK_PRODUCTS[3],
   MOCK_PRODUCTS[8],
 ];
@@ -119,42 +111,38 @@ function AnimatedPhoneMockup() {
   const stepIdx = STEP_ORDER.indexOf(step);
   const cartCount =
     stepIdx <= 1 ? 0 :
-    stepIdx <= 3 ? 1 :
-    stepIdx <= 5 ? 2 :
-    stepIdx <= 7 ? 3 :
-    stepIdx <= 9 ? 4 : 5;
+    stepIdx <= 4 ? 1 :
+    stepIdx <= 6 ? 2 : 3;
 
-  const cartTotals = ["", "6 500 ₸", "11 700 ₸", "17 500 ₸", "19 300 ₸", "21 500 ₸"];
+  const cartTotals = ["", "6 500 ₸", "8 300 ₸", "10 500 ₸"];
   const cartTotal = cartTotals[cartCount];
 
   const showStorefront = [
-    "browse", "tap1", "added1", "tap2", "added2",
-    "scroll-down", "tap3", "added3",
-    "switch-cat", "tap4", "added4", "tap5", "added5",
+    "browse", "tap1", "added1",
+    "scroll-down", "switch-cat",
+    "tap2", "added2", "tap3", "added3",
   ].includes(step);
   const showCart = step === "cart-open";
   const showCheckout = step === "checkout" || step === "fill-form";
   const showWhatsapp = step === "whatsapp";
 
   const isScrolled = stepIdx >= STEP_ORDER.indexOf("scroll-down");
-  const isCatSwitched = stepIdx >= STEP_ORDER.indexOf("switch-cat") && stepIdx <= STEP_ORDER.indexOf("added5");
+  const isCatSwitched = stepIdx >= STEP_ORDER.indexOf("switch-cat") && stepIdx <= STEP_ORDER.indexOf("added3");
 
-  const tappedProduct = step === "tap1" ? 0 : step === "tap2" ? 1 : step === "tap3" ? 4 : -1;
-  const tappedDessert = step === "tap4" ? 0 : step === "tap5" ? 2 : -1;
+  const tappedProduct = step === "tap1" ? 0 : -1;
+  const tappedDessert = step === "tap2" ? 0 : step === "tap3" ? 2 : -1;
 
   const addedProducts = new Set<number>();
   if (stepIdx >= 2) addedProducts.add(0);
-  if (stepIdx >= 4) addedProducts.add(1);
-  if (stepIdx >= 7) addedProducts.add(4);
 
   const addedDesserts = new Set<number>();
-  if (stepIdx >= 10) addedDesserts.add(0);
-  if (stepIdx >= 12) addedDesserts.add(2);
+  if (stepIdx >= 6) addedDesserts.add(0);
+  if (stepIdx >= 8) addedDesserts.add(2);
 
-  const showAddedAnimation = step === "added1" || step === "added2" || step === "added3";
-  const showDessertAddedAnimation = step === "added4" || step === "added5";
-  const addedAnimIdx = step === "added1" ? 0 : step === "added2" ? 1 : step === "added3" ? 4 : -1;
-  const addedDessertAnimIdx = step === "added4" ? 0 : step === "added5" ? 2 : -1;
+  const showAddedAnimation = step === "added1";
+  const showDessertAddedAnimation = step === "added2" || step === "added3";
+  const addedAnimIdx = step === "added1" ? 0 : -1;
+  const addedDessertAnimIdx = step === "added2" ? 0 : step === "added3" ? 2 : -1;
 
   const activeCategory = isCatSwitched ? 5 : 0;
   const displayProducts = isCatSwitched ? DESSERT_PRODUCTS : MOCK_PRODUCTS.slice(0, 8);
@@ -268,7 +256,7 @@ function AnimatedPhoneMockup() {
               <div className="flex items-center gap-2 px-3 pt-[48px] pb-2 border-b border-border/30">
                 <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
                 <span className="text-[10px] font-bold flex-1">Корзина</span>
-                <span className="text-[8px] text-muted-foreground">5 товаров</span>
+                <span className="text-[8px] text-muted-foreground">3 товара</span>
               </div>
               <div className="px-3 pt-2 space-y-1.5">
                 {CART_ITEMS.map((item, i) => (
@@ -290,7 +278,7 @@ function AnimatedPhoneMockup() {
                 {CART_ITEMS.map((item, i) => (
                   <div key={i} className="flex justify-between text-[7px] text-muted-foreground"><span>{item.name}</span><span>{item.price} ₸</span></div>
                 ))}
-                <div className="flex justify-between text-[10px] font-bold mt-1.5 pt-1.5 border-t border-border/30"><span>Итого</span><span>21 500 ₸</span></div>
+                <div className="flex justify-between text-[10px] font-bold mt-1.5 pt-1.5 border-t border-border/30"><span>Итого</span><span>10 500 ₸</span></div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
                 <div className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px]" style={{ backgroundColor: "hsl(var(--primary))" }}>Оформить заказ <ArrowRight className="h-3 w-3" /></div>
@@ -330,7 +318,7 @@ function AnimatedPhoneMockup() {
                   ))}
                   <div className="flex justify-between pt-1 border-t border-border/30">
                     <span className="text-[8px] font-bold">Итого</span>
-                    <span className="text-[8px] font-bold text-primary">21 500 ₸</span>
+                    <span className="text-[8px] font-bold text-primary">10 500 ₸</span>
                   </div>
                 </div>
               </div>
@@ -356,11 +344,9 @@ function AnimatedPhoneMockup() {
                   <div className="max-w-[88%] rounded-lg px-2 py-1.5 text-[8px] leading-relaxed shadow-sm" style={{ backgroundColor: "#dcf8c6" }}>
                     <p className="font-semibold mb-0.5">Заказ №285</p>
                     <p>1x Торт Наполеон — 6 500 ₸</p>
-                    <p>1x Макаронс набор — 5 200 ₸</p>
-                    <p>1x Медовик — 5 800 ₸</p>
                     <p>1x Чизкейк клубника — 1 800 ₸</p>
                     <p>1x Тирамису — 2 200 ₸</p>
-                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 21 500 ₸</p>
+                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 10 500 ₸</p>
                     <p className="mt-1">Имя: Айгуль</p>
                     <p>Тел: +7 701 456 78 90</p>
                     <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: takesale.kz/invoice/285</p>
@@ -553,12 +539,11 @@ export default function LandingPage() {
                       <p className="text-xs text-muted-foreground mt-0.5">Айгуль М. · +7 701 ***-**-90</p>
                       <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
                         <p>1x Торт Наполеон — 6 500 ₸</p>
-                        <p>1x Макаронс набор — 5 200 ₸</p>
-                        <p>1x Медовик — 5 800 ₸</p>
-                        <p>и ещё 2 товара...</p>
+                        <p>1x Чизкейк клубника — 1 800 ₸</p>
+                        <p>1x Тирамису — 2 200 ₸</p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold">Итого: 21 500 ₸</p>
+                        <p className="text-sm font-bold">Итого: 10 500 ₸</p>
                         <Badge variant="secondary" className="bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20 text-[10px]">Новый</Badge>
                       </div>
                     </div>
