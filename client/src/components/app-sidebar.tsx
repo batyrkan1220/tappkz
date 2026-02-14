@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList, Users, BarChart3, Shield } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList, Users, BarChart3, Shield, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
 import { getBusinessLabels, type Store } from "@shared/schema";
@@ -31,6 +31,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
     { title: "Категории", url: "/admin/categories", icon: FolderOpen },
     { title: "Брендирование", url: "/admin/branding", icon: Palette },
     { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageCircle },
+    { title: "Подписка", url: "/admin/subscription", icon: Crown },
     { title: "Настройки", url: "/admin/settings", icon: Settings },
   ];
 

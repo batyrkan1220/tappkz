@@ -23,7 +23,8 @@ import {
   Check,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import mockNapoleon from "@/assets/images/mock-cake-napoleon.png";
 import mockMacarons from "@/assets/images/mock-macarons.png";
 import mockEclair from "@/assets/images/mock-eclair.png";
@@ -398,8 +399,50 @@ function AnimatedPhoneMockup() {
   );
 }
 
+type TariffData = Record<string, { price: number; limit: number; name: string; features: string[] }>;
+
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: tariffs } = useQuery<TariffData>({ queryKey: ["/api/tariffs"] });
+
+  const pricingPlans = useMemo(() => {
+    const t = tariffs || {};
+    const free = t.free || { price: 0, limit: 30, name: "Бесплатный", features: [] };
+    const pro = t.pro || { price: 4990, limit: 300, name: "Профессиональный", features: [] };
+    const business = t.business || { price: 14990, limit: 2000, name: "Бизнес", features: [] };
+    return [
+      {
+        name: "Старт",
+        price: free.price === 0 ? "0 ₸" : `${free.price.toLocaleString("ru-RU")} ₸`,
+        period: free.price === 0 ? "навсегда" : "/мес",
+        products: `до ${free.limit} товаров`,
+        features: free.features.length > 0 ? free.features : ["Мобильный магазин", "WhatsApp заказы", "Базовая аналитика", "Брендирование", "Управление заказами", "База клиентов"],
+        highlight: false,
+        cta: "Начать бесплатно",
+        enabled: true,
+      },
+      {
+        name: pro.name || "Профессиональный",
+        price: `${pro.price.toLocaleString("ru-RU")} ₸`,
+        period: "/мес",
+        products: `до ${pro.limit} товаров`,
+        features: pro.features.length > 0 ? pro.features : ["Всё из Старт", "Расширенная аналитика", "Приоритетная поддержка", "Свой домен", "Экспорт данных"],
+        highlight: true,
+        cta: "Скоро",
+        enabled: false,
+      },
+      {
+        name: business.name || "Бизнес",
+        price: `${business.price.toLocaleString("ru-RU")} ₸`,
+        period: "/мес",
+        products: `до ${business.limit} товаров`,
+        features: business.features.length > 0 ? business.features : ["Всё из Профессиональный", "Несколько магазинов", "API доступ", "Менеджер аккаунта", "Интеграции"],
+        highlight: false,
+        cta: "Скоро",
+        enabled: false,
+      },
+    ];
+  }, [tariffs]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-background overflow-x-hidden">
@@ -797,38 +840,7 @@ export default function LandingPage() {
           </p>
 
           <div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-3">
-            {[
-              {
-                name: "Старт",
-                price: "0 ₸",
-                period: "навсегда",
-                products: "до 30 товаров",
-                features: ["Мобильный магазин", "WhatsApp заказы", "Базовая аналитика", "Брендирование", "Управление заказами", "База клиентов"],
-                highlight: false,
-                cta: "Начать бесплатно",
-                enabled: true,
-              },
-              {
-                name: "Бизнес",
-                price: "4 990 ₸",
-                period: "/мес",
-                products: "до 300 товаров",
-                features: ["Всё из Старт", "Расширенная аналитика", "Приоритетная поддержка", "Свой домен", "Экспорт данных"],
-                highlight: true,
-                cta: "Скоро",
-                enabled: false,
-              },
-              {
-                name: "Про",
-                price: "9 990 ₸",
-                period: "/мес",
-                products: "до 2000 товаров",
-                features: ["Всё из Бизнес", "Несколько магазинов", "API доступ", "Менеджер аккаунта", "Интеграции"],
-                highlight: false,
-                cta: "Скоро",
-                enabled: false,
-              },
-            ].map((plan, planIdx) => (
+            {pricingPlans.map((plan, planIdx) => (
               <Card
                 key={plan.name}
                 className={`relative p-6 text-left ${plan.highlight ? "border-primary border-2 shadow-lg shadow-primary/10" : ""}`}

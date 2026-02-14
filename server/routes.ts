@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupSession, registerAuthRoutes, isAuthenticated, isSuperAdminMiddleware } from "./auth";
-import { PLAN_LIMITS, BUSINESS_TYPES } from "@shared/schema";
+import { PLAN_LIMITS, PLAN_PRICES, PLAN_NAMES, PLAN_FEATURES, BUSINESS_TYPES } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -465,6 +465,36 @@ export async function registerRoutes(
       }
       const data = await storage.getDetailedAnalytics(store.id, startDate, endDate);
       res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/tariffs", async (_req, res) => {
+    try {
+      const settings = await storage.getAllPlatformSettings();
+      const plans = ["free", "pro", "business"];
+      const result: Record<string, { price: number; limit: number; name: string; features: string[] }> = {};
+      for (const plan of plans) {
+        const saved = settings.find((s) => s.key === `plan_${plan}`);
+        if (saved && saved.value) {
+          const v = saved.value as any;
+          result[plan] = {
+            price: v.price ?? PLAN_PRICES[plan],
+            limit: v.limit ?? PLAN_LIMITS[plan],
+            name: v.name ?? PLAN_NAMES[plan],
+            features: v.features ?? PLAN_FEATURES[plan],
+          };
+        } else {
+          result[plan] = {
+            price: PLAN_PRICES[plan],
+            limit: PLAN_LIMITS[plan],
+            name: PLAN_NAMES[plan],
+            features: PLAN_FEATURES[plan],
+          };
+        }
+      }
+      res.json(result);
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }

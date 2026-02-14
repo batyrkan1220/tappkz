@@ -18,6 +18,7 @@ import BrandingPage from "@/pages/admin/branding";
 import WhatsAppPage from "@/pages/admin/whatsapp";
 
 import StoreSettingsPage from "@/pages/admin/store-settings";
+import SubscriptionPage from "@/pages/admin/subscription";
 import OrdersPage from "@/pages/admin/orders";
 import CustomersPage from "@/pages/admin/customers";
 import AnalyticsPage from "@/pages/admin/analytics";
@@ -71,6 +72,7 @@ function Router() {
       <Route path="/admin/customers" component={() => <AdminRoute component={CustomersPage} />} />
       <Route path="/admin/analytics" component={() => <AdminRoute component={AnalyticsPage} />} />
       <Route path="/admin/settings" component={() => <AdminRoute component={StoreSettingsPage} />} />
+      <Route path="/admin/subscription" component={() => <AdminRoute component={SubscriptionPage} />} />
       <Route path="/superadmin" component={() => <SuperAdminRoute component={SuperAdminDashboard} />} />
       <Route path="/superadmin/stores/:id" component={() => <SuperAdminRoute component={SuperAdminStoreDetail} />} />
       <Route path="/superadmin/stores" component={() => <SuperAdminRoute component={SuperAdminStores} />} />

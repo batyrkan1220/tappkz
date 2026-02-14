@@ -27,6 +27,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `/admin/analytics` - Analytics with charts (Page views, Sales, Orders) and tab reports
 - `/admin/orders` - Orders management with status/payment/fulfillment controls
 - `/admin/customers` - Customer management (auto-created from orders, manual CRUD)
+- `/admin/subscription` - Subscription/plan management with comparison
 - `/admin/settings` - Store info, contacts, display settings
 
 ### Auth API
@@ -44,6 +45,7 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 - `GET/PUT /api/my-store/settings` - Store settings (validated)
 - `PUT /api/my-store/whatsapp` - WhatsApp settings (validated)
 - `GET /api/my-store/analytics` - Store analytics
+- `GET /api/tariffs` - Public tariff/plan data (reads from platform_settings with constant fallbacks)
 - `GET /api/storefront/:slug` - Public store data
 - `GET /api/my-store/analytics/detailed` - Detailed analytics with daily data (auth)
 - `GET /api/my-store/orders` - List all orders for store (auth)
