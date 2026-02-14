@@ -26,7 +26,7 @@ type CustomerWithStatus = Customer & {
   earliestOrderAt: string | null;
 };
 
-const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+const THREE_HOURS = 3 * 60 * 60 * 1000;
 
 function getCustomerStatus(customer: CustomerWithStatus): { label: string; className: string } {
   const confirmed = customer.confirmedOrders || 0;
@@ -41,7 +41,7 @@ function getCustomerStatus(customer: CustomerWithStatus): { label: string; class
 
   if (pending > 0) {
     const isRecent = customer.earliestOrderAt &&
-      (Date.now() - new Date(customer.earliestOrderAt).getTime()) < TWELVE_HOURS;
+      (Date.now() - new Date(customer.earliestOrderAt).getTime()) < THREE_HOURS;
     if (isRecent) return { label: "Новый", className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" };
     return { label: "Ожидает подтверждения", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" };
   }
