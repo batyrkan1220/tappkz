@@ -874,5 +874,123 @@ export async function registerRoutes(
     }
   });
 
+  // ============== Unipile WhatsApp Integration ==============
+  const UNIPILE_DSN = process.env.UNIPILE_DSN;
+  const UNIPILE_TOKEN = process.env.UNIPILE_ACCESS_TOKEN;
+
+  const unipileHeaders = {
+    "X-API-KEY": UNIPILE_TOKEN || "",
+    "accept": "application/json",
+    "content-type": "application/json",
+  };
+
+  async function unipileFetch(endpoint: string, options: any = {}) {
+    if (!UNIPILE_DSN || !UNIPILE_TOKEN) throw new Error("Unipile not configured");
+    const url = `https://${UNIPILE_DSN}/api/v1${endpoint}`;
+    const res = await fetch(url, {
+      ...options,
+      headers: { ...unipileHeaders, ...(options.headers || {}) },
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Unipile error ${res.status}: ${text}`);
+    }
+    return res.json();
+  }
+
+  app.get("/api/whatsapp/status", isAuthenticated, async (_req, res) => {
+    try {
+      if (!UNIPILE_DSN || !UNIPILE_TOKEN) {
+        return res.json({ configured: false, accounts: [] });
+      }
+      const data = await unipileFetch("/accounts");
+      const whatsappAccounts = (data.items || []).filter((a: any) => a.provider === "WHATSAPP");
+      res.json({ configured: true, accounts: whatsappAccounts });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/whatsapp/connect", isAuthenticated, async (_req, res) => {
+    try {
+      const data = await unipileFetch("/accounts", {
+        method: "POST",
+        body: JSON.stringify({ provider: "WHATSAPP" }),
+      });
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/whatsapp/account/:id", isAuthenticated, async (req, res) => {
+    try {
+      const data = await unipileFetch(`/accounts/${req.params.id}`);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.delete("/api/whatsapp/account/:id", isAuthenticated, async (req, res) => {
+    try {
+      await unipileFetch(`/accounts/${req.params.id}`, { method: "DELETE" });
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/whatsapp/chats", isAuthenticated, async (req, res) => {
+    try {
+      const accountId = req.query.account_id;
+      const cursor = req.query.cursor || "";
+      let endpoint = "/chats";
+      const params = new URLSearchParams();
+      if (accountId) params.set("account_id", String(accountId));
+      if (cursor) params.set("cursor", String(cursor));
+      const qs = params.toString();
+      if (qs) endpoint += `?${qs}`;
+      const data = await unipileFetch(endpoint);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/whatsapp/chats/:id/messages", isAuthenticated, async (req, res) => {
+    try {
+      const cursor = req.query.cursor || "";
+      let endpoint = `/chats/${req.params.id}/messages`;
+      if (cursor) endpoint += `?cursor=${encodeURIComponent(String(cursor))}`;
+      const data = await unipileFetch(endpoint);
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/whatsapp/messages", isAuthenticated, async (req, res) => {
+    try {
+      const sendSchema = z.object({
+        chat_id: z.string().min(1),
+        text: z.string().min(1),
+        account_id: z.string().optional(),
+      });
+      const parsed = sendSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "chat_id and text required" });
+      const { chat_id, text, account_id } = parsed.data;
+      const body: any = { chat_id, text };
+      if (account_id) body.account_id = account_id;
+      const data = await unipileFetch("/messages", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      res.json(data);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   return httpServer;
 }
