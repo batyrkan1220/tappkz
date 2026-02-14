@@ -131,7 +131,8 @@ function QRConnectView({ onConnected }: { onConnected: () => void }) {
       try {
         const res = await apiRequest("GET", `/api/whatsapp/account/${accountId}`);
         const data = await res.json();
-        if (data.status === "OK" || data.status === "connected" || data.connection_params) {
+        const sourceStatus = data.sources?.[0]?.status;
+        if (data.status === "OK" || data.status === "connected" || sourceStatus === "OK") {
           setPolling(false);
           if (pollRef.current) clearInterval(pollRef.current);
           toast({ title: "WhatsApp подключён!" });
@@ -752,7 +753,10 @@ export default function WhatsAppInboxPage() {
   }
 
   const accounts: WhatsAppAccount[] = statusData?.accounts || [];
-  const connectedAccount = accounts.find((a) => a.status === "OK" || a.status === "connected");
+  const connectedAccount = accounts.find((a) => {
+    const sourceStatus = (a as any).sources?.[0]?.status;
+    return a.status === "OK" || a.status === "connected" || sourceStatus === "OK";
+  });
 
   if (!connectedAccount) {
     return (
