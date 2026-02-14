@@ -17,6 +17,8 @@ import {
   Clock,
   Send,
   Bell,
+  Search,
+  Plus,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useState } from "react";
@@ -122,76 +124,98 @@ export default function LandingPage() {
               <div className="relative mx-auto w-[300px] rounded-[2.5rem] border-[8px] border-foreground/90 bg-white dark:bg-zinc-900 p-1.5 shadow-2xl" data-testid="mockup-phone">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-foreground/90 rounded-b-2xl z-10" />
                 <div className="rounded-[2rem] overflow-hidden bg-white dark:bg-zinc-900">
-                  <div className="flex items-center justify-between gap-2 px-3.5 pt-8 pb-2 border-b border-border/30">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full border-2 border-primary flex items-center justify-center text-primary text-[9px] font-extrabold bg-white dark:bg-zinc-900">
-                        DA
-                      </div>
-                      <span className="text-[11px] font-extrabold tracking-tight">Достархан</span>
+                  <div className="flex items-center justify-between gap-2 px-3 pt-8 pb-2 border-b border-border/30">
+                    <div className="h-6 w-6 flex items-center justify-center">
+                      <Menu className="h-3.5 w-3.5 text-foreground/70" />
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-6 w-6 rounded-md flex items-center justify-center">
-                        <ShoppingBag className="h-3.5 w-3.5 text-foreground/70" />
+                    <div className="w-6" />
+                    <div className="flex items-center gap-1">
+                      <div className="h-6 w-6 flex items-center justify-center">
+                        <Search className="h-3.5 w-3.5 text-foreground/70" />
                       </div>
-                      <div className="h-6 w-6 rounded-md flex items-center justify-center relative">
-                        <ShoppingCart className="h-3.5 w-3.5 text-foreground/70" />
-                        <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-primary text-[7px] text-white flex items-center justify-center font-bold">3</span>
+                      <div className="h-6 w-6 flex items-center justify-center relative">
+                        <ShoppingBag className="h-3.5 w-3.5 text-foreground/70" />
+                        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary text-[6px] text-white flex items-center justify-center font-bold">3</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="relative">
-                    <div className="h-[72px] w-full overflow-hidden">
+                  <div className="relative mx-2.5 mt-2">
+                    <div className="h-[68px] w-full overflow-hidden rounded-xl">
                       <img src={mockBanner} alt="" className="h-full w-full object-cover" />
-                    </div>
-                    <div className="flex justify-center -mt-6 relative z-10">
-                      <div className="h-12 w-12 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md flex items-center justify-center text-white text-xs font-bold bg-primary">
-                        DA
-                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/25 rounded-xl" />
                     </div>
                   </div>
-                  <div className="text-center pt-0.5 pb-2">
-                    <p className="text-[11px] font-extrabold tracking-tight">Достархан</p>
-                    <p className="text-[8px] text-muted-foreground flex items-center justify-center gap-0.5">
-                      <MapPin className="h-2 w-2" /> Алматы
+                  <div className="flex flex-col items-center -mt-5 relative z-10">
+                    <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md flex items-center justify-center text-white text-[10px] font-bold bg-primary">
+                      DA
+                    </div>
+                    <p className="text-[10px] font-bold tracking-tight mt-1">Достархан</p>
+                    <p className="text-[7px] text-muted-foreground flex items-center gap-0.5">
+                      <MapPin className="h-1.5 w-1.5" /> Алматы
                     </p>
                   </div>
 
-                  <div className="px-3 pb-2">
-                    <div className="flex gap-1.5 overflow-hidden">
-                      <span className="shrink-0 rounded-full bg-primary text-white px-2.5 py-0.5 text-[9px] font-semibold">Все</span>
-                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Горячее</span>
-                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Шашлыки</span>
+                  <div className="mx-3 mt-2 border-b border-border/30 pb-0">
+                    <div className="flex">
+                      <div className="flex-1 text-center pb-1.5 border-b-2 border-foreground">
+                        <span className="text-[9px] font-semibold">Меню</span>
+                      </div>
+                      <div className="flex-1 text-center pb-1.5 text-muted-foreground">
+                        <span className="text-[9px] font-medium flex items-center justify-center gap-0.5">
+                          <Search className="h-2 w-2" /> Поиск
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="px-3 pb-2 space-y-2">
-                    {[
-                      { name: "Плов по-узбекски", desc: "Баранина, рис девзира, морковь, специи", price: "2 800", old: "3 200", img: mockPlov },
-                      { name: "Лагман домашний", desc: "Говядина, домашняя лапша, овощи", price: "2 200", img: mockLagman },
-                      { name: "Шашлык из баранины", desc: "Маринад на углях, лук, зелень", price: "3 500", img: mockShashlik },
-                    ].map((item, i) => (
-                      <div key={i} className="flex rounded-xl border border-border/40 bg-card overflow-hidden" data-testid={`mockup-product-${i}`}>
-                        <div className="w-[3px] shrink-0 bg-primary/20 rounded-l-xl" />
-                        <div className="flex-1 p-2.5 pr-1">
-                          <p className="text-[10px] font-bold leading-tight">{item.name}</p>
-                          <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{item.desc}</p>
-                          <div className="mt-1.5 flex items-center gap-1.5">
-                            <span className="text-[10px] font-extrabold text-primary">{item.price} ₸</span>
-                            {item.old && <span className="text-[8px] text-muted-foreground line-through">{item.old} ₸</span>}
-                          </div>
-                        </div>
-                        <div className="w-[72px] shrink-0 overflow-hidden rounded-r-xl bg-muted m-1.5 ml-0 rounded-l-lg">
-                          <img src={item.img} alt={item.name} className="h-full w-full object-cover" />
-                        </div>
-                      </div>
-                    ))}
+                  <div className="px-3 pt-2 pb-1.5">
+                    <div className="flex gap-1.5 overflow-hidden">
+                      <span className="shrink-0 rounded-full bg-primary text-white px-2 py-[3px] text-[8px] font-semibold">Все</span>
+                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Горячее</span>
+                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Шашлыки</span>
+                    </div>
                   </div>
 
-                  <div className="px-3 pb-3 pt-1">
-                    <div className="flex items-center justify-center gap-1.5 rounded-xl bg-[#25D366] py-2.5 text-white shadow-sm">
-                      <SiWhatsapp className="h-3.5 w-3.5" />
-                      <span className="text-[10px] font-bold">Заказать в WhatsApp</span>
+                  <div className="px-3 pb-2">
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { name: "Плов по-узбекски", price: "2 800", old: "3 200", img: mockPlov },
+                        { name: "Лагман домашний", price: "2 200", img: mockLagman },
+                        { name: "Шашлык из баранины", price: "3 500", img: mockShashlik },
+                        { name: "Манты домашние", price: "2 400", img: mockPlov },
+                      ].map((item, i) => (
+                        <div key={i} className="overflow-hidden rounded-lg border border-border/40 bg-card" data-testid={`mockup-product-${i}`}>
+                          <div className="relative aspect-square overflow-hidden bg-muted">
+                            <img src={item.img} alt={item.name} className="h-full w-full object-cover" />
+                            {item.old && (
+                              <span className="absolute top-1 left-1 rounded-full bg-primary text-white text-[6px] font-bold px-1 py-[1px]">
+                                -{Math.round((1 - 2800 / 3200) * 100)}%
+                              </span>
+                            )}
+                            <div className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-white/90 flex items-center justify-center shadow-sm">
+                              <Plus className="h-2.5 w-2.5 text-foreground/70" />
+                            </div>
+                          </div>
+                          <div className="p-1.5">
+                            <p className="text-[8px] font-semibold leading-tight line-clamp-2">{item.name}</p>
+                            <div className="mt-0.5 flex items-center gap-1">
+                              <span className="text-[8px] font-bold text-primary">{item.price} ₸</span>
+                              {item.old && <span className="text-[6px] text-muted-foreground line-through">{item.old} ₸</span>}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="px-3 pb-3">
+                    <div className="flex items-center justify-between rounded-xl py-2 px-3 text-white" style={{ backgroundColor: "hsl(var(--primary))" }}>
+                      <div className="flex items-center gap-1.5">
+                        <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white/20 px-1 text-[7px] font-bold">3</span>
+                        <span className="text-[9px] font-semibold">Корзина</span>
+                      </div>
+                      <span className="text-[9px] font-bold">8 500 ₸</span>
                     </div>
                   </div>
                 </div>
