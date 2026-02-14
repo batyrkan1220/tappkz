@@ -3,9 +3,10 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, UserPlus, Trash2, Pencil } from "lucide-react";
+import { Search, Plus, Trash2, Pencil, ShoppingBag, TrendingUp } from "lucide-react";
 import { PhoneInput } from "@/components/phone-input";
 import {
   Dialog,
@@ -18,11 +19,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Customer } from "@shared/schema";
 
+function getCustomerStatus(customer: Customer): { label: string; className: string } {
+  const orders = customer.totalOrders || 0;
+  if (orders === 0) return { label: "Новый", className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" };
+  if (orders === 1) return { label: "Первый заказ", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" };
+  if (orders <= 4) return { label: "Постоянный", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" };
+  return { label: "Лояльный", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" };
+}
+
 const FILTER_TABS = [
   { key: "all", label: "Все" },
-  { key: "inactive", label: "Неактивно" },
+  { key: "new", label: "Новые" },
   { key: "first_order", label: "Первый заказ" },
-  { key: "never_ordered", label: "Никогда не заказывал" },
+  { key: "regular", label: "Постоянные" },
+  { key: "loyal", label: "Лояльные" },
 ];
 
 function formatDate(date: string | Date | null) {
@@ -91,9 +101,11 @@ export default function CustomersPage() {
   });
 
   const filteredCustomers = customers.filter((c) => {
-    if (filter === "inactive" && c.isActive) return false;
-    if (filter === "first_order" && c.totalOrders !== 1) return false;
-    if (filter === "never_ordered" && (c.totalOrders || 0) > 0) return false;
+    const orders = c.totalOrders || 0;
+    if (filter === "new" && orders !== 0) return false;
+    if (filter === "first_order" && orders !== 1) return false;
+    if (filter === "regular" && (orders < 2 || orders > 4)) return false;
+    if (filter === "loyal" && orders < 5) return false;
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -106,6 +118,17 @@ export default function CustomersPage() {
     }
     return true;
   });
+
+  const totalSpentAll = customers.reduce((s, c) => s + (c.totalSpent || 0), 0);
+  const totalOrdersAll = customers.reduce((s, c) => s + (c.totalOrders || 0), 0);
+  const avgOrderValue = totalOrdersAll > 0 ? Math.round(totalSpentAll / totalOrdersAll) : 0;
+
+  const statusCounts = {
+    new: customers.filter((c) => (c.totalOrders || 0) === 0).length,
+    first_order: customers.filter((c) => (c.totalOrders || 0) === 1).length,
+    regular: customers.filter((c) => { const o = c.totalOrders || 0; return o >= 2 && o <= 4; }).length,
+    loyal: customers.filter((c) => (c.totalOrders || 0) >= 5).length,
+  };
 
   if (isLoading) {
     return (
@@ -142,11 +165,30 @@ export default function CustomersPage() {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="rounded-md border p-3">
+          <p className="text-xs text-muted-foreground">Всего клиентов</p>
+          <p className="text-xl font-bold" data-testid="text-stat-total">{customers.length}</p>
+        </div>
+        <div className="rounded-md border p-3">
+          <p className="text-xs text-muted-foreground">Общая выручка</p>
+          <p className="text-xl font-bold" data-testid="text-stat-revenue">{formatPrice(totalSpentAll)}</p>
+        </div>
+        <div className="rounded-md border p-3">
+          <p className="text-xs text-muted-foreground">Всего заказов</p>
+          <p className="text-xl font-bold" data-testid="text-stat-orders">{totalOrdersAll}</p>
+        </div>
+        <div className="rounded-md border p-3">
+          <p className="text-xs text-muted-foreground">Средний чек</p>
+          <p className="text-xl font-bold" data-testid="text-stat-avg">{formatPrice(avgOrderValue)}</p>
+        </div>
+      </div>
+
       <div className="flex items-center flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Поиск по имени клиента, телефону, email или заметкам"
+            placeholder="Поиск по имени, телефону, email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -156,17 +198,23 @@ export default function CustomersPage() {
       </div>
 
       <div className="flex items-center gap-1 flex-wrap">
-        {FILTER_TABS.map((tab) => (
-          <Button
-            key={tab.key}
-            variant={filter === tab.key ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setFilter(tab.key)}
-            data-testid={`button-filter-${tab.key}`}
-          >
-            {tab.label}
-          </Button>
-        ))}
+        {FILTER_TABS.map((tab) => {
+          const count = tab.key === "all" ? customers.length : statusCounts[tab.key as keyof typeof statusCounts] || 0;
+          return (
+            <Button
+              key={tab.key}
+              variant={filter === tab.key ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setFilter(tab.key)}
+              data-testid={`button-filter-${tab.key}`}
+            >
+              {tab.label}
+              {count > 0 && (
+                <span className="ml-1 text-xs opacity-70">{count}</span>
+              )}
+            </Button>
+          );
+        })}
       </div>
 
       <div className="border rounded-md overflow-hidden">
@@ -175,9 +223,10 @@ export default function CustomersPage() {
             <thead>
               <tr className="border-b bg-muted/30">
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Клиент</th>
-                <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Email</th>
+                <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Статус</th>
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Заказы</th>
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Потрачено</th>
+                <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Первый заказ</th>
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Последний заказ</th>
                 <th className="text-left p-3 font-medium text-muted-foreground whitespace-nowrap">Заметки</th>
                 <th className="text-right p-3 font-medium text-muted-foreground whitespace-nowrap">Действия</th>
@@ -186,72 +235,89 @@ export default function CustomersPage() {
             <tbody>
               {filteredCustomers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={8} className="p-8 text-center text-muted-foreground">
                     {customers.length === 0 ? "Клиентов пока нет" : "Ничего не найдено"}
                   </td>
                 </tr>
               ) : (
-                filteredCustomers.map((customer) => (
-                  <tr
-                    key={customer.id}
-                    className="border-b last:border-b-0"
-                    data-testid={`row-customer-${customer.id}`}
-                  >
-                    <td className="p-3">
-                      <div className="min-w-0">
-                        <p className="font-medium truncate max-w-[180px]" data-testid={`text-customer-name-${customer.id}`}>
-                          {customer.name}
-                        </p>
-                        {customer.phone && (
-                          <p className="text-xs text-muted-foreground" data-testid={`text-customer-phone-${customer.id}`}>
-                            {customer.phone}
+                filteredCustomers.map((customer) => {
+                  const status = getCustomerStatus(customer);
+                  return (
+                    <tr
+                      key={customer.id}
+                      className="border-b last:border-b-0"
+                      data-testid={`row-customer-${customer.id}`}
+                    >
+                      <td className="p-3">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate max-w-[180px]" data-testid={`text-customer-name-${customer.id}`}>
+                            {customer.name}
                           </p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-3 text-muted-foreground text-xs" data-testid={`text-customer-email-${customer.id}`}>
-                      {customer.email || "—"}
-                    </td>
-                    <td className="p-3 text-center" data-testid={`text-customer-orders-${customer.id}`}>
-                      {customer.totalOrders || 0}
-                    </td>
-                    <td className="p-3 whitespace-nowrap" data-testid={`text-customer-spent-${customer.id}`}>
-                      {formatPrice(customer.totalSpent || 0)}
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-xs text-muted-foreground" data-testid={`text-customer-last-order-${customer.id}`}>
-                      {formatDate(customer.lastOrderAt)}
-                    </td>
-                    <td className="p-3">
-                      <span className="text-xs text-muted-foreground truncate max-w-[150px] block" data-testid={`text-customer-notes-${customer.id}`}>
-                        {customer.notes || "—"}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => setEditCustomer(customer)}
-                          data-testid={`button-edit-customer-${customer.id}`}
+                          {customer.phone && (
+                            <p className="text-xs text-muted-foreground" data-testid={`text-customer-phone-${customer.id}`}>
+                              {customer.phone}
+                            </p>
+                          )}
+                          {customer.email && (
+                            <p className="text-xs text-muted-foreground">{customer.email}</p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3" data-testid={`text-customer-status-${customer.id}`}>
+                        <Badge
+                          variant="secondary"
+                          className={`rounded-full text-xs font-semibold no-default-hover-elevate no-default-active-elevate ${status.className}`}
                         >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => {
-                            if (confirm("Удалить клиента?")) {
-                              deleteMutation.mutate(customer.id);
-                            }
-                          }}
-                          data-testid={`button-delete-customer-${customer.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {status.label}
+                        </Badge>
+                      </td>
+                      <td className="p-3" data-testid={`text-customer-orders-${customer.id}`}>
+                        <div className="flex items-center gap-1.5">
+                          <ShoppingBag className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="font-medium">{customer.totalOrders || 0}</span>
+                        </div>
+                      </td>
+                      <td className="p-3 whitespace-nowrap font-medium" data-testid={`text-customer-spent-${customer.id}`}>
+                        {formatPrice(customer.totalSpent || 0)}
+                      </td>
+                      <td className="p-3 whitespace-nowrap text-xs text-muted-foreground" data-testid={`text-customer-first-order-${customer.id}`}>
+                        {formatDate(customer.firstOrderAt)}
+                      </td>
+                      <td className="p-3 whitespace-nowrap text-xs text-muted-foreground" data-testid={`text-customer-last-order-${customer.id}`}>
+                        {formatDate(customer.lastOrderAt)}
+                      </td>
+                      <td className="p-3">
+                        <span className="text-xs text-muted-foreground truncate max-w-[150px] block" data-testid={`text-customer-notes-${customer.id}`}>
+                          {customer.notes || "—"}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => setEditCustomer(customer)}
+                            data-testid={`button-edit-customer-${customer.id}`}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => {
+                              if (confirm("Удалить клиента?")) {
+                                deleteMutation.mutate(customer.id);
+                              }
+                            }}
+                            data-testid={`button-delete-customer-${customer.id}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -259,7 +325,7 @@ export default function CustomersPage() {
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-2 text-sm text-muted-foreground">
-        <span data-testid="text-customers-count">Всего {filteredCustomers.length}</span>
+        <span data-testid="text-customers-count">Показано {filteredCustomers.length} из {customers.length}</span>
       </div>
 
       <Dialog open={!!editCustomer} onOpenChange={(open) => !open && setEditCustomer(null)}>
