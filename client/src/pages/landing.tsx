@@ -3,27 +3,20 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ShoppingBag,
-  MessageCircle,
   Smartphone,
-  Palette,
   BarChart3,
-  Zap,
   ArrowRight,
   CheckCircle2,
   Globe,
-  ShieldCheck,
   Menu,
   X,
   Star,
   ShoppingCart,
-  Users,
-  FolderOpen,
-  Settings,
-  LineChart,
   Store,
-  Truck,
-  Receipt,
   MapPin,
+  Clock,
+  Send,
+  Bell,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useState } from "react";
@@ -32,114 +25,13 @@ import mockSerum from "@/assets/images/mock-product-serum.jpg";
 import mockFoundation from "@/assets/images/mock-product-foundation.jpg";
 import mockBanner from "@/assets/images/mock-store-banner.jpg";
 
-const steps = [
-  {
-    num: "01",
-    title: "Создайте магазин",
-    desc: "Выберите тип бизнеса, добавьте категории и товары с фото. Настройте брендинг за 5 минут",
-    icon: ShoppingBag,
-  },
-  {
-    num: "02",
-    title: "Поделитесь ссылкой",
-    desc: "Отправьте ссылку магазина в Instagram, мессенджерах или на визитке",
-    icon: Globe,
-  },
-  {
-    num: "03",
-    title: "Управляйте продажами",
-    desc: "Принимайте заказы через WhatsApp, отслеживайте аналитику и клиентов",
-    icon: LineChart,
-  },
-];
-
-const features = [
-  {
-    icon: Smartphone,
-    title: "Мобильный магазин",
-    desc: "Адаптивный дизайн для смартфонов. 90% ваших клиентов покупают с телефона",
-  },
-  {
-    icon: Palette,
-    title: "Полный брендинг",
-    desc: "Логотип, баннер, цвета, стили кнопок и карточек. Магазин выглядит как ваш бренд",
-  },
-  {
-    icon: FolderOpen,
-    title: "Категории и каталог",
-    desc: "Организуйте товары по категориям. Фото, цены, скидки, описание для каждой позиции",
-  },
-  {
-    icon: MessageCircle,
-    title: "WhatsApp-чекаут",
-    desc: "Клиент собирает корзину и отправляет готовый заказ с деталями прямо в WhatsApp",
-  },
-  {
-    icon: Zap,
-    title: "Быстрый старт",
-    desc: "Никакого кода, никаких разработчиков. Готовый магазин за несколько минут",
-  },
-  {
-    icon: ShoppingCart,
-    title: "Управление заказами",
-    desc: "Статусы, оплата, доставка, заметки. Полный контроль каждого заказа в панели",
-  },
-  {
-    icon: Users,
-    title: "База клиентов",
-    desc: "Автоматический сбор клиентов из заказов. История покупок и контакты",
-  },
-  {
-    icon: BarChart3,
-    title: "Детальная аналитика",
-    desc: "Графики продаж, просмотров, конверсий. Отчёты по периодам и товарам",
-  },
-  {
-    icon: Store,
-    title: "26 типов бизнеса",
-    desc: "Еда, торговля, услуги. Платформа подстраивается под вашу нишу: меню, товары или услуги",
-  },
-];
-
-const testimonials = [
-  {
-    name: "Айгерим К.",
-    role: "Косметика, Алматы",
-    text: "Раньше заказы терялись в переписке. Теперь клиенты сами выбирают товары и отправляют готовый заказ. Экономлю 3 часа в день!",
-    rating: 5,
-  },
-  {
-    name: "Марат Т.",
-    role: "Еда на дом, Астана",
-    text: "Запустил магазин за один вечер. Клиенты довольны - всё понятно, удобно, красиво. Заказов стало в 2 раза больше.",
-    rating: 5,
-  },
-  {
-    name: "Динара С.",
-    role: "Одежда, Шымкент",
-    text: "Идеальное решение для Instagram-бизнеса. Ставлю ссылку в шапку профиля и покупатели сразу видят весь каталог с ценами.",
-    rating: 5,
-  },
-];
-
-const adminFeatures = [
-  { icon: Receipt, label: "Заказы и статусы" },
-  { icon: Users, label: "База клиентов" },
-  { icon: LineChart, label: "Графики и отчёты" },
-  { icon: ShieldCheck, label: "Безопасность" },
-  { icon: Palette, label: "Брендинг" },
-  { icon: Truck, label: "Статус доставки" },
-  { icon: FolderOpen, label: "Категории" },
-  { icon: Settings, label: "Настройки" },
-];
-
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-white dark:bg-background overflow-x-hidden">
       <nav className="sticky top-0 z-50 bg-white/90 dark:bg-background/90 backdrop-blur-md border-b border-border/40">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground">
               <ShoppingBag className="h-4.5 w-4.5 text-background" />
@@ -148,15 +40,14 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-6">
-            <a href="#how-it-works" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-how">Как это работает</a>
             <a href="#features" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-features">Возможности</a>
-            <a href="#admin" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-admin">Панель управления</a>
+            <a href="#how-it-works" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-how">Как это работает</a>
             <a href="#pricing" className="text-sm text-muted-foreground font-medium transition-colors" data-testid="link-nav-pricing">Тарифы</a>
           </div>
 
           <div className="flex items-center gap-2.5">
             <a href="/login">
-              <Button variant="ghost" className="font-semibold text-sm" data-testid="button-login-nav">
+              <Button variant="ghost" size="sm" className="font-semibold" data-testid="button-login-nav">
                 Войти
               </Button>
             </a>
@@ -165,21 +56,22 @@ export default function LandingPage() {
                 Начать бесплатно
               </Button>
             </a>
-            <button
-              className="md:hidden p-1.5"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               data-testid="button-mobile-menu"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            </Button>
           </div>
         </div>
 
         {mobileMenuOpen && (
           <div className="md:hidden border-t px-5 py-4 bg-white dark:bg-background space-y-1">
-            <a href="#how-it-works" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-how">Как это работает</a>
             <a href="#features" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-features">Возможности</a>
-            <a href="#admin" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-admin">Панель управления</a>
+            <a href="#how-it-works" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-how">Как это работает</a>
             <a href="#pricing" className="block py-2 text-sm font-medium" onClick={() => setMobileMenuOpen(false)} data-testid="link-mobile-pricing">Тарифы</a>
             <a href="/register" className="block pt-2">
               <Button className="w-full rounded-full font-semibold" data-testid="button-mobile-register">Начать бесплатно</Button>
@@ -189,57 +81,44 @@ export default function LandingPage() {
       </nav>
 
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/3 dark:from-primary/5 dark:via-background dark:to-primary/3" />
-        <div className="absolute top-20 -right-32 h-96 w-96 rounded-full bg-primary/10 blur-3xl dark:bg-primary/5" />
-        <div className="absolute -bottom-20 -left-32 h-80 w-80 rounded-full bg-primary/8 blur-3xl dark:bg-primary/3" />
-
-        <div className="relative mx-auto max-w-6xl px-5 pt-16 pb-20 md:pt-24 md:pb-28">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_60%)]" />
+        <div className="relative mx-auto max-w-6xl px-5 pt-20 pb-8 md:pt-28 md:pb-12">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white/80 dark:bg-background/80 px-4 py-2 mb-7">
-              <SiWhatsapp className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-semibold">
-                Магазин + WhatsApp = Продажи
-              </span>
+            <div className="inline-flex items-center gap-2 rounded-full border bg-white/80 dark:bg-background/80 px-4 py-1.5 mb-8 text-sm font-medium" data-testid="badge-whatsapp-partner">
+              <SiWhatsapp className="h-4 w-4 text-[#25D366]" />
+              <span>WhatsApp Business Partner</span>
             </div>
 
-            <h1 className="text-4xl font-extrabold leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl" data-testid="text-hero-heading">
-              Полноценный магазин
-              <span className="block mt-1 text-primary">
-                в кармане каждого клиента
-              </span>
+            <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl md:text-[3.5rem]" data-testid="text-hero-heading">
+              Создайте онлайн-магазин{" "}
+              <span className="text-primary">для WhatsApp</span>
             </h1>
 
-            <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground leading-relaxed" data-testid="text-hero-subtitle">
-              Создайте магазин, управляйте заказами, ведите клиентскую базу и анализируйте продажи - всё в одном месте.
+            <p className="mx-auto mt-6 max-w-lg text-lg text-muted-foreground leading-relaxed" data-testid="text-hero-subtitle">
+              Принимайте заказы, управляйте продажами и растите бизнес - всё через WhatsApp
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
               <a href="/register">
                 <Button size="lg" className="rounded-full font-semibold" data-testid="button-hero-cta">
-                  Создать магазин бесплатно
+                  Начать бесплатно
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
-              <a href="#admin">
-                <Button size="lg" variant="outline" className="rounded-full font-semibold" data-testid="button-hero-demo">
-                  Посмотреть возможности
                 </Button>
               </a>
             </div>
 
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5" data-testid="text-check-free"><CheckCircle2 className="h-4 w-4 text-primary" /> Бесплатно</span>
-              <span className="flex items-center gap-1.5" data-testid="text-check-nocode"><CheckCircle2 className="h-4 w-4 text-primary" /> Без кода</span>
-              <span className="flex items-center gap-1.5" data-testid="text-check-fast"><CheckCircle2 className="h-4 w-4 text-primary" /> За 5 минут</span>
-              <span className="flex items-center gap-1.5" data-testid="text-check-26types"><CheckCircle2 className="h-4 w-4 text-primary" /> 26 типов бизнеса</span>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5" data-testid="text-check-free"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Бесплатно</span>
+              <span className="flex items-center gap-1.5" data-testid="text-check-nocode"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Без кода</span>
+              <span className="flex items-center gap-1.5" data-testid="text-check-fast"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Готово за 5 минут</span>
             </div>
           </div>
 
           <div className="mt-16 flex justify-center">
-            <div className="relative mx-auto w-[300px] rounded-[2.5rem] border-[8px] border-foreground/90 bg-white dark:bg-zinc-900 p-1.5 shadow-2xl">
+            <div className="relative mx-auto w-[300px] rounded-[2.5rem] border-[8px] border-foreground/90 bg-white dark:bg-zinc-900 p-1.5 shadow-2xl" data-testid="mockup-phone">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-foreground/90 rounded-b-2xl z-10" />
               <div className="rounded-[2rem] overflow-hidden bg-white dark:bg-zinc-900">
-                <div className="flex items-center justify-between px-3.5 pt-8 pb-2 border-b border-border/30">
+                <div className="flex items-center justify-between gap-2 px-3.5 pt-8 pb-2 border-b border-border/30">
                   <div className="flex items-center gap-2">
                     <div className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold" style={{ backgroundColor: "#e91e63" }}>
                       AB
@@ -287,7 +166,7 @@ export default function LandingPage() {
                     { name: "Сыворотка витамин C", desc: "Антиоксидантная сыворотка для сияния", price: "7 800", img: mockSerum },
                     { name: "Тональный крем", desc: "SPF 30, натуральный финиш", price: "6 200", img: mockFoundation },
                   ].map((item, i) => (
-                    <div key={i} className="flex rounded-md border border-border/50 bg-card">
+                    <div key={i} className="flex rounded-md border border-border/50 bg-card" data-testid={`mockup-product-${i}`}>
                       <div className="flex-1 p-2.5 pr-1">
                         <p className="text-[10px] font-semibold leading-tight">{item.name}</p>
                         <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{item.desc}</p>
@@ -315,159 +194,238 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section id="features" className="py-20 md:py-28">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-features-heading">
+              Упростите заказы через WhatsApp
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
+              Меньше ошибок, быстрее сделки, больше продаж
+            </p>
+          </div>
+
+          <div className="grid gap-16 lg:gap-24">
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              <div>
+                <Badge variant="secondary" className="mb-4 rounded-full font-semibold">Заказы</Badge>
+                <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-orders">
+                  Чистые заказы без путаницы
+                </h3>
+                <p className="mt-4 text-muted-foreground leading-relaxed">
+                  Клиенты собирают корзину, указывают контакты и отправляют готовый заказ прямо в ваш WhatsApp. Никаких потерянных сообщений и уточнений.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {["Автоматическое формирование заказа", "Имя, телефон, адрес в одном сообщении", "Сумма и список товаров сразу видны", "Инвойс/чек для каждого заказа"].map((item) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <Card className="p-6 lg:p-8" data-testid="card-feature-orders">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 rounded-lg border p-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#25D366]/10">
+                      <SiWhatsapp className="h-4 w-4 text-[#25D366]" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold" data-testid="text-order-number">Новый заказ #142</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Айгерим К. · +7 701 ***-**-45</p>
+                      <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                        <p>1x Увлажняющий крем - 4 500 ₸</p>
+                        <p>2x Сыворотка витамин C - 15 600 ₸</p>
+                      </div>
+                      <p className="mt-2 text-sm font-bold">Итого: 20 100 ₸</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Ожидает</Badge>
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Оплачен</Badge>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Доставлен</Badge>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              <Card className="p-6 lg:p-8 lg:order-first order-last" data-testid="card-feature-catalog">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden"><img src={mockCream} alt="" className="h-full w-full object-cover" /></div>
+                      <div>
+                        <p className="text-sm font-semibold">Увлажняющий крем</p>
+                        <p className="text-xs text-muted-foreground">Уход за лицом</p>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold" style={{ color: "#e91e63" }}>4 500 ₸</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden"><img src={mockSerum} alt="" className="h-full w-full object-cover" /></div>
+                      <div>
+                        <p className="text-sm font-semibold">Сыворотка витамин C</p>
+                        <p className="text-xs text-muted-foreground">Уход за лицом</p>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold" style={{ color: "#e91e63" }}>7 800 ₸</p>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden"><img src={mockFoundation} alt="" className="h-full w-full object-cover" /></div>
+                      <div>
+                        <p className="text-sm font-semibold">Тональный крем</p>
+                        <p className="text-xs text-muted-foreground">Макияж</p>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold" style={{ color: "#e91e63" }}>6 200 ₸</p>
+                  </div>
+                </div>
+              </Card>
+              <div>
+                <Badge variant="secondary" className="mb-4 rounded-full font-semibold">Каталог</Badge>
+                <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-catalog">
+                  Красивый магазин за минуты
+                </h3>
+                <p className="mt-4 text-muted-foreground leading-relaxed">
+                  Добавьте товары, загрузите фото, настройте цвета и логотип. Ваш магазин готов - поделитесь ссылкой в Instagram, WhatsApp или где угодно.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {["Категории и каталог товаров с фото", "Логотип, баннер, фирменные цвета", "Адаптивный мобильный дизайн", "Ссылка-визитка для Instagram Bio"].map((item) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              <div>
+                <Badge variant="secondary" className="mb-4 rounded-full font-semibold">Управление</Badge>
+                <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-manage">
+                  Управляйте заказами онлайн
+                </h3>
+                <p className="mt-4 text-muted-foreground leading-relaxed">
+                  Отслеживайте статусы заказов, контролируйте оплату и доставку. Вся клиентская база и аналитика в одном месте.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {["Статусы: новый, подтверждён, выполнен", "Контроль оплаты и доставки", "База клиентов с историей покупок", "Графики продаж и аналитика"].map((item) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm">
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <Card className="p-6 lg:p-8" data-testid="card-feature-manage">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border p-3 text-center" data-testid="text-stat-orders">
+                      <p className="text-2xl font-extrabold tracking-tight">247</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Заказов</p>
+                    </div>
+                    <div className="rounded-lg border p-3 text-center" data-testid="text-stat-revenue">
+                      <p className="text-2xl font-extrabold tracking-tight">1.2M</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Выручка ₸</p>
+                    </div>
+                    <div className="rounded-lg border p-3 text-center" data-testid="text-stat-clients">
+                      <p className="text-2xl font-extrabold tracking-tight">89</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Клиентов</p>
+                    </div>
+                    <div className="rounded-lg border p-3 text-center" data-testid="text-stat-views">
+                      <p className="text-2xl font-extrabold tracking-tight">4.8K</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Просмотров</p>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <p className="text-xs font-semibold">Продажи за неделю</p>
+                      <Badge variant="secondary" className="text-[10px]">+23%</Badge>
+                    </div>
+                    <div className="flex items-end gap-1 h-12">
+                      {[35, 52, 41, 68, 55, 72, 80].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-sm bg-primary/20" style={{ height: `${h}%` }}>
+                          <div className="w-full rounded-sm bg-primary" style={{ height: `${Math.min(100, h + 10)}%` }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 md:py-20 bg-muted/30 dark:bg-muted/10">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: Smartphone, title: "26 типов бизнеса", desc: "Еда, торговля, услуги - платформа адаптируется", tid: "business-types" },
+              { icon: Clock, title: "5 минут", desc: "Время от регистрации до готового магазина", tid: "setup-time" },
+              { icon: Globe, title: "Ссылка-визитка", desc: "Поделитесь в Instagram, WhatsApp, визитке", tid: "share-link" },
+              { icon: BarChart3, title: "Аналитика", desc: "Просмотры, заказы, выручка в реальном времени", tid: "analytics" },
+            ].map((item) => (
+              <div key={item.title} className="text-center" data-testid={`stat-${item.tid}`}>
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/5">
+                  <item.icon className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="text-base font-extrabold tracking-tight">{item.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section id="how-it-works" className="py-20 md:py-28">
         <div className="mx-auto max-w-6xl px-5">
           <div className="text-center mb-16">
-            <Badge variant="secondary" className="mb-4 rounded-full font-semibold" data-testid="badge-how-it-works">Просто как 1-2-3</Badge>
             <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-how-heading">
               Как это работает
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Три простых шага от идеи до первого заказа
+              Три шага от идеи до первого заказа
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {steps.map((step) => (
-              <div key={step.num} className="relative text-center md:text-left">
-                <div className="mx-auto md:mx-0 mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/5">
-                  <step.icon className="h-6 w-6 text-primary" />
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                step: "1",
+                title: "Создайте магазин",
+                desc: "Зарегистрируйтесь, выберите тип бизнеса, добавьте товары и настройте дизайн",
+                icon: Store,
+              },
+              {
+                step: "2",
+                title: "Поделитесь ссылкой",
+                desc: "Отправьте ссылку магазина клиентам через Instagram, WhatsApp или любой канал",
+                icon: Send,
+              },
+              {
+                step: "3",
+                title: "Принимайте заказы",
+                desc: "Получайте готовые заказы в WhatsApp, управляйте ими в панели администратора",
+                icon: Bell,
+              },
+            ].map((step) => (
+              <Card key={step.step} className="relative p-6 text-center" data-testid={`card-step-${step.step}`}>
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+                    {step.step}
+                  </div>
                 </div>
-                <span className="text-5xl font-extrabold text-muted/80 dark:text-muted/40 absolute -top-2 right-4 md:right-auto md:-left-2 select-none">{step.num}</span>
+                <div className="mt-4 mb-3 mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/5">
+                  <step.icon className="h-5 w-5 text-primary" />
+                </div>
                 <h3 className="text-lg font-extrabold tracking-tight mb-2">{step.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="features" className="py-20 md:py-28 bg-muted/20 dark:bg-muted/5">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-features-heading">
-              Всё для вашего бизнеса
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Мощные инструменты продаж в простом и удобном интерфейсе
-            </p>
-          </div>
-
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <Card key={f.title} className="group p-6 hover-elevate" data-testid={`card-feature-${f.title}`}>
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/5 transition-colors">
-                  <f.icon className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="mb-2 text-base font-extrabold tracking-tight">{f.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
               </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="admin" className="py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="text-center mb-16">
-            <Badge variant="secondary" className="mb-4 rounded-full font-semibold" data-testid="badge-admin">Панель управления</Badge>
-            <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-admin-heading">
-              Полный контроль бизнеса
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Удобная панель администратора с аналитикой, заказами, клиентами и настройками
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="p-6" data-testid="card-admin-orders">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/5">
-                  <ShoppingCart className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold tracking-tight">Заказы и доставка</h3>
-                  <p className="text-xs text-muted-foreground">Полное управление заказами</p>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                {["Статусы заказа: новый, подтверждён, завершён", "Контроль оплаты и доставки", "Внутренние заметки к заказам", "Автосоздание клиентов из заказов"].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-
-            <Card className="p-6" data-testid="card-admin-analytics">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/5">
-                  <LineChart className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold tracking-tight">Аналитика и отчёты</h3>
-                  <p className="text-xs text-muted-foreground">Данные для принятия решений</p>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                {["Графики просмотров, продаж и заказов", "Отчёты по периодам (7/30/90 дней)", "Топ товаров по выручке", "Конверсия посетителей в покупателей"].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-
-            <Card className="p-6" data-testid="card-admin-payments">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/5">
-                  <Receipt className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold tracking-tight">Чекаут и инвойсы</h3>
-                  <p className="text-xs text-muted-foreground">Заказы через WhatsApp</p>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                {["Заказ через WhatsApp с деталями", "Настраиваемый шаблон сообщений", "Инвойс/чек для каждого заказа", "Контроль статуса оплаты"].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-
-            <Card className="p-6" data-testid="card-admin-branding">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/5">
-                  <Palette className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold tracking-tight">Брендинг и дизайн</h3>
-                  <p className="text-xs text-muted-foreground">Ваш стиль без дизайнера</p>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                {["Логотип, баннер и фирменные цвета", "Стили кнопок, карточек и шрифтов", "Оверлей баннера для читаемости", "Витрина с вашим брендом, не TakeSale"].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          </div>
-
-          <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {adminFeatures.map((af) => (
-              <div key={af.label} className="flex items-center gap-2.5 rounded-md border p-3">
-                <af.icon className="h-4 w-4 text-primary shrink-0" />
-                <span className="text-sm font-medium">{af.label}</span>
-              </div>
             ))}
           </div>
         </div>
@@ -479,22 +437,35 @@ export default function LandingPage() {
             <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-reviews-heading">
               Что говорят продавцы
             </h2>
-            <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Реальные истории предпринимателей из Казахстана
-            </p>
           </div>
 
           <div className="grid gap-5 md:grid-cols-3">
-            {testimonials.map((t, i) => (
+            {[
+              {
+                name: "Айгерим К.",
+                role: "Косметика",
+                text: "Раньше заказы терялись в переписке. Теперь клиенты сами выбирают товары и отправляют готовый заказ. Экономлю 3 часа в день!",
+              },
+              {
+                name: "Марат Т.",
+                role: "Доставка еды",
+                text: "Запустил магазин за один вечер. Клиенты довольны - всё понятно, удобно, красиво. Заказов стало в 2 раза больше.",
+              },
+              {
+                name: "Динара С.",
+                role: "Одежда",
+                text: "Идеальное решение для Instagram-бизнеса. Ставлю ссылку в шапку профиля и покупатели сразу видят весь каталог с ценами.",
+              },
+            ].map((t, i) => (
               <Card key={i} className="p-6" data-testid={`card-testimonial-${i}`}>
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.rating }).map((_, j) => (
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: 5 }).map((_, j) => (
                     <Star key={j} className="h-4 w-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-sm leading-relaxed mb-4">"{t.text}"</p>
-                <div className="border-t pt-3">
-                  <p className="text-sm font-semibold">{t.name}</p>
+                <p className="text-sm leading-relaxed mb-5">"{t.text}"</p>
+                <div className="border-t pt-4">
+                  <p className="text-sm font-bold">{t.name}</p>
                   <p className="text-xs text-muted-foreground">{t.role}</p>
                 </div>
               </Card>
@@ -592,19 +563,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 md:py-28 bg-muted/20 dark:bg-muted/5">
+      <section className="py-20 md:py-28">
         <div className="mx-auto max-w-3xl px-5 text-center">
           <div className="rounded-3xl bg-primary p-10 md:p-16 text-primary-foreground">
             <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-cta-heading">
               Готовы начать продавать?
             </h2>
             <p className="mx-auto mt-4 max-w-md text-primary-foreground/80 leading-relaxed">
-              Присоединяйтесь к предпринимателям Казахстана, которые уже продают через TakeSale
+              Создайте магазин бесплатно и начните принимать заказы через WhatsApp уже сегодня
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="mt-8">
               <a href="/register">
                 <Button size="lg" className="bg-white text-primary rounded-full font-semibold" data-testid="button-cta-bottom">
-                  Создать магазин бесплатно
+                  Начать бесплатно
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </a>
@@ -626,13 +597,12 @@ export default function LandingPage() {
               <span className="text-sm font-extrabold tracking-tight">TakeSale</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              <a href="#how-it-works" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-how">Как это работает</a>
               <a href="#features" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-features">Возможности</a>
-              <a href="#admin" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-admin">Панель управления</a>
+              <a href="#how-it-works" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-how">Как это работает</a>
               <a href="#pricing" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-pricing">Тарифы</a>
             </div>
             <p className="text-xs text-muted-foreground" data-testid="text-footer-copyright">
-              TakeSale 2026. Сделано в Казахстане.
+              TakeSale 2026
             </p>
           </div>
         </div>
