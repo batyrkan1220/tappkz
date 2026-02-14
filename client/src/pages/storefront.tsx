@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { PhoneInput } from "@/components/phone-input";
@@ -184,30 +185,18 @@ export default function StorefrontPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-background">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-between px-4 py-4">
-          <Skeleton className="h-6 w-6 rounded-md" />
-          <Skeleton className="h-8 w-24 rounded-md" />
+          <Skeleton className="h-6 w-6" />
+          <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex gap-2">
-            <Skeleton className="h-6 w-6 rounded-md" />
-            <Skeleton className="h-6 w-6 rounded-md" />
+            <Skeleton className="h-6 w-6" />
+            <Skeleton className="h-6 w-6" />
           </div>
         </div>
-        <Skeleton className="mx-4 h-44 rounded-2xl" />
-        <div className="flex justify-center -mt-10">
-          <Skeleton className="h-20 w-20 rounded-full" />
-        </div>
-        <div className="mt-3 flex justify-center">
-          <Skeleton className="h-5 w-32 rounded-md" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 p-4 mt-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i}>
-              <Skeleton className="aspect-square rounded-xl" />
-              <Skeleton className="mt-2 h-4 w-3/4 rounded-md" />
-              <Skeleton className="mt-1.5 h-4 w-1/2 rounded-md" />
-            </div>
-          ))}
+        <Skeleton className="mx-4 h-40 rounded-2xl" />
+        <div className="space-y-3 p-4 mt-4">
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         </div>
       </div>
     );
@@ -215,13 +204,11 @@ export default function StorefrontPage() {
 
   if (error || !store) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-background p-4">
-        <div className="max-w-sm text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-            <ShoppingBag className="h-7 w-7 text-muted-foreground/40" />
-          </div>
-          <p className="text-lg font-bold tracking-tight">Магазин не найден</p>
-          <p className="mt-1.5 text-sm text-muted-foreground">Проверьте ссылку и попробуйте снова</p>
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="max-w-sm rounded-2xl border p-8 text-center bg-card">
+          <ShoppingBag className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
+          <p className="text-lg font-semibold">Магазин не найден</p>
+          <p className="mt-1 text-sm text-muted-foreground">Проверьте ссылку и попробуйте снова</p>
         </div>
       </div>
     );
@@ -229,59 +216,10 @@ export default function StorefrontPage() {
 
   const tabLabel = businessLabels.itemLabelPlural;
 
-  const CartItemRow = ({ item, prefix }: { item: CartItem; prefix: string }) => (
-    <div className="flex items-center gap-3 rounded-xl bg-muted/30 p-3" data-testid={`${prefix}-${item.product.id}`}>
-      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
-        {item.product.imageUrls?.[0] ? (
-          <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <ImageIcon className="h-5 w-5 text-muted-foreground/30" />
-          </div>
-        )}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold">{item.product.name}</p>
-        <p className="text-sm font-bold mt-0.5" style={{ color: primaryColor }}>
-          {formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}
-        </p>
-      </div>
-      <div className="flex items-center rounded-full border bg-white dark:bg-background">
-        <button
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-          onClick={() => updateQuantity(item.product.id, -1)}
-          data-testid={`button-${prefix}-qty-minus-${item.product.id}`}
-        >
-          <Minus className="h-3.5 w-3.5" />
-        </button>
-        <span className="w-6 text-center text-sm font-bold">{item.quantity}</span>
-        <button
-          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-          onClick={() => updateQuantity(item.product.id, 1)}
-          data-testid={`button-${prefix}-qty-plus-${item.product.id}`}
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-
-  const WhatsAppCheckoutButton = ({ testId }: { testId: string }) => (
-    <button
-      className="flex w-full items-center justify-center gap-2.5 rounded-xl py-3.5 text-white font-semibold text-[15px] shadow-lg shadow-green-500/20 transition-all active:scale-[0.98]"
-      style={{ backgroundColor: "#25D366" }}
-      onClick={() => setCheckoutOpen(true)}
-      data-testid={testId}
-    >
-      <SiWhatsapp className="h-5 w-5" />
-      Оформить заказ
-    </button>
-  );
-
   return (
-    <div className="min-h-screen bg-white dark:bg-background">
-      <nav className="sticky top-0 z-50 backdrop-blur-xl border-b border-border/20" style={{ backgroundColor: `${primaryColor}08` }}>
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-2 px-4 py-2.5">
+    <div className="min-h-screen bg-background">
+      <nav className="sticky top-0 z-50 bg-white/95 dark:bg-background/95 backdrop-blur-md border-b border-border/30">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-2 px-4 py-3">
           <Button
             size="icon"
             variant="ghost"
@@ -291,24 +229,7 @@ export default function StorefrontPage() {
             <Menu className="h-5 w-5" />
           </Button>
 
-          <div className="flex items-center gap-2">
-            {theme?.logoUrl ? (
-              <Avatar className="h-7 w-7">
-                <AvatarImage src={theme.logoUrl} alt={store.name} />
-                <AvatarFallback style={{ backgroundColor: primaryColor }} className="text-[10px] font-bold text-white">
-                  {store.name.substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <div
-                className="flex h-7 w-7 items-center justify-center rounded-md text-white text-[10px] font-bold"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {store.name.substring(0, 2).toUpperCase()}
-              </div>
-            )}
-            <span className="text-sm font-bold tracking-tight" data-testid="text-nav-store-name">{store.name}</span>
-          </div>
+          <div className="w-9" />
 
           <div className="flex items-center gap-0.5">
             <Button
@@ -327,7 +248,6 @@ export default function StorefrontPage() {
                     <span
                       className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
                       style={{ backgroundColor: primaryColor }}
-                      data-testid="badge-cart-count"
                     >
                       {cartCount}
                     </span>
@@ -336,14 +256,12 @@ export default function StorefrontPage() {
               </SheetTrigger>
               <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
                 <SheetHeader className="px-5 pt-5 pb-3">
-                  <SheetTitle className="text-lg font-bold">Корзина</SheetTitle>
+                  <SheetTitle className="text-lg">Корзина</SheetTitle>
                 </SheetHeader>
                 {cart.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center flex-1">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
-                      <ShoppingBag className="h-6 w-6 text-muted-foreground/30" />
-                    </div>
-                    <p className="text-sm font-medium text-muted-foreground">Корзина пуста</p>
+                    <ShoppingBag className="mb-3 h-12 w-12 text-muted-foreground/20" />
+                    <p className="text-sm text-muted-foreground">Корзина пуста</p>
                     <p className="text-xs text-muted-foreground/60 mt-1">Добавьте товары из каталога</p>
                   </div>
                 ) : (
@@ -351,7 +269,38 @@ export default function StorefrontPage() {
                     <div className="flex-1 overflow-y-auto px-5">
                       <div className="space-y-2.5 pb-4">
                         {cart.map((item) => (
-                          <CartItemRow key={item.product.id} item={item} prefix="cart-item" />
+                          <div key={item.product.id} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-${item.product.id}`}>
+                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+                              {item.product.imageUrls?.[0] ? (
+                                <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                <div className="flex h-full items-center justify-center">
+                                  <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{item.product.name}</p>
+                              <p className="text-sm font-bold mt-0.5" style={{ color: primaryColor }}>
+                                {formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}
+                              </p>
+                            </div>
+                            <div className="flex items-center rounded-full bg-background border">
+                              <button
+                                className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+                                onClick={() => updateQuantity(item.product.id, -1)}
+                              >
+                                <Minus className="h-3.5 w-3.5" />
+                              </button>
+                              <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                              <button
+                                className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+                                onClick={() => updateQuantity(item.product.id, 1)}
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -360,7 +309,15 @@ export default function StorefrontPage() {
                         <span className="font-semibold">Итого</span>
                         <span className="text-lg font-bold" style={{ color: primaryColor }} data-testid="text-cart-total">{formatPrice(cartTotal)}</span>
                       </div>
-                      <WhatsAppCheckoutButton testId="button-side-checkout" />
+                      <button
+                        className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
+                        style={{ backgroundColor: "#25D366" }}
+                        onClick={() => setCheckoutOpen(true)}
+                        data-testid="button-checkout"
+                      >
+                        <SiWhatsapp className="h-5 w-5" />
+                        Оформить заказ
+                      </button>
                     </div>
                   </>
                 )}
@@ -374,71 +331,62 @@ export default function StorefrontPage() {
         <div className="mx-auto max-w-lg px-4 pt-3">
           <div className="relative overflow-hidden rounded-2xl">
             <div
-              className="h-44 w-full sm:h-52"
+              className="h-40 w-full sm:h-48"
               style={{
                 background: theme?.bannerUrl
                   ? `url(${theme.bannerUrl}) center/cover no-repeat`
-                  : `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
+                  : `linear-gradient(135deg, ${primaryColor}20, ${primaryColor}08)`,
               }}
             />
             {theme?.bannerUrl && bannerOverlay && (
-              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 rounded-2xl" />
-            )}
-            {!theme?.bannerUrl && (
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-2xl" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/30 rounded-2xl" />
             )}
           </div>
         </div>
         <div className="flex flex-col items-center -mt-12 relative z-10">
-          <Avatar className="h-[88px] w-[88px] border-[4px] border-white dark:border-background shadow-lg shadow-black/10">
+          <Avatar className="h-20 w-20 border-4 border-background shadow-lg">
             {theme?.logoUrl ? (
               <AvatarImage src={theme.logoUrl} alt={store.name} />
             ) : null}
             <AvatarFallback
-              className="text-2xl font-bold text-white"
+              className="text-xl font-bold text-white"
               style={{ backgroundColor: primaryColor }}
             >
               {store.name.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <h1 className="mt-2.5 text-lg font-extrabold tracking-tight text-center" data-testid="text-store-name">
+          <h1 className="mt-2 text-lg font-bold tracking-tight text-center" data-testid="text-store-name">
             {store.name}
           </h1>
           {store.city && (
-            <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground" data-testid="text-store-city">
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" /> {store.city}
             </p>
           )}
           {store.description && (
-            <p className="mt-1.5 max-w-xs text-center text-xs text-muted-foreground/80 leading-relaxed px-6">
+            <p className="mt-1 max-w-xs text-center text-xs text-muted-foreground px-4">
               {store.description}
             </p>
           )}
         </div>
       </div>
 
-      <div className="mx-auto mt-5 max-w-lg border-b border-border/30">
-        <div className="flex px-4">
+      <div className="mx-auto mt-4 max-w-lg border-b border-border/30">
+        <div className="flex">
           <button
-            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition-all relative ${activeTab === "overview" ? "text-foreground" : "text-muted-foreground"}`}
+            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${activeTab === "overview" ? "border-b-2 border-foreground text-foreground" : "text-muted-foreground"}`}
             onClick={() => { setActiveTab("overview"); setSearchQuery(""); }}
             data-testid="tab-overview"
           >
             {tabLabel}
-            {activeTab === "overview" && (
-              <div className="absolute bottom-0 left-1/4 right-1/4 h-[2.5px] rounded-full" style={{ backgroundColor: primaryColor }} />
-            )}
           </button>
           <button
-            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition-all relative ${activeTab === "search" ? "text-foreground" : "text-muted-foreground"}`}
+            className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${activeTab === "search" ? "border-b-2 border-foreground text-foreground" : "text-muted-foreground"}`}
             onClick={() => setActiveTab("search")}
             data-testid="tab-search"
           >
             <Search className="h-4 w-4" />
             Поиск
-            {activeTab === "search" && (
-              <div className="absolute bottom-0 left-1/4 right-1/4 h-[2.5px] rounded-full" style={{ backgroundColor: primaryColor }} />
-            )}
           </button>
         </div>
       </div>
@@ -452,7 +400,7 @@ export default function StorefrontPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Поиск..."
-                className="pl-10 rounded-xl bg-muted/40 border-0 focus-visible:ring-1"
+                className="pl-10 rounded-full bg-muted/50 border-0 focus-visible:ring-1"
                 data-testid="input-search"
                 autoFocus
               />
@@ -462,7 +410,6 @@ export default function StorefrontPage() {
                   variant="ghost"
                   className="absolute right-1 top-1/2 -translate-y-1/2"
                   onClick={() => setSearchQuery("")}
-                  data-testid="button-search-clear"
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -475,8 +422,8 @@ export default function StorefrontPage() {
           <div className="mb-4 -mx-4 px-4 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
             <div className="flex gap-2 pb-1 w-max">
               <button
-                className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${activeCategory === null ? "text-white shadow-md" : "bg-muted/60 text-foreground"}`}
-                style={activeCategory === null ? { backgroundColor: primaryColor, boxShadow: `0 4px 14px ${primaryColor}30` } : {}}
+                className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
                 onClick={() => setActiveCategory(null)}
                 data-testid="button-category-all"
               >
@@ -485,8 +432,8 @@ export default function StorefrontPage() {
               {categories.map((c) => (
                 <button
                   key={c.id}
-                  className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${activeCategory === c.id ? "text-white shadow-md" : "bg-muted/60 text-foreground"}`}
-                  style={activeCategory === c.id ? { backgroundColor: primaryColor, boxShadow: `0 4px 14px ${primaryColor}30` } : {}}
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                  style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
                   onClick={() => setActiveCategory(c.id)}
                   data-testid={`button-category-${c.id}`}
                 >
@@ -501,17 +448,13 @@ export default function StorefrontPage() {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             {activeTab === "search" && searchQuery ? (
               <>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
-                  <Search className="h-6 w-6 text-muted-foreground/30" />
-                </div>
-                <p className="text-sm font-medium text-muted-foreground" data-testid="text-search-empty">Ничего не найдено по запросу "{searchQuery}"</p>
+                <Search className="mb-3 h-10 w-10 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">Ничего не найдено по запросу "{searchQuery}"</p>
               </>
             ) : (
               <>
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
-                  <ShoppingBag className="h-6 w-6 text-muted-foreground/30" />
-                </div>
-                <p className="text-sm font-medium text-muted-foreground" data-testid="text-products-empty">Товары пока не добавлены</p>
+                <ShoppingBag className="mb-3 h-10 w-10 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">Товары пока не добавлены</p>
               </>
             )}
           </div>
@@ -522,7 +465,7 @@ export default function StorefrontPage() {
               return (
                 <div
                   key={p.id}
-                  className="group cursor-pointer overflow-hidden rounded-xl bg-white dark:bg-card border border-border/30 shadow-sm transition-shadow"
+                  className="group cursor-pointer overflow-hidden rounded-xl border border-border/40 bg-card"
                   onClick={() => setSelectedProduct(p)}
                   data-testid={`card-storefront-product-${p.id}`}
                 >
@@ -530,63 +473,66 @@ export default function StorefrontPage() {
                     {p.imageUrls?.[0] ? (
                       <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
-                      <div className="flex h-full items-center justify-center bg-gradient-to-br from-muted to-muted/60">
-                        <ImageIcon className="h-8 w-8 text-muted-foreground/15" />
+                      <div className="flex h-full items-center justify-center">
+                        <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
                       </div>
                     )}
                     {p.discountPrice && (
                       <Badge
-                        className="absolute top-2 left-2 rounded-md text-[10px] px-1.5 py-0.5 text-white border-0 font-bold"
+                        className="absolute top-2 left-2 rounded-full text-[10px] px-1.5 py-0.5 text-white border-0"
                         style={{ backgroundColor: secondaryColor || primaryColor }}
                       >
                         -{Math.round((1 - p.discountPrice / p.price) * 100)}%
                       </Badge>
                     )}
                     {!cartItem ? (
-                      <button
-                        className="absolute bottom-2 right-2 flex h-9 w-9 items-center justify-center rounded-xl bg-white/95 dark:bg-background/95 backdrop-blur-sm shadow-md border border-border/20 transition-transform active:scale-90"
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="absolute bottom-2 right-2 rounded-full shadow-md bg-white/90 dark:bg-background/90 backdrop-blur-sm border-0"
                         onClick={(e) => {
                           e.stopPropagation();
                           addToCart(p);
                         }}
                         data-testid={`button-add-to-cart-${p.id}`}
                       >
-                        <Plus className="h-4.5 w-4.5" style={{ color: primaryColor }} />
-                      </button>
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     ) : (
-                      <div
-                        className="absolute bottom-2 right-2 flex items-center gap-0.5 rounded-xl bg-white/95 dark:bg-background/95 backdrop-blur-sm shadow-md border border-border/20 px-0.5"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <button
-                          className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+                      <div className="absolute bottom-2 right-2 flex items-center gap-0.5 rounded-full bg-white/90 dark:bg-background/90 backdrop-blur-sm shadow-md px-1" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
                           onClick={() => updateQuantity(p.id, -1)}
                           data-testid={`button-qty-minus-${p.id}`}
                         >
-                          <Minus className="h-3.5 w-3.5" />
-                        </button>
+                          <Minus className="h-3 w-3" />
+                        </Button>
                         <span className="w-5 text-center text-xs font-bold">{cartItem.quantity}</span>
-                        <button
-                          className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
                           onClick={() => updateQuantity(p.id, 1)}
                           data-testid={`button-qty-plus-${p.id}`}
                         >
-                          <Plus className="h-3.5 w-3.5" style={{ color: primaryColor }} />
-                        </button>
+                          <Plus className="h-3 w-3" />
+                        </Button>
                       </div>
                     )}
                   </div>
                   <div className="p-3">
                     <p className="text-sm font-semibold leading-tight line-clamp-2" data-testid={`text-storefront-product-name-${p.id}`}>{p.name}</p>
                     {settings?.showPrices !== false && (
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
                         {p.discountPrice ? (
                           <>
-                            <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }} data-testid={`text-product-price-${p.id}`}>{formatPrice(p.discountPrice)}</span>
-                            <span className="text-[11px] text-muted-foreground line-through" data-testid={`text-product-old-price-${p.id}`}>{formatPrice(p.price)}</span>
+                            <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(p.discountPrice)}</span>
+                            <span className="text-[11px] text-muted-foreground line-through">{formatPrice(p.price)}</span>
                           </>
                         ) : (
-                          <span className="text-sm font-bold" style={{ color: primaryColor }} data-testid={`text-product-price-${p.id}`}>{formatPrice(p.price)}</span>
+                          <span className="text-sm font-bold">{formatPrice(p.price)}</span>
                         )}
                       </div>
                     )}
@@ -603,12 +549,12 @@ export default function StorefrontPage() {
           <Sheet>
             <SheetTrigger asChild>
               <button
-                className="flex w-full items-center justify-between rounded-xl px-5 py-4 text-white shadow-xl transition-all active:scale-[0.98]"
-                style={{ backgroundColor: primaryColor, boxShadow: `0 8px 24px ${primaryColor}40` }}
+                className="flex w-full items-center justify-between rounded-2xl px-5 py-4 text-white shadow-xl transition-all active:scale-[0.98]"
+                style={{ backgroundColor: primaryColor }}
                 data-testid="button-bottom-cart"
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex h-7 min-w-[28px] items-center justify-center rounded-md bg-white/20 px-1.5 text-xs font-bold">
+                  <span className="flex h-7 min-w-[28px] items-center justify-center rounded-full bg-white/25 px-1.5 text-xs font-bold">
                     {cartCount}
                   </span>
                   <span className="font-semibold text-[15px]">Корзина</span>
@@ -618,12 +564,45 @@ export default function StorefrontPage() {
             </SheetTrigger>
             <SheetContent side="bottom" className="max-h-[85vh] rounded-t-3xl p-0">
               <SheetHeader className="px-5 pt-5 pb-3">
-                <SheetTitle className="text-lg font-bold">Корзина</SheetTitle>
+                <SheetTitle className="text-lg">Корзина</SheetTitle>
               </SheetHeader>
               <div className="px-5 overflow-y-auto" style={{ maxHeight: "calc(85vh - 200px)" }}>
                 <div className="space-y-2.5">
                   {cart.map((item) => (
-                    <CartItemRow key={item.product.id} item={item} prefix="cart-item-bottom" />
+                    <div key={item.product.id} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-bottom-${item.product.id}`}>
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
+                        {item.product.imageUrls?.[0] ? (
+                          <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{item.product.name}</p>
+                        <p className="text-sm font-bold mt-0.5" style={{ color: primaryColor }}>
+                          {formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}
+                        </p>
+                      </div>
+                      <div className="flex items-center rounded-full bg-background border">
+                        <button
+                          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+                          onClick={() => updateQuantity(item.product.id, -1)}
+                          data-testid={`button-cart-qty-minus-${item.product.id}`}
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                        <button
+                          className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+                          onClick={() => updateQuantity(item.product.id, 1)}
+                          data-testid={`button-cart-qty-plus-${item.product.id}`}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -632,7 +611,15 @@ export default function StorefrontPage() {
                   <span className="font-semibold">Итого</span>
                   <span className="text-lg font-bold" style={{ color: primaryColor }} data-testid="text-bottom-cart-total">{formatPrice(cartTotal)}</span>
                 </div>
-                <WhatsAppCheckoutButton testId="button-bottom-checkout" />
+                <button
+                  className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
+                  style={{ backgroundColor: "#25D366" }}
+                  onClick={() => setCheckoutOpen(true)}
+                  data-testid="button-checkout"
+                >
+                  <SiWhatsapp className="h-5 w-5" />
+                  Оформить заказ
+                </button>
               </div>
             </SheetContent>
           </Sheet>
@@ -640,7 +627,7 @@ export default function StorefrontPage() {
       )}
 
       <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md p-0 rounded-2xl">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>{selectedProduct?.name}</DialogTitle>
             <DialogDescription>{selectedProduct?.description || "Подробности о товаре"}</DialogDescription>
@@ -651,13 +638,13 @@ export default function StorefrontPage() {
                 {selectedProduct.imageUrls?.[0] ? (
                   <img src={selectedProduct.imageUrls[0]} alt={selectedProduct.name} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full items-center justify-center bg-gradient-to-br from-muted to-muted/60">
-                    <ImageIcon className="h-12 w-12 text-muted-foreground/20" />
+                  <div className="flex h-full items-center justify-center">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground/30" />
                   </div>
                 )}
               </div>
               <div className="space-y-3 p-5">
-                <h2 className="text-xl font-bold tracking-tight" data-testid="text-product-detail-name">{selectedProduct.name}</h2>
+                <h2 className="text-xl font-bold" data-testid="text-product-detail-name">{selectedProduct.name}</h2>
                 {selectedProduct.description && (
                   <p className="text-sm text-muted-foreground leading-relaxed">{selectedProduct.description}</p>
                 )}
@@ -665,27 +652,27 @@ export default function StorefrontPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     {selectedProduct.discountPrice ? (
                       <>
-                        <span className="text-2xl font-bold" style={{ color: secondaryColor || primaryColor }} data-testid="text-product-detail-price">{formatPrice(selectedProduct.discountPrice)}</span>
-                        <span className="text-muted-foreground line-through" data-testid="text-product-detail-old-price">{formatPrice(selectedProduct.price)}</span>
-                        <Badge variant="secondary" className="text-xs rounded-md font-bold" style={{ backgroundColor: (secondaryColor || primaryColor) + "15", color: secondaryColor || primaryColor }} data-testid="badge-product-detail-discount">
+                        <span className="text-xl font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(selectedProduct.discountPrice)}</span>
+                        <span className="text-muted-foreground line-through">{formatPrice(selectedProduct.price)}</span>
+                        <Badge variant="secondary" className="text-xs rounded-full" style={{ backgroundColor: (secondaryColor || primaryColor) + "15", color: secondaryColor || primaryColor }}>
                           -{Math.round((1 - selectedProduct.discountPrice / selectedProduct.price) * 100)}%
                         </Badge>
                       </>
                     ) : (
-                      <span className="text-2xl font-bold" style={{ color: primaryColor }} data-testid="text-product-detail-price">{formatPrice(selectedProduct.price)}</span>
+                      <span className="text-xl font-bold">{formatPrice(selectedProduct.price)}</span>
                     )}
                   </div>
                 )}
                 {selectedProduct.imageUrls && selectedProduct.imageUrls.length > 1 && (
-                  <div className="flex gap-2 overflow-x-auto py-1">
+                  <div className="flex gap-2 overflow-x-auto">
                     {selectedProduct.imageUrls.map((url, i) => (
-                      <img key={i} src={url} alt="" className="h-16 w-16 shrink-0 rounded-xl border border-border/30 object-cover" />
+                      <img key={i} src={url} alt="" className="h-16 w-16 shrink-0 rounded-lg border object-cover" />
                     ))}
                   </div>
                 )}
                 <button
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-white font-semibold text-[15px] shadow-md transition-all active:scale-[0.98]"
-                  style={{ backgroundColor: primaryColor, boxShadow: `0 4px 14px ${primaryColor}30` }}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-md transition-all active:scale-[0.98]"
+                  style={{ backgroundColor: primaryColor }}
                   onClick={(e) => {
                     e.stopPropagation();
                     addToCart(selectedProduct);
@@ -703,97 +690,79 @@ export default function StorefrontPage() {
       </Dialog>
 
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-        <SheetContent side="left" className="w-72 p-0">
-          <SheetHeader className="sr-only">
-            <SheetTitle>{store.name}</SheetTitle>
+        <SheetContent side="left" className="w-72">
+          <SheetHeader>
+            <SheetTitle className="sr-only">{store.name}</SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col h-full">
-            <div className="p-5 pb-3 border-b border-border/30">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  {theme?.logoUrl ? (
-                    <AvatarImage src={theme.logoUrl} alt={store.name} />
-                  ) : null}
-                  <AvatarFallback className="text-sm font-bold text-white" style={{ backgroundColor: primaryColor }}>
-                    {store.name.substring(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold truncate" data-testid="text-menu-store-name">{store.name}</p>
-                  {store.city && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5" data-testid="text-menu-store-city">
-                      <MapPin className="h-3 w-3 shrink-0" /> {store.city}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Поиск"
-                  className="pl-9 rounded-xl bg-muted/40 border-0"
-                  onClick={() => {
-                    setActiveTab("search");
-                    setMenuOpen(false);
-                  }}
-                  readOnly
-                  data-testid="input-menu-search"
-                />
-              </div>
-
-              <button
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold hover-elevate"
+          <div className="mt-4 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Поиск"
+                className="pl-9 rounded-full bg-muted/50 border-0"
                 onClick={() => {
-                  setActiveTab("overview");
-                  setActiveCategory(null);
-                  setSearchQuery("");
+                  setActiveTab("search");
                   setMenuOpen(false);
                 }}
-                data-testid="button-menu-all"
-              >
-                {tabLabel}
-              </button>
-
-              {categories.length > 0 && (
-                <div>
-                  <button
-                    className="flex w-full items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground"
-                    onClick={() => setCategoriesExpanded(!categoriesExpanded)}
-                    data-testid="button-menu-categories-toggle"
-                  >
-                    <span>{businessLabels.categoryLabel}</span>
-                    {categoriesExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                  </button>
-                  {categoriesExpanded && (
-                    <div className="space-y-0.5 mt-1">
-                      {categories.map((c) => (
-                        <button
-                          key={c.id}
-                          className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm hover-elevate ${activeCategory === c.id ? "font-semibold" : ""}`}
-                          style={activeCategory === c.id ? { backgroundColor: `${primaryColor}10`, color: primaryColor } : {}}
-                          onClick={() => {
-                            setActiveCategory(c.id);
-                            setActiveTab("overview");
-                            setMenuOpen(false);
-                          }}
-                          data-testid={`button-menu-category-${c.id}`}
-                        >
-                          <span>{c.name}</span>
-                          <span className="text-xs text-muted-foreground">{getCategoryProductCount(c.id)}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                readOnly
+                data-testid="input-menu-search"
+              />
             </div>
 
-            <div className="border-t border-border/30 p-4 space-y-2">
+            <button
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium hover-elevate"
+              onClick={() => {
+                setActiveTab("overview");
+                setActiveCategory(null);
+                setSearchQuery("");
+                setMenuOpen(false);
+              }}
+              data-testid="button-menu-all"
+            >
+              {tabLabel}
+            </button>
+
+            {categories.length > 0 && (
+              <div>
+                <button
+                  className="flex w-full items-center justify-between px-3 py-2 text-sm font-bold"
+                  onClick={() => setCategoriesExpanded(!categoriesExpanded)}
+                  data-testid="button-menu-categories-toggle"
+                >
+                  <span>{businessLabels.categoryLabel}</span>
+                  {categoriesExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                </button>
+                {categoriesExpanded && (
+                  <div className="space-y-0.5 mt-1">
+                    {categories.map((c) => (
+                      <button
+                        key={c.id}
+                        className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm hover-elevate ${activeCategory === c.id ? "font-semibold" : ""}`}
+                        onClick={() => {
+                          setActiveCategory(c.id);
+                          setActiveTab("overview");
+                          setMenuOpen(false);
+                        }}
+                        data-testid={`button-menu-category-${c.id}`}
+                      >
+                        <span>{c.name}</span>
+                        <span className="text-xs text-muted-foreground">{getCategoryProductCount(c.id)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="border-t pt-4 space-y-2">
+              {store.city && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground px-3">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span>{store.city}</span>
+                </div>
+              )}
               {settings?.phoneNumber && (
-                <a href={`tel:${settings.phoneNumber}`} className="flex items-center gap-2.5 text-sm text-muted-foreground px-1 py-1.5 hover-elevate rounded-md" data-testid="link-menu-phone">
+                <a href={`tel:${settings.phoneNumber}`} className="flex items-center gap-2 text-sm text-muted-foreground px-3">
                   <Phone className="h-4 w-4 shrink-0" />
                   <span>{settings.phoneNumber}</span>
                 </a>
@@ -803,8 +772,7 @@ export default function StorefrontPage() {
                   href={`https://instagram.com/${settings.instagramUrl.replace("@", "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 text-sm text-muted-foreground px-1 py-1.5 hover-elevate rounded-md"
-                  data-testid="link-menu-instagram"
+                  className="flex items-center gap-2 text-sm text-muted-foreground px-3"
                 >
                   <SiInstagram className="h-4 w-4 shrink-0" />
                   <span>{settings.instagramUrl}</span>
@@ -815,8 +783,7 @@ export default function StorefrontPage() {
                   href={`https://wa.me/${store.whatsappPhone.replace(/[^0-9]/g, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 text-sm text-muted-foreground px-1 py-1.5 hover-elevate rounded-md"
-                  data-testid="link-menu-whatsapp"
+                  className="flex items-center gap-2 text-sm text-muted-foreground px-3"
                 >
                   <SiWhatsapp className="h-4 w-4 shrink-0" />
                   <span>WhatsApp</span>
@@ -828,16 +795,16 @@ export default function StorefrontPage() {
       </Sheet>
 
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden rounded-2xl">
+        <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
           <DialogHeader className="px-5 pt-5 pb-3">
-            <DialogTitle className="text-lg font-bold">Оформление заказа</DialogTitle>
+            <DialogTitle className="text-lg">Оформление заказа</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">Заполните данные и отправьте заказ</DialogDescription>
           </DialogHeader>
           <div className="max-h-[70vh] overflow-y-auto">
             <div className="px-5 space-y-4">
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Ваше имя</Label>
+                  <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Ваше имя</Label>
                   <Input
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
@@ -847,7 +814,7 @@ export default function StorefrontPage() {
                   />
                 </div>
                 <div>
-                  <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Телефон</Label>
+                  <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Телефон</Label>
                   <PhoneInput
                     value={customerPhone}
                     onValueChange={setCustomerPhone}
@@ -856,7 +823,7 @@ export default function StorefrontPage() {
                 </div>
                 {settings?.checkoutAddressEnabled && (
                   <div>
-                    <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Адрес доставки</Label>
+                    <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес доставки</Label>
                     <Input
                       value={customerAddress}
                       onChange={(e) => setCustomerAddress(e.target.value)}
@@ -868,7 +835,7 @@ export default function StorefrontPage() {
                 )}
                 {settings?.checkoutCommentEnabled && (
                   <div>
-                    <Label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Комментарий</Label>
+                    <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Комментарий</Label>
                     <Textarea
                       value={customerComment}
                       onChange={(e) => setCustomerComment(e.target.value)}
@@ -881,40 +848,40 @@ export default function StorefrontPage() {
                 )}
               </div>
 
-              <div className="rounded-xl bg-muted/30 p-4">
-                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Ваш заказ</p>
-                <div className="space-y-2.5">
+              <div className="rounded-xl bg-muted/50 p-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Ваш заказ</p>
+                <div className="space-y-2">
                   {cart.map((item) => (
                     <div key={item.product.id} className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-muted">
+                        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {item.product.imageUrls?.[0] ? (
                             <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
                           ) : (
                             <div className="flex h-full items-center justify-center">
-                              <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/30" />
+                              <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/40" />
                             </div>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{item.product.name}</p>
+                          <p className="text-sm truncate">{item.product.name}</p>
                           <p className="text-xs text-muted-foreground">{item.quantity} шт.</p>
                         </div>
                       </div>
-                      <span className="text-sm font-bold shrink-0">{formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}</span>
+                      <span className="text-sm font-semibold shrink-0">{formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}</span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-3">
+                <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
                   <span className="text-sm font-bold">Итого</span>
                   <span className="text-base font-bold" style={{ color: primaryColor }} data-testid="text-checkout-total">{formatPrice(cartTotal)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-white dark:bg-background border-t px-5 py-4 mt-4">
+            <div className="sticky bottom-0 bg-background border-t px-5 py-4 mt-4">
               <button
-                className="flex w-full items-center justify-center gap-2.5 rounded-xl py-3.5 text-white font-semibold text-[15px] shadow-lg shadow-green-500/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#25D366" }}
                 disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting}
                 onClick={handleCheckout}
@@ -923,16 +890,16 @@ export default function StorefrontPage() {
                 <SiWhatsapp className="h-5 w-5" />
                 {isSubmitting ? "Отправка..." : "Отправить в WhatsApp"}
               </button>
-              <p className="text-[10px] text-muted-foreground text-center mt-2.5">Заказ будет отправлен продавцу через WhatsApp</p>
+              <p className="text-[10px] text-muted-foreground text-center mt-2">Заказ будет отправлен продавцу через WhatsApp</p>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <footer className="mx-auto max-w-lg border-t border-border/20 px-4 py-6 text-center">
-        <a href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground group" data-testid="link-footer-takesale">
-          <div className="flex h-5 w-5 items-center justify-center rounded-md bg-primary">
-            <ShoppingBag className="h-3 w-3 text-primary-foreground" />
+      <footer className="mx-auto max-w-lg border-t border-border/30 px-4 py-6 text-center">
+        <a href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground" data-testid="link-footer-takesale">
+          <div className="flex h-5 w-5 items-center justify-center rounded bg-foreground">
+            <ShoppingBag className="h-3 w-3 text-background" />
           </div>
           <span>Сделано в <span className="font-semibold text-foreground">TakeSale</span></span>
         </a>
