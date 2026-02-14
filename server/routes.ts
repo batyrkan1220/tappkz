@@ -564,7 +564,9 @@ export async function registerRoutes(
         status: "pending",
       });
 
-      await storage.upsertCustomerFromOrder(store.id, data.customerName, data.customerPhone, subtotal).catch(() => {});
+      await storage.upsertCustomerFromOrder(store.id, data.customerName, data.customerPhone, subtotal).catch((err) => {
+        console.error("Failed to upsert customer from order:", err);
+      });
 
       res.json(order);
     } catch (e: any) {
