@@ -35,6 +35,7 @@ import mockBerryTart from "@/assets/images/mock-berry-tart.png";
 import mockTiramisu from "@/assets/images/mock-tiramisu.png";
 import mockCinnamonRoll from "@/assets/images/mock-cinnamon-roll.png";
 import mockBanner from "@/assets/images/mock-confectionery-banner.png";
+import mockLogo from "@/assets/images/mock-sweetbaker-logo.png";
 
 const MOCK_CATEGORIES = ["Все", "Торты", "Пирожные", "Выпечка", "Конфеты", "Десерты"];
 
@@ -187,7 +188,7 @@ function AnimatedPhoneMockup() {
                 </div>
               </div>
               <div className="flex flex-col items-center -mt-5 relative z-10">
-                <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md flex items-center justify-center text-white text-[10px] font-bold bg-primary">SB</div>
+                <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md overflow-hidden"><img src={mockLogo} alt="Sweet Baker" className="h-full w-full object-cover" /></div>
                 <p className="text-[10px] font-bold tracking-tight mt-1">Sweet Baker</p>
                 <p className="text-[7px] text-muted-foreground flex items-center gap-0.5"><MapPin className="h-1.5 w-1.5" /> Алматы</p>
               </div>
@@ -332,7 +333,7 @@ function AnimatedPhoneMockup() {
             <div className="absolute inset-0 transition-all duration-500 flex flex-col" style={{ opacity: showWhatsapp ? 1 : 0, transform: showWhatsapp ? "scale(1)" : "scale(0.95)", pointerEvents: showWhatsapp ? "auto" : "none" }}>
               <div className="flex items-center gap-2 px-3 pt-[48px] pb-2 border-b" style={{ borderColor: "#25D366", backgroundColor: "#dcf8c6" }}>
                 <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ color: "#075E54" }} />
-                <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-[7px] font-bold">SB</div>
+                <div className="h-6 w-6 rounded-full overflow-hidden"><img src={mockLogo} alt="Sweet Baker" className="h-full w-full object-cover" /></div>
                 <div className="flex-1">
                   <p className="text-[9px] font-bold" style={{ color: "#075E54" }}>Sweet Baker</p>
                   <p className="text-[7px]" style={{ color: "#128C7E" }}>онлайн</p>
