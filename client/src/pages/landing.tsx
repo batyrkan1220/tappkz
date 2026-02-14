@@ -94,7 +94,7 @@ const DESSERT_PRODUCTS = MOCK_PRODUCTS.filter(p => p.cat === "Десерты");
 const CART_ITEMS = [
   MOCK_PRODUCTS[0],
   MOCK_PRODUCTS[3],
-  MOCK_PRODUCTS[8],
+  MOCK_PRODUCTS[7],
 ];
 
 function AnimatedPhoneMockup() {
@@ -114,7 +114,7 @@ function AnimatedPhoneMockup() {
     stepIdx <= 3 ? 1 :
     stepIdx <= 5 ? 2 : 3;
 
-  const cartTotals = ["", "6 500 ₸", "8 300 ₸", "10 500 ₸"];
+  const cartTotals = ["", "6 500 ₸", "8 300 ₸", "12 200 ₸"];
   const cartTotal = cartTotals[cartCount];
 
   const showStorefront = [
@@ -130,19 +130,19 @@ function AnimatedPhoneMockup() {
   const isCatSwitched = stepIdx >= STEP_ORDER.indexOf("switch-cat") && stepIdx <= STEP_ORDER.indexOf("added3");
 
   const tappedProduct = step === "tap1" ? 0 : -1;
-  const tappedDessert = step === "tap2" ? 0 : step === "tap3" ? 2 : -1;
+  const tappedDessert = step === "tap2" ? 0 : step === "tap3" ? 1 : -1;
 
   const addedProducts = new Set<number>();
   if (stepIdx >= 2) addedProducts.add(0);
 
   const addedDesserts = new Set<number>();
   if (stepIdx >= 5) addedDesserts.add(0);
-  if (stepIdx >= 7) addedDesserts.add(2);
+  if (stepIdx >= 7) addedDesserts.add(1);
 
   const showAddedAnimation = step === "added1";
   const showDessertAddedAnimation = step === "added2" || step === "added3";
   const addedAnimIdx = step === "added1" ? 0 : -1;
-  const addedDessertAnimIdx = step === "added2" ? 0 : step === "added3" ? 2 : -1;
+  const addedDessertAnimIdx = step === "added2" ? 0 : step === "added3" ? 1 : -1;
 
   const activeCategory = isCatSwitched ? 5 : 0;
   const displayProducts = isCatSwitched ? DESSERT_PRODUCTS : MOCK_PRODUCTS.slice(0, 8);
@@ -279,7 +279,7 @@ function AnimatedPhoneMockup() {
                 {CART_ITEMS.map((item, i) => (
                   <div key={i} className="flex justify-between text-[7px] text-muted-foreground"><span>{item.name}</span><span>{item.price} ₸</span></div>
                 ))}
-                <div className="flex justify-between text-[10px] font-bold mt-1.5 pt-1.5 border-t border-border/30"><span>Итого</span><span>10 500 ₸</span></div>
+                <div className="flex justify-between text-[10px] font-bold mt-1.5 pt-1.5 border-t border-border/30"><span>Итого</span><span>12 200 ₸</span></div>
               </div>
               <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
                 <div className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px]" style={{ backgroundColor: "hsl(var(--primary))" }}>Оформить заказ <ArrowRight className="h-3 w-3" /></div>
@@ -319,7 +319,7 @@ function AnimatedPhoneMockup() {
                   ))}
                   <div className="flex justify-between pt-1 border-t border-border/30">
                     <span className="text-[8px] font-bold">Итого</span>
-                    <span className="text-[8px] font-bold text-primary">10 500 ₸</span>
+                    <span className="text-[8px] font-bold text-primary">12 200 ₸</span>
                   </div>
                 </div>
               </div>
@@ -346,8 +346,8 @@ function AnimatedPhoneMockup() {
                     <p className="font-semibold mb-0.5">Заказ №285</p>
                     <p>1x Торт Наполеон — 6 500 ₸</p>
                     <p>1x Чизкейк клубника — 1 800 ₸</p>
-                    <p>1x Тирамису — 2 200 ₸</p>
-                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 10 500 ₸</p>
+                    <p>1x Тарт ягодный — 3 900 ₸</p>
+                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 12 200 ₸</p>
                     <p className="mt-1">Имя: Айгуль</p>
                     <p>Тел: +7 701 456 78 90</p>
                     <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: takesale.kz/invoice/285</p>
@@ -541,10 +541,10 @@ export default function LandingPage() {
                       <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
                         <p>1x Торт Наполеон — 6 500 ₸</p>
                         <p>1x Чизкейк клубника — 1 800 ₸</p>
-                        <p>1x Тирамису — 2 200 ₸</p>
+                        <p>1x Тарт ягодный — 3 900 ₸</p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold">Итого: 10 500 ₸</p>
+                        <p className="text-sm font-bold">Итого: 12 200 ₸</p>
                         <Badge variant="secondary" className="bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20 text-[10px]">Новый</Badge>
                       </div>
                     </div>
