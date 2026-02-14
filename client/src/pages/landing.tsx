@@ -20,10 +20,10 @@ import {
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useState } from "react";
-import mockCream from "@/assets/images/mock-product-cream.jpg";
-import mockSerum from "@/assets/images/mock-product-serum.jpg";
-import mockFoundation from "@/assets/images/mock-product-foundation.jpg";
-import mockBanner from "@/assets/images/mock-store-banner.jpg";
+import mockPlov from "@/assets/images/mock-food-plov.png";
+import mockLagman from "@/assets/images/mock-food-lagman.png";
+import mockShashlik from "@/assets/images/mock-food-shashlik.png";
+import mockBanner from "@/assets/images/mock-restaurant-banner.png";
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -124,10 +124,10 @@ export default function LandingPage() {
                 <div className="rounded-[2rem] overflow-hidden bg-white dark:bg-zinc-900">
                   <div className="flex items-center justify-between gap-2 px-3.5 pt-8 pb-2 border-b border-border/30">
                     <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br from-pink-500 to-rose-600">
-                        AB
+                      <div className="h-7 w-7 rounded-lg flex items-center justify-center text-white text-[10px] font-bold bg-primary">
+                        DA
                       </div>
-                      <span className="text-[11px] font-extrabold tracking-tight">Arai Beauty</span>
+                      <span className="text-[11px] font-extrabold tracking-tight">Достархан</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <div className="h-6 w-6 rounded-md flex items-center justify-center">
@@ -135,7 +135,7 @@ export default function LandingPage() {
                       </div>
                       <div className="h-6 w-6 rounded-md flex items-center justify-center relative">
                         <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-gradient-to-br from-pink-500 to-rose-600 text-[7px] text-white flex items-center justify-center font-bold">2</span>
+                        <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary text-[7px] text-white flex items-center justify-center font-bold">3</span>
                       </div>
                     </div>
                   </div>
@@ -144,13 +144,13 @@ export default function LandingPage() {
                     <img src={mockBanner} alt="" className="h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/30" />
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="h-12 w-12 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white text-sm font-bold bg-gradient-to-br from-pink-500 to-rose-600">
-                        AB
+                      <div className="h-12 w-12 rounded-full border-2 border-white shadow-md flex items-center justify-center text-white text-sm font-bold bg-primary">
+                        DA
                       </div>
                     </div>
                   </div>
                   <div className="text-center pt-1 pb-2">
-                    <p className="text-[11px] font-extrabold tracking-tight">Arai Beauty</p>
+                    <p className="text-[11px] font-extrabold tracking-tight">Достархан</p>
                     <p className="text-[8px] text-muted-foreground flex items-center justify-center gap-0.5">
                       <MapPin className="h-2 w-2" /> Алматы
                     </p>
@@ -159,23 +159,23 @@ export default function LandingPage() {
                   <div className="px-3 pb-2">
                     <div className="flex gap-1.5 overflow-hidden">
                       <span className="shrink-0 rounded-full bg-foreground text-background px-2.5 py-0.5 text-[9px] font-medium">Все</span>
-                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Уход за лицом</span>
-                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Макияж</span>
+                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Горячее</span>
+                      <span className="shrink-0 rounded-full bg-muted text-foreground px-2.5 py-0.5 text-[9px] font-medium">Шашлыки</span>
                     </div>
                   </div>
 
                   <div className="px-3 pb-2 space-y-2">
                     {[
-                      { name: "Увлажняющий крем", desc: "Дневной крем с гиалуроновой кислотой", price: "4 500", old: "5 200", img: mockCream },
-                      { name: "Сыворотка витамин C", desc: "Антиоксидантная сыворотка для сияния", price: "7 800", img: mockSerum },
-                      { name: "Тональный крем", desc: "SPF 30, натуральный финиш", price: "6 200", img: mockFoundation },
+                      { name: "Плов по-узбекски", desc: "Баранина, рис девзира, морковь, специи", price: "2 800", old: "3 200", img: mockPlov },
+                      { name: "Лагман домашний", desc: "Говядина, домашняя лапша, овощи", price: "2 200", img: mockLagman },
+                      { name: "Шашлык из баранины", desc: "Маринад на углях, лук, зелень", price: "3 500", img: mockShashlik },
                     ].map((item, i) => (
                       <div key={i} className="flex rounded-md border border-border/50 bg-card" data-testid={`mockup-product-${i}`}>
                         <div className="flex-1 p-2.5 pr-1">
                           <p className="text-[10px] font-semibold leading-tight">{item.name}</p>
                           <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{item.desc}</p>
                           <div className="mt-1.5 flex items-center gap-1">
-                            <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">{item.price} ₸</span>
+                            <span className="text-[10px] font-bold text-primary">{item.price} ₸</span>
                             {item.old && <span className="text-[8px] text-muted-foreground line-through">{item.old} ₸</span>}
                           </div>
                         </div>
@@ -243,11 +243,11 @@ export default function LandingPage() {
                       <p className="text-sm font-semibold" data-testid="text-order-number">Новый заказ #142</p>
                       <p className="text-xs text-muted-foreground mt-0.5">Айгерим К. · +7 701 ***-**-45</p>
                       <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
-                        <p>1x Увлажняющий крем — 4 500 ₸</p>
-                        <p>2x Сыворотка витамин C — 15 600 ₸</p>
+                        <p>2x Плов по-узбекски — 5 600 ₸</p>
+                        <p>1x Шашлык из баранины — 3 500 ₸</p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold">Итого: 20 100 ₸</p>
+                        <p className="text-sm font-bold">Итого: 9 100 ₸</p>
                         <Badge variant="secondary" className="bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20 text-[10px]">Новый</Badge>
                       </div>
                     </div>
@@ -265,9 +265,9 @@ export default function LandingPage() {
               <Card className="p-6 lg:p-8 lg:order-first order-last bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60" data-testid="card-feature-catalog">
                 <div className="space-y-3">
                   {[
-                    { name: "Увлажняющий крем", cat: "Уход за лицом", price: "4 500 ₸", img: mockCream },
-                    { name: "Сыворотка витамин C", cat: "Уход за лицом", price: "7 800 ₸", img: mockSerum },
-                    { name: "Тональный крем", cat: "Макияж", price: "6 200 ₸", img: mockFoundation },
+                    { name: "Плов по-узбекски", cat: "Горячее", price: "2 800 ₸", img: mockPlov },
+                    { name: "Лагман домашний", cat: "Горячее", price: "2 200 ₸", img: mockLagman },
+                    { name: "Шашлык из баранины", cat: "Шашлыки", price: "3 500 ₸", img: mockShashlik },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between gap-3 rounded-xl border p-3" data-testid={`catalog-item-${i}`}>
                       <div className="flex items-center gap-3">
@@ -288,13 +288,13 @@ export default function LandingPage() {
                   <span className="text-xs font-semibold text-primary">Каталог</span>
                 </div>
                 <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-catalog">
-                  Красивый магазин за минуты
+                  Красивое меню за минуты
                 </h3>
                 <p className="mt-4 text-muted-foreground leading-relaxed">
-                  Добавьте товары, загрузите фото, настройте цвета и логотип. Ваш магазин готов — поделитесь ссылкой в Instagram, WhatsApp или где угодно.
+                  Добавьте блюда, загрузите фото, настройте цвета и логотип. Ваше меню готово — поделитесь ссылкой в Instagram, WhatsApp или на визитке.
                 </p>
                 <ul className="mt-6 space-y-3">
-                  {["Категории и каталог товаров с фото", "Логотип, баннер, фирменные цвета", "Адаптивный мобильный дизайн", "Ссылка-визитка для Instagram Bio"].map((item, i) => (
+                  {["Категории и каталог блюд с фото", "Логотип, баннер, фирменные цвета", "Адаптивный мобильный дизайн", "Ссылка-визитка для Instagram Bio"].map((item, i) => (
                     <li key={item} className="flex items-center gap-2.5 text-sm" data-testid={`text-catalog-feature-${i}`}>
                       <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                       <span>{item}</span>
@@ -452,17 +452,17 @@ export default function LandingPage() {
             {[
               {
                 name: "Айгерим К.",
-                role: "Косметика",
-                text: "Раньше заказы терялись в переписке. Теперь клиенты сами выбирают товары и отправляют готовый заказ. Экономлю 3 часа в день!",
+                role: "Кондитерская",
+                text: "Раньше заказы терялись в переписке. Теперь клиенты сами выбирают торты и отправляют готовый заказ. Экономлю 3 часа в день!",
               },
               {
                 name: "Марат Т.",
-                role: "Доставка еды",
-                text: "Запустил магазин за один вечер. Клиенты довольны — всё понятно, удобно, красиво. Заказов стало в 2 раза больше.",
+                role: "Ресторан доставки",
+                text: "Запустил меню за один вечер. Клиенты довольны — всё понятно, удобно, красиво. Заказов стало в 2 раза больше.",
               },
               {
                 name: "Динара С.",
-                role: "Одежда",
+                role: "Магазин одежды",
                 text: "Идеальное решение для Instagram-бизнеса. Ставлю ссылку в шапку профиля и покупатели сразу видят весь каталог с ценами.",
               },
             ].map((t, i) => (
