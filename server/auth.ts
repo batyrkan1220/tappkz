@@ -195,3 +195,26 @@ export const isAuthenticated: RequestHandler = (req, res, next) => {
   }
   next();
 };
+
+export async function ensureSuperAdmin() {
+  const email = "batyrhan.aff@gmail.com";
+  const password = "Expo2017!";
+
+  const [existing] = await db.select().from(users).where(eq(users.email, email));
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  if (existing) {
+    if (!existing.isSuperAdmin || !existing.passwordHash) {
+      await db.update(users).set({ passwordHash, isSuperAdmin: true }).where(eq(users.id, existing.id));
+      console.log(`SuperAdmin updated: ${email}`);
+    }
+  } else {
+    await db.insert(users).values({
+      email,
+      passwordHash,
+      firstName: "BATYRKHAN",
+      isSuperAdmin: true,
+    });
+    console.log(`SuperAdmin created: ${email}`);
+  }
+}
