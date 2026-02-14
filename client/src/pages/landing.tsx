@@ -28,13 +28,27 @@ import mockNapoleon from "@/assets/images/mock-cake-napoleon.png";
 import mockMacarons from "@/assets/images/mock-macarons.png";
 import mockEclair from "@/assets/images/mock-eclair.png";
 import mockCheesecake from "@/assets/images/mock-cheesecake.png";
+import mockMedovik from "@/assets/images/mock-medovik.png";
+import mockCroissant from "@/assets/images/mock-croissant.png";
+import mockTruffles from "@/assets/images/mock-truffles.png";
+import mockBerryTart from "@/assets/images/mock-berry-tart.png";
+import mockTiramisu from "@/assets/images/mock-tiramisu.png";
+import mockCinnamonRoll from "@/assets/images/mock-cinnamon-roll.png";
 import mockBanner from "@/assets/images/mock-confectionery-banner.png";
 
+const MOCK_CATEGORIES = ["Все", "Торты", "Пирожные", "Выпечка", "Конфеты", "Десерты"];
+
 const MOCK_PRODUCTS = [
-  { name: "Торт Наполеон", price: "4 500", old: "5 200", img: mockNapoleon },
-  { name: "Макаронс набор", price: "3 800", img: mockMacarons },
-  { name: "Эклер шоколадный", price: "1 200", img: mockEclair },
-  { name: "Чизкейк клубника", price: "3 200", img: mockCheesecake },
+  { name: "Торт Наполеон", price: "4 500", old: "5 200", cat: "Торты", img: mockNapoleon },
+  { name: "Макаронс набор", price: "3 800", cat: "Пирожные", img: mockMacarons },
+  { name: "Эклер шоколадный", price: "1 200", cat: "Пирожные", img: mockEclair },
+  { name: "Чизкейк клубника", price: "3 200", cat: "Десерты", img: mockCheesecake },
+  { name: "Медовик", price: "4 200", cat: "Торты", img: mockMedovik },
+  { name: "Круассан", price: "980", cat: "Выпечка", img: mockCroissant },
+  { name: "Трюфели набор", price: "5 600", old: "6 200", cat: "Конфеты", img: mockTruffles },
+  { name: "Тарт ягодный", price: "2 800", cat: "Десерты", img: mockBerryTart },
+  { name: "Тирамису", price: "2 400", cat: "Десерты", img: mockTiramisu },
+  { name: "Синнабон", price: "1 500", cat: "Выпечка", img: mockCinnamonRoll },
 ];
 
 const STEP_DURATIONS = [2200, 1400, 1400, 1400, 2000, 1800, 1800, 2200, 3000];
@@ -150,18 +164,18 @@ function AnimatedPhoneMockup() {
               </div>
               <div className="px-3 pt-2 pb-1.5">
                 <div className="flex gap-1.5 overflow-hidden">
-                  <span className="shrink-0 rounded-full bg-primary text-white px-2 py-[3px] text-[8px] font-semibold">Все</span>
-                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Торты</span>
-                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Пирожные</span>
+                  {MOCK_CATEGORIES.map((cat, i) => (
+                    <span key={i} className={`shrink-0 rounded-full px-2 py-[3px] text-[8px] ${i === 0 ? "bg-primary text-white font-semibold" : "bg-muted text-foreground font-medium"}`}>{cat}</span>
+                  ))}
                 </div>
               </div>
-              <div className="px-3 pb-2">
+              <div className="px-3 pb-2 flex-1 overflow-hidden relative">
                 <div className="grid grid-cols-2 gap-1.5">
-                  {MOCK_PRODUCTS.map((item, i) => (
+                  {MOCK_PRODUCTS.slice(0, 8).map((item, i) => (
                     <div key={i} className={`overflow-hidden rounded-lg border bg-card transition-all duration-300 ${tappedProduct === i ? "border-primary ring-2 ring-primary/30 scale-[0.96]" : "border-border/40"}`} data-testid={`mockup-product-${i}`}>
                       <div className="relative aspect-square overflow-hidden bg-muted">
                         <img src={item.img} alt={item.name} className="h-full w-full object-cover" />
-                        {item.old && <span className="absolute top-1 left-1 rounded-full bg-primary text-white text-[6px] font-bold px-1 py-[1px]">-13%</span>}
+                        {item.old && <span className="absolute top-1 left-1 rounded-full bg-primary text-white text-[6px] font-bold px-1 py-[1px]">-{Math.round((1 - parseInt(item.price.replace(/\s/g, '')) / parseInt(item.old.replace(/\s/g, ''))) * 100)}%</span>}
                         <div className={`absolute bottom-1 right-1 h-5 w-5 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 ${tappedProduct === i ? "bg-primary scale-110" : "bg-white/90"}`}>
                           {tappedProduct === i ? <Check className="h-2.5 w-2.5 text-white" /> : <Plus className={`h-2.5 w-2.5 ${(showAddedAnimation && ((step === "added1" && i === 0) || (step === "added2" && i === 1))) ? "text-primary" : "text-foreground/70"}`} />}
                         </div>
@@ -181,6 +195,7 @@ function AnimatedPhoneMockup() {
                     </div>
                   ))}
                 </div>
+                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
               </div>
               {cartCount > 0 && (
                 <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 animate-in slide-in-from-bottom duration-400">
@@ -504,6 +519,7 @@ export default function LandingPage() {
                     { name: "Торт Наполеон", cat: "Торты", price: "4 500 ₸", img: mockNapoleon },
                     { name: "Макаронс набор", cat: "Пирожные", price: "3 800 ₸", img: mockMacarons },
                     { name: "Эклер шоколадный", cat: "Пирожные", price: "1 200 ₸", img: mockEclair },
+                    { name: "Медовик", cat: "Торты", price: "4 200 ₸", img: mockMedovik },
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between gap-3 rounded-xl border p-3" data-testid={`catalog-item-${i}`}>
                       <div className="flex items-center gap-3">
