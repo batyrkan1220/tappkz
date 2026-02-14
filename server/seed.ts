@@ -3,8 +3,7 @@ import { stores, storeThemes, storeSettings, categories, products, storeEvents }
 import { eq } from "drizzle-orm";
 
 export async function seedDatabase() {
-  const existingStores = await db.select().from(stores).limit(1);
-  if (existingStores.length > 0) return;
+  return;
 
   const [demoStore] = await db.insert(stores).values({
     ownerUserId: "demo-user",
