@@ -190,7 +190,8 @@ function AnimatedPhoneMockup() {
               <div className="flex flex-col items-center -mt-5 relative z-10">
                 <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md overflow-hidden"><img src={mockLogo} alt="Sweet Baker" className="h-full w-full object-cover" /></div>
                 <p className="text-[10px] font-bold tracking-tight mt-1">Sweet Baker</p>
-                <p className="text-[7px] text-muted-foreground flex items-center gap-0.5"><MapPin className="h-1.5 w-1.5" /> Алматы</p>
+                <p className="text-[7px] text-muted-foreground mt-0.5 text-center px-6 leading-relaxed">Домашние торты, пирожные и десерты с доставкой по Алматы</p>
+                <p className="text-[7px] text-muted-foreground flex items-center gap-0.5 mt-0.5"><MapPin className="h-1.5 w-1.5" /> Алматы</p>
               </div>
               <div className="mx-3 mt-2 border-b border-border/30 pb-0">
                 <div className="flex">
