@@ -60,7 +60,16 @@ Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefro
 users, sessions, stores, store_themes, store_settings, categories, products, orders, customers, store_events, platform_settings
 
 ## Demo Store
-Seed data creates a demo store at `/s/arai-beauty` (Arai Beauty cosmetics shop) with 8 products across 4 categories
+Demo store arai-beauty is automatically deleted on startup via seed.ts
+
+## Product Attributes System
+Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) columns for business-type-specific data.
+- **FnB fields**: portionSize, calories, cookingTime, ingredients, allergens, isSpicy, isVegetarian, isHalal
+- **Ecommerce fields**: brand, weight, material, sizes, colors, dimensions, warrantyMonths; pharmacy: dosage, activeIngredient, prescriptionRequired; digital: fileFormat, deliveryMethod; B2B: minOrderQty, wholesalePrice
+- **Service fields**: durationMinutes, priceType, serviceLocation, bookingRequired; education: format, lessonsCount, certificate; travel/ticketing: location, daysCount, maxParticipants; hotel: maxGuests; rental: depositAmount, rentalPeriod
+- Unit options vary by business group (fnb/ecommerce/service)
+- Product form shows collapsible type-specific section
+- Storefront product detail shows attribute badges
 
 ## Plans
 - Free: 30 products

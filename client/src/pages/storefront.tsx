@@ -524,6 +524,12 @@ export default function StorefrontPage() {
                   </div>
                   <div className="p-3">
                     <p className="text-sm font-semibold leading-tight line-clamp-2" data-testid={`text-storefront-product-name-${p.id}`}>{p.name}</p>
+                    {(() => {
+                      const a = (p as any).attributes || {};
+                      const unit = (p as any).unit;
+                      const hint = a.portionSize || a.weight || unit || (a.durationMinutes ? `${a.durationMinutes} мин` : "");
+                      return hint ? <p className="text-[11px] text-muted-foreground mt-0.5">{hint}</p> : null;
+                    })()}
                     {settings?.showPrices !== false && (
                       <div className="mt-1.5 flex flex-wrap items-center gap-1">
                         {p.discountPrice ? (
@@ -648,6 +654,62 @@ export default function StorefrontPage() {
                 {selectedProduct.description && (
                   <p className="text-sm text-muted-foreground leading-relaxed">{selectedProduct.description}</p>
                 )}
+                {(() => {
+                  const a = (selectedProduct as any).attributes || {};
+                  const sku = (selectedProduct as any).sku;
+                  const unit = (selectedProduct as any).unit;
+                  const tags: string[] = [];
+                  if (unit) tags.push(unit);
+                  if (a.portionSize) tags.push(a.portionSize);
+                  if (a.calories) tags.push(`${a.calories} ккал`);
+                  if (a.cookingTime) tags.push(`${a.cookingTime} мин готовка`);
+                  if (a.brand) tags.push(a.brand);
+                  if (a.weight) tags.push(a.weight);
+                  if (a.sizes) tags.push(`Размеры: ${a.sizes}`);
+                  if (a.colors) tags.push(`Цвета: ${a.colors}`);
+                  if (a.material) tags.push(a.material);
+                  if (a.dimensions) tags.push(a.dimensions);
+                  if (a.warrantyMonths) tags.push(`Гарантия ${a.warrantyMonths} мес`);
+                  if (a.durationMinutes) tags.push(`${a.durationMinutes} мин`);
+                  if (a.priceType === "from") tags.push("от");
+                  if (a.priceType === "hourly") tags.push("в час");
+                  if (a.serviceLocation === "onsite") tags.push("У нас");
+                  if (a.serviceLocation === "client") tags.push("У клиента");
+                  if (a.serviceLocation === "online") tags.push("Онлайн");
+                  if (a.isSpicy) tags.push("Острое");
+                  if (a.isVegetarian) tags.push("Вег");
+                  if (a.isHalal) tags.push("Халяль");
+                  if (a.prescriptionRequired) tags.push("По рецепту");
+                  if (a.bookingRequired) tags.push("Запись");
+                  if (a.certificate) tags.push("Сертификат");
+                  if (a.format === "online") tags.push("Онлайн");
+                  if (a.format === "offline") tags.push("Очно");
+                  if (a.format === "hybrid") tags.push("Гибрид");
+                  if (a.lessonsCount) tags.push(`${a.lessonsCount} занятий`);
+                  if (a.daysCount) tags.push(`${a.daysCount} дн`);
+                  if (a.location) tags.push(a.location);
+                  if (a.maxParticipants) tags.push(`до ${a.maxParticipants} чел`);
+                  if (a.maxGuests) tags.push(`до ${a.maxGuests} гостей`);
+                  if (a.dosage) tags.push(a.dosage);
+                  if (a.activeIngredient) tags.push(a.activeIngredient);
+                  if (a.fileFormat) tags.push(a.fileFormat);
+                  if (a.deliveryMethod === "download") tags.push("Скачивание");
+                  if (a.deliveryMethod === "email") tags.push("По Email");
+                  if (a.deliveryMethod === "link") tags.push("По ссылке");
+                  if (a.minOrderQty) tags.push(`от ${a.minOrderQty} шт`);
+                  if (a.rentalPeriod) {
+                    const rp: Record<string, string> = { hour: "в час", day: "в день", week: "в неделю", month: "в месяц" };
+                    tags.push(rp[a.rentalPeriod] || a.rentalPeriod);
+                  }
+                  if (a.ingredients) tags.push(`Состав: ${a.ingredients}`);
+                  if (tags.length === 0 && !sku) return null;
+                  return (
+                    <div className="flex flex-wrap gap-1.5">
+                      {sku && <Badge variant="secondary" className="text-[10px] rounded-full">Арт: {sku}</Badge>}
+                      {tags.map((t, i) => <Badge key={i} variant="secondary" className="text-[10px] rounded-full">{t}</Badge>)}
+                    </div>
+                  );
+                })()}
                 {settings?.showPrices !== false && (
                   <div className="flex flex-wrap items-center gap-2">
                     {selectedProduct.discountPrice ? (

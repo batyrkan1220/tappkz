@@ -46,6 +46,9 @@ const createProductSchema = z.object({
   isActive: z.boolean().optional().default(true),
   sortOrder: z.coerce.number().int().optional().default(0),
   imageUrls: z.array(z.string()).optional().default([]),
+  sku: z.string().max(50).nullable().optional(),
+  unit: z.string().max(30).nullable().optional(),
+  attributes: z.record(z.any()).optional().default({}),
 });
 
 const updateProductSchema = createProductSchema.partial();

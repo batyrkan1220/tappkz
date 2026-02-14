@@ -107,6 +107,9 @@ export const products = pgTable("products", {
   isActive: boolean("is_active").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   imageUrls: text("image_urls").array().notNull().default(sql`'{}'::text[]`),
+  sku: varchar("sku", { length: 50 }),
+  unit: varchar("unit", { length: 30 }),
+  attributes: jsonb("attributes").notNull().default({}),
 });
 
 export const orders = pgTable("orders", {

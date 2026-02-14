@@ -12,13 +12,370 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Search, ImageIcon, Package, FolderOpen, ArrowRight, AlertCircle } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, ImageIcon, Package, FolderOpen, ArrowRight, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { Link } from "wouter";
 import type { Product, Category, Store } from "@shared/schema";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("ru-KZ").format(price) + " ₸";
+}
+
+type ProductAttributes = Record<string, any>;
+
+interface ProductForm {
+  name: string;
+  description: string;
+  price: string;
+  discountPrice: string;
+  categoryId: string;
+  isActive: boolean;
+  imageUrls: string[];
+  sku: string;
+  unit: string;
+  attributes: ProductAttributes;
+}
+
+const emptyForm: ProductForm = {
+  name: "", description: "", price: "", discountPrice: "", categoryId: "",
+  isActive: true, imageUrls: [], sku: "", unit: "", attributes: {},
+};
+
+const UNIT_OPTIONS: Record<string, { value: string; label: string }[]> = {
+  fnb: [
+    { value: "порция", label: "Порция" },
+    { value: "шт", label: "Штука" },
+    { value: "г", label: "Граммы (г)" },
+    { value: "кг", label: "Килограммы (кг)" },
+    { value: "мл", label: "Миллилитры (мл)" },
+    { value: "л", label: "Литры (л)" },
+  ],
+  ecommerce: [
+    { value: "шт", label: "Штука" },
+    { value: "г", label: "Граммы (г)" },
+    { value: "кг", label: "Килограммы (кг)" },
+    { value: "мл", label: "Миллилитры (мл)" },
+    { value: "л", label: "Литры (л)" },
+    { value: "м", label: "Метры (м)" },
+    { value: "уп", label: "Упаковка" },
+    { value: "компл", label: "Комплект" },
+  ],
+  service: [
+    { value: "услуга", label: "Услуга" },
+    { value: "час", label: "Час" },
+    { value: "сеанс", label: "Сеанс" },
+    { value: "занятие", label: "Занятие" },
+    { value: "день", label: "День" },
+    { value: "чел", label: "Человек" },
+  ],
+};
+
+function CollapsibleSection({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-lg border">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center justify-between gap-2 p-3 text-sm font-semibold hover-elevate rounded-lg"
+        data-testid={`section-toggle-${title.replace(/\s/g, '-')}`}
+      >
+        {title}
+        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+      </button>
+      {open && <div className="space-y-3 border-t px-3 pb-3 pt-3">{children}</div>}
+    </div>
+  );
+}
+
+function FnbFields({ form, setForm }: { form: ProductForm; setForm: (f: ProductForm) => void }) {
+  const a = form.attributes;
+  const setAttr = (key: string, val: any) => setForm({ ...form, attributes: { ...a, [key]: val } });
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs text-muted-foreground">Размер порции</Label>
+          <Input placeholder="напр. 250г" value={a.portionSize || ""} onChange={(e) => setAttr("portionSize", e.target.value)} data-testid="input-portion-size" />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">Калории (ккал)</Label>
+          <Input type="number" placeholder="0" value={a.calories || ""} onChange={(e) => setAttr("calories", e.target.value)} data-testid="input-calories" />
+        </div>
+      </div>
+      <div>
+        <Label className="text-xs text-muted-foreground">Время приготовления (мин)</Label>
+        <Input type="number" placeholder="0" value={a.cookingTime || ""} onChange={(e) => setAttr("cookingTime", e.target.value)} data-testid="input-cooking-time" />
+      </div>
+      <div>
+        <Label className="text-xs text-muted-foreground">Состав / ингредиенты</Label>
+        <Textarea placeholder="Перечислите ингредиенты" value={a.ingredients || ""} onChange={(e) => setAttr("ingredients", e.target.value)} data-testid="input-ingredients" />
+      </div>
+      <div>
+        <Label className="text-xs text-muted-foreground">Аллергены</Label>
+        <Input placeholder="напр. молоко, орехи, глютен" value={a.allergens || ""} onChange={(e) => setAttr("allergens", e.target.value)} data-testid="input-allergens" />
+      </div>
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Switch checked={!!a.isSpicy} onCheckedChange={(v) => setAttr("isSpicy", v)} data-testid="switch-spicy" />
+          <Label className="text-xs">Острое</Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch checked={!!a.isVegetarian} onCheckedChange={(v) => setAttr("isVegetarian", v)} data-testid="switch-vegetarian" />
+          <Label className="text-xs">Вегетарианское</Label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch checked={!!a.isHalal} onCheckedChange={(v) => setAttr("isHalal", v)} data-testid="switch-halal" />
+          <Label className="text-xs">Халяль</Label>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function EcommerceFields({ form, setForm, businessType }: { form: ProductForm; setForm: (f: ProductForm) => void; businessType: string }) {
+  const a = form.attributes;
+  const setAttr = (key: string, val: any) => setForm({ ...form, attributes: { ...a, [key]: val } });
+  const isFashion = businessType === "fashion" || businessType === "jewelry";
+  const isPharmacy = businessType === "pharmacy";
+  const isDigital = businessType === "digital";
+  const isB2B = businessType === "b2b";
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs text-muted-foreground">Бренд</Label>
+          <Input placeholder="Название бренда" value={a.brand || ""} onChange={(e) => setAttr("brand", e.target.value)} data-testid="input-brand" />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">Вес</Label>
+          <Input placeholder="напр. 500г" value={a.weight || ""} onChange={(e) => setAttr("weight", e.target.value)} data-testid="input-weight" />
+        </div>
+      </div>
+      {!isDigital && (
+        <div>
+          <Label className="text-xs text-muted-foreground">Материал</Label>
+          <Input placeholder="Материал изделия" value={a.material || ""} onChange={(e) => setAttr("material", e.target.value)} data-testid="input-material" />
+        </div>
+      )}
+      {(isFashion) && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">Размеры (через запятую)</Label>
+            <Input placeholder="XS, S, M, L, XL, XXL" value={a.sizes || ""} onChange={(e) => setAttr("sizes", e.target.value)} data-testid="input-sizes" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Цвета (через запятую)</Label>
+            <Input placeholder="Черный, Белый, Красный" value={a.colors || ""} onChange={(e) => setAttr("colors", e.target.value)} data-testid="input-colors" />
+          </div>
+        </>
+      )}
+      {!isDigital && !isFashion && (
+        <div>
+          <Label className="text-xs text-muted-foreground">Габариты (Д x Ш x В)</Label>
+          <Input placeholder="напр. 30x20x10 см" value={a.dimensions || ""} onChange={(e) => setAttr("dimensions", e.target.value)} data-testid="input-dimensions" />
+        </div>
+      )}
+      {!isDigital && (
+        <div>
+          <Label className="text-xs text-muted-foreground">Гарантия (мес)</Label>
+          <Input type="number" placeholder="0" value={a.warrantyMonths || ""} onChange={(e) => setAttr("warrantyMonths", e.target.value)} data-testid="input-warranty" />
+        </div>
+      )}
+      {isPharmacy && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">Дозировка</Label>
+            <Input placeholder="напр. 500мг" value={a.dosage || ""} onChange={(e) => setAttr("dosage", e.target.value)} data-testid="input-dosage" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Действующее вещество</Label>
+            <Input placeholder="Активный ингредиент" value={a.activeIngredient || ""} onChange={(e) => setAttr("activeIngredient", e.target.value)} data-testid="input-active-ingredient" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={!!a.prescriptionRequired} onCheckedChange={(v) => setAttr("prescriptionRequired", v)} data-testid="switch-prescription" />
+            <Label className="text-xs">По рецепту</Label>
+          </div>
+        </>
+      )}
+      {isDigital && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">Формат файла</Label>
+            <Input placeholder="напр. PDF, MP4, ZIP" value={a.fileFormat || ""} onChange={(e) => setAttr("fileFormat", e.target.value)} data-testid="input-file-format" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Способ доставки</Label>
+            <Select value={a.deliveryMethod || ""} onValueChange={(v) => setAttr("deliveryMethod", v)}>
+              <SelectTrigger data-testid="select-delivery-method">
+                <SelectValue placeholder="Выберите" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="download">Скачивание</SelectItem>
+                <SelectItem value="email">По Email</SelectItem>
+                <SelectItem value="link">По ссылке</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+      {isB2B && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">Мин. кол-во заказа</Label>
+            <Input type="number" placeholder="1" value={a.minOrderQty || ""} onChange={(e) => setAttr("minOrderQty", e.target.value)} data-testid="input-min-order" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Оптовая цена (₸)</Label>
+            <Input type="number" placeholder="0" value={a.wholesalePrice || ""} onChange={(e) => setAttr("wholesalePrice", e.target.value)} data-testid="input-wholesale-price" />
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+function ServiceFields({ form, setForm, businessType }: { form: ProductForm; setForm: (f: ProductForm) => void; businessType: string }) {
+  const a = form.attributes;
+  const setAttr = (key: string, val: any) => setForm({ ...form, attributes: { ...a, [key]: val } });
+  const isEducation = businessType === "education";
+  const isTravel = businessType === "travel";
+  const isTicketing = businessType === "ticketing";
+  const isHotel = businessType === "hotel";
+  const isRental = businessType === "rental";
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <Label className="text-xs text-muted-foreground">Длительность (мин)</Label>
+          <Input type="number" placeholder="60" value={a.durationMinutes || ""} onChange={(e) => setAttr("durationMinutes", e.target.value)} data-testid="input-duration" />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">Тип цены</Label>
+          <Select value={a.priceType || "fixed"} onValueChange={(v) => setAttr("priceType", v)}>
+            <SelectTrigger data-testid="select-price-type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="fixed">Фиксированная</SelectItem>
+              <SelectItem value="from">От (минимальная)</SelectItem>
+              <SelectItem value="hourly">Почасовая</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div>
+        <Label className="text-xs text-muted-foreground">Место оказания</Label>
+        <Select value={a.serviceLocation || ""} onValueChange={(v) => setAttr("serviceLocation", v)}>
+          <SelectTrigger data-testid="select-service-location">
+            <SelectValue placeholder="Выберите" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="onsite">У нас</SelectItem>
+            <SelectItem value="client">У клиента</SelectItem>
+            <SelectItem value="online">Онлайн</SelectItem>
+            <SelectItem value="any">Любое</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex items-center gap-2">
+        <Switch checked={!!a.bookingRequired} onCheckedChange={(v) => setAttr("bookingRequired", v)} data-testid="switch-booking" />
+        <Label className="text-xs">Требуется предварительная запись</Label>
+      </div>
+      {isEducation && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">Формат обучения</Label>
+            <Select value={a.format || ""} onValueChange={(v) => setAttr("format", v)}>
+              <SelectTrigger data-testid="select-education-format">
+                <SelectValue placeholder="Выберите" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="offline">Очно</SelectItem>
+                <SelectItem value="online">Онлайн</SelectItem>
+                <SelectItem value="hybrid">Гибрид</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Кол-во занятий</Label>
+            <Input type="number" placeholder="1" value={a.lessonsCount || ""} onChange={(e) => setAttr("lessonsCount", e.target.value)} data-testid="input-lessons-count" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch checked={!!a.certificate} onCheckedChange={(v) => setAttr("certificate", v)} data-testid="switch-certificate" />
+            <Label className="text-xs">Выдаётся сертификат</Label>
+          </div>
+        </>
+      )}
+      {(isTravel || isTicketing) && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">{isTravel ? "Направление" : "Место проведения"}</Label>
+            <Input placeholder={isTravel ? "напр. Стамбул, Анталья" : "напр. Алматы Арена"} value={a.location || ""} onChange={(e) => setAttr("location", e.target.value)} data-testid="input-location" />
+          </div>
+          {isTravel && (
+            <div>
+              <Label className="text-xs text-muted-foreground">Кол-во дней</Label>
+              <Input type="number" placeholder="1" value={a.daysCount || ""} onChange={(e) => setAttr("daysCount", e.target.value)} data-testid="input-days-count" />
+            </div>
+          )}
+          <div>
+            <Label className="text-xs text-muted-foreground">Макс. участников</Label>
+            <Input type="number" placeholder="" value={a.maxParticipants || ""} onChange={(e) => setAttr("maxParticipants", e.target.value)} data-testid="input-max-participants" />
+          </div>
+        </>
+      )}
+      {(isHotel || isRental) && (
+        <>
+          <div>
+            <Label className="text-xs text-muted-foreground">{isHotel ? "Макс. гостей" : "Залоговая стоимость (₸)"}</Label>
+            <Input type="number" placeholder="" value={isHotel ? (a.maxGuests || "") : (a.depositAmount || "")} onChange={(e) => setAttr(isHotel ? "maxGuests" : "depositAmount", e.target.value)} data-testid={`input-${isHotel ? "max-guests" : "deposit"}`} />
+          </div>
+          {isRental && (
+            <div>
+              <Label className="text-xs text-muted-foreground">Период аренды</Label>
+              <Select value={a.rentalPeriod || ""} onValueChange={(v) => setAttr("rentalPeriod", v)}>
+                <SelectTrigger data-testid="select-rental-period">
+                  <SelectValue placeholder="Выберите" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hour">Час</SelectItem>
+                  <SelectItem value="day">День</SelectItem>
+                  <SelectItem value="week">Неделя</SelectItem>
+                  <SelectItem value="month">Месяц</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
+}
+
+function getAttrBadges(product: Product, group: string): string[] {
+  const badges: string[] = [];
+  const a = (product as any).attributes || {};
+  if ((product as any).sku) badges.push(`Арт: ${(product as any).sku}`);
+  if ((product as any).unit) badges.push((product as any).unit);
+  if (group === "fnb") {
+    if (a.portionSize) badges.push(a.portionSize);
+    if (a.calories) badges.push(`${a.calories} ккал`);
+    if (a.isSpicy) badges.push("Острое");
+    if (a.isVegetarian) badges.push("Вег");
+    if (a.isHalal) badges.push("Халяль");
+  }
+  if (group === "ecommerce") {
+    if (a.brand) badges.push(a.brand);
+    if (a.weight) badges.push(a.weight);
+    if (a.sizes) badges.push(`Р: ${a.sizes}`);
+  }
+  if (group === "service") {
+    if (a.durationMinutes) badges.push(`${a.durationMinutes} мин`);
+    if (a.priceType === "from") badges.push("от");
+    if (a.bookingRequired) badges.push("Запись");
+  }
+  return badges;
 }
 
 export default function ProductsPage() {
@@ -34,20 +391,14 @@ export default function ProductsPage() {
   const { data: categories } = useQuery<Category[]>({ queryKey: ["/api/my-store/categories"] });
 
   const hasCategories = (categories?.length ?? 0) > 0;
+  const businessType = store?.businessType || "ecommerce";
+  const group = labels.group;
 
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    discountPrice: "",
-    categoryId: "",
-    isActive: true,
-    imageUrls: [] as string[],
-  });
+  const [form, setForm] = useState<ProductForm>({ ...emptyForm });
 
   const openCreate = () => {
     setEditProduct(null);
-    setForm({ name: "", description: "", price: "", discountPrice: "", categoryId: "", isActive: true, imageUrls: [] });
+    setForm({ ...emptyForm });
     setDialogOpen(true);
   };
 
@@ -61,6 +412,9 @@ export default function ProductsPage() {
       categoryId: p.categoryId ? String(p.categoryId) : "",
       isActive: p.isActive,
       imageUrls: p.imageUrls || [],
+      sku: (p as any).sku || "",
+      unit: (p as any).unit || "",
+      attributes: (p as any).attributes || {},
     });
     setDialogOpen(true);
   };
@@ -77,6 +431,9 @@ export default function ProductsPage() {
         imageUrls: form.imageUrls,
         storeId: store!.id,
         sortOrder: editProduct?.sortOrder ?? 0,
+        sku: form.sku || null,
+        unit: form.unit || null,
+        attributes: form.attributes,
       };
       if (editProduct) {
         await apiRequest("PATCH", `/api/my-store/products/${editProduct.id}`, body);
@@ -145,6 +502,10 @@ export default function ProductsPage() {
     );
   }
 
+  const unitOptions = UNIT_OPTIONS[group] || UNIT_OPTIONS.ecommerce;
+
+  const sectionTitle = group === "fnb" ? "Параметры блюда" : group === "service" ? "Параметры услуги" : "Характеристики";
+
   return (
     <div className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -175,7 +536,7 @@ export default function ProductsPage() {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold" data-testid="text-no-categories-title">Сначала создайте категорию</p>
             <p className="text-xs text-muted-foreground">
-              {labels.group === "fnb" ? "Чтобы добавить блюда, сначала создайте разделы меню" : labels.group === "service" ? "Чтобы добавить услуги, сначала создайте категории услуг" : "Чтобы добавить товары, сначала создайте категории"}
+              {group === "fnb" ? "Чтобы добавить блюда, сначала создайте разделы меню" : group === "service" ? "Чтобы добавить услуги, сначала создайте категории услуг" : "Чтобы добавить товары, сначала создайте категории"}
             </p>
           </div>
           <Link href="/admin/categories" data-testid="link-go-categories">
@@ -224,46 +585,54 @@ export default function ProductsPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {filtered.map((p) => (
-            <Card key={p.id} className="flex items-center gap-3 p-3" data-testid={`card-product-${p.id}`}>
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
-                {p.imageUrls?.[0] ? (
-                  <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" />
-                ) : (
-                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate font-semibold" data-testid={`text-product-name-${p.id}`}>{p.name}</p>
-                  {!p.isActive && <Badge variant="secondary">Скрыт</Badge>}
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  {p.discountPrice ? (
-                    <>
-                      <span className="font-semibold text-green-600">{formatPrice(p.discountPrice)}</span>
-                      <span className="text-muted-foreground line-through">{formatPrice(p.price)}</span>
-                    </>
+          {filtered.map((p) => {
+            const badges = getAttrBadges(p, group);
+            return (
+              <Card key={p.id} className="flex items-center gap-3 p-3" data-testid={`card-product-${p.id}`}>
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+                  {p.imageUrls?.[0] ? (
+                    <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" />
                   ) : (
-                    <span className="font-semibold">{formatPrice(p.price)}</span>
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
                   )}
                 </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Switch
-                  checked={p.isActive}
-                  onCheckedChange={(v) => toggleMutation.mutate({ id: p.id, isActive: v })}
-                  data-testid={`switch-product-active-${p.id}`}
-                />
-                <Button size="icon" variant="ghost" onClick={() => openEdit(p)} data-testid={`button-edit-product-${p.id}`}>
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button size="icon" variant="ghost" onClick={() => deleteMutation.mutate(p.id)} data-testid={`button-delete-product-${p.id}`}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate font-semibold" data-testid={`text-product-name-${p.id}`}>{p.name}</p>
+                    {!p.isActive && <Badge variant="secondary">Скрыт</Badge>}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    {p.discountPrice ? (
+                      <>
+                        <span className="font-semibold text-green-600">{formatPrice(p.discountPrice)}</span>
+                        <span className="text-muted-foreground line-through">{formatPrice(p.price)}</span>
+                      </>
+                    ) : (
+                      <span className="font-semibold">{formatPrice(p.price)}</span>
+                    )}
+                    {badges.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {badges.join(" · ")}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Switch
+                    checked={p.isActive}
+                    onCheckedChange={(v) => toggleMutation.mutate({ id: p.id, isActive: v })}
+                    data-testid={`switch-product-active-${p.id}`}
+                  />
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(p)} data-testid={`button-edit-product-${p.id}`}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => deleteMutation.mutate(p.id)} data-testid={`button-delete-product-${p.id}`}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -304,6 +673,33 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="font-semibold">Артикул (SKU)</Label>
+                <Input placeholder="напр. А-001" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} data-testid="input-product-sku" />
+              </div>
+              <div>
+                <Label className="font-semibold">Ед. измерения</Label>
+                <Select value={form.unit || ""} onValueChange={(v) => setForm({ ...form, unit: v })}>
+                  <SelectTrigger data-testid="select-product-unit">
+                    <SelectValue placeholder="Выберите" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unitOptions.map((u) => (
+                      <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <CollapsibleSection title={sectionTitle} defaultOpen={editProduct != null && Object.keys(form.attributes).length > 0}>
+              {group === "fnb" && <FnbFields form={form} setForm={setForm} />}
+              {group === "ecommerce" && <EcommerceFields form={form} setForm={setForm} businessType={businessType} />}
+              {group === "service" && <ServiceFields form={form} setForm={setForm} businessType={businessType} />}
+            </CollapsibleSection>
+
             <div>
               <Label className="font-semibold">Фото</Label>
               <div className="mt-1 flex flex-wrap gap-2">
