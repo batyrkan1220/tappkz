@@ -315,16 +315,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-b bg-muted/30 dark:bg-muted/10">
-        <div className="mx-auto max-w-5xl px-5 py-5 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Для бизнеса в Казахстане</span>
-          <div className="flex items-center gap-3 flex-wrap justify-center">
-            {["Алматы", "Астана", "Шымкент", "Караганда", "Актобе"].map((city) => (
-              <Badge key={city} variant="outline" className="font-semibold rounded-full" data-testid={`badge-city-${city}`}>{city}</Badge>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <section id="how-it-works" className="py-20 md:py-28">
         <div className="mx-auto max-w-6xl px-5">
