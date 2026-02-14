@@ -36,7 +36,7 @@ const MOCK_PRODUCTS = [
   { name: "Манты домашние", price: "2 400", img: mockPlov },
 ];
 
-const STEP_DURATIONS = [2200, 1400, 1400, 1400, 2000, 1800, 1800, 2200, 2600, 2800];
+const STEP_DURATIONS = [2200, 1400, 1400, 1400, 2000, 1800, 1800, 2200, 3000];
 
 type DemoStep =
   | "browse"
@@ -47,8 +47,7 @@ type DemoStep =
   | "cart-open"
   | "checkout"
   | "fill-form"
-  | "whatsapp"
-  | "invoice";
+  | "whatsapp";
 
 const STEP_ORDER: DemoStep[] = [
   "browse",
@@ -60,7 +59,6 @@ const STEP_ORDER: DemoStep[] = [
   "checkout",
   "fill-form",
   "whatsapp",
-  "invoice",
 ];
 
 function AnimatedPhoneMockup() {
@@ -94,7 +92,6 @@ function AnimatedPhoneMockup() {
   const showCart = step === "cart-open";
   const showCheckout = step === "checkout" || step === "fill-form";
   const showWhatsapp = step === "whatsapp";
-  const showInvoice = step === "invoice";
 
   const tappedProduct = step === "tap1" ? 0 : step === "tap2" ? 1 : -1;
 
@@ -103,15 +100,20 @@ function AnimatedPhoneMockup() {
   return (
     <div className="relative" data-testid="mockup-phone">
       <div className="absolute -inset-4 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent rounded-[3.5rem] blur-2xl" />
-      <div className="relative mx-auto w-[300px] rounded-[3rem] bg-gradient-to-b from-zinc-600 via-zinc-800 to-zinc-600 dark:from-zinc-500 dark:via-zinc-700 dark:to-zinc-500 p-[4px] shadow-2xl shadow-black/50">
-        <div className="rounded-[2.8rem] bg-black p-[2px]">
-          <div className="rounded-[2.7rem] overflow-hidden bg-white dark:bg-zinc-900 relative" style={{ height: "460px" }}>
-            <div className="absolute top-[10px] left-1/2 -translate-x-1/2 h-[25px] w-[100px] bg-black rounded-full z-20 flex items-center justify-center">
-              <div className="h-[8px] w-[8px] rounded-full bg-zinc-900 ring-[1.5px] ring-zinc-700/50" />
+      <div className="relative mx-auto w-[280px] rounded-[3.2rem] bg-gradient-to-b from-zinc-400 via-zinc-600 to-zinc-400 dark:from-zinc-400 dark:via-zinc-600 dark:to-zinc-400 p-[3px] shadow-2xl" style={{ boxShadow: "0 30px 70px -15px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)" }}>
+        <div className="absolute -right-[2px] top-[120px] w-[3px] h-[35px] rounded-r-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400 dark:from-zinc-400 dark:via-zinc-500 dark:to-zinc-400" />
+        <div className="absolute -right-[2px] top-[170px] w-[3px] h-[35px] rounded-r-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400 dark:from-zinc-400 dark:via-zinc-500 dark:to-zinc-400" />
+        <div className="absolute -left-[2px] top-[100px] w-[3px] h-[20px] rounded-l-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400 dark:from-zinc-400 dark:via-zinc-500 dark:to-zinc-400" />
+        <div className="absolute -left-[2px] top-[145px] w-[3px] h-[50px] rounded-l-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400 dark:from-zinc-400 dark:via-zinc-500 dark:to-zinc-400" />
+        <div className="rounded-[3rem] bg-black p-[3px]">
+          <div className="rounded-[2.8rem] overflow-hidden bg-white dark:bg-zinc-900 relative" style={{ height: "580px" }}>
+            <div className="absolute top-[12px] left-1/2 -translate-x-1/2 h-[28px] w-[105px] bg-black rounded-full z-20 flex items-center justify-end pr-[18px]">
+              <div className="h-[10px] w-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #2a2a3e 0%, #0a0a12 50%, #1a1a2e 100%)", boxShadow: "inset 0 1px 2px rgba(255,255,255,0.1), 0 0 3px rgba(50,50,80,0.3)" }} />
             </div>
+            <div className="absolute bottom-[8px] left-1/2 -translate-x-1/2 h-[4px] w-[100px] bg-foreground/20 rounded-full z-20" />
 
             <div className="absolute inset-0 transition-all duration-500" style={{ opacity: showStorefront ? 1 : 0, transform: showStorefront ? "translateX(0)" : "translateX(-100%)", pointerEvents: showStorefront ? "auto" : "none" }}>
-              <div className="flex items-center justify-between gap-2 px-3 pt-[42px] pb-2 border-b border-border/30">
+              <div className="flex items-center justify-between gap-2 px-3 pt-[48px] pb-2 border-b border-border/30">
                 <div className="h-6 w-6 flex items-center justify-center">
                   <Menu className="h-3.5 w-3.5 text-foreground/70" />
                 </div>
@@ -193,7 +195,7 @@ function AnimatedPhoneMockup() {
             </div>
 
             <div className="absolute inset-0 transition-all duration-500" style={{ opacity: showCart ? 1 : 0, transform: showCart ? "translateX(0)" : "translateX(100%)", pointerEvents: showCart ? "auto" : "none" }}>
-              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b border-border/30">
+              <div className="flex items-center gap-2 px-3 pt-[48px] pb-2 border-b border-border/30">
                 <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
                 <span className="text-[10px] font-bold flex-1">Корзина</span>
                 <span className="text-[8px] text-muted-foreground">2 товара</span>
@@ -225,7 +227,7 @@ function AnimatedPhoneMockup() {
             </div>
 
             <div className="absolute inset-0 transition-all duration-500" style={{ opacity: showCheckout ? 1 : 0, transform: showCheckout ? "translateX(0)" : "translateX(100%)", pointerEvents: showCheckout ? "auto" : "none" }}>
-              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b border-border/30">
+              <div className="flex items-center gap-2 px-3 pt-[48px] pb-2 border-b border-border/30">
                 <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
                 <span className="text-[10px] font-bold flex-1">Оформление заказа</span>
               </div>
@@ -269,7 +271,7 @@ function AnimatedPhoneMockup() {
             </div>
 
             <div className="absolute inset-0 transition-all duration-500 flex flex-col" style={{ opacity: showWhatsapp ? 1 : 0, transform: showWhatsapp ? "scale(1)" : "scale(0.95)", pointerEvents: showWhatsapp ? "auto" : "none" }}>
-              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b" style={{ borderColor: "#25D366", backgroundColor: "#dcf8c6" }}>
+              <div className="flex items-center gap-2 px-3 pt-[48px] pb-2 border-b" style={{ borderColor: "#25D366", backgroundColor: "#dcf8c6" }}>
                 <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ color: "#075E54" }} />
                 <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-[7px] font-bold">DA</div>
                 <div className="flex-1">
@@ -310,52 +312,6 @@ function AnimatedPhoneMockup() {
               </div>
             </div>
 
-            <div className="absolute inset-0 transition-all duration-500 flex flex-col" style={{ opacity: showInvoice ? 1 : 0, transform: showInvoice ? "scale(1)" : "scale(0.95)", pointerEvents: showInvoice ? "auto" : "none" }}>
-              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b border-border/30 bg-white dark:bg-zinc-900">
-                <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
-                <span className="text-[10px] font-bold flex-1">Достархан</span>
-              </div>
-              <div className="flex-1 overflow-hidden bg-muted/30 px-3 pt-3">
-                <div className="rounded-lg border border-border/40 bg-card p-3 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] font-bold">Заказ №142</p>
-                      <p className="text-[7px] text-muted-foreground">14 февраля 2026, 12:34</p>
-                    </div>
-                    <span className="rounded-full px-2 py-0.5 text-[7px] font-semibold bg-amber-100 text-amber-800">Ожидает</span>
-                  </div>
-                  <div className="border-t border-border/30 pt-2 space-y-1.5">
-                    {[MOCK_PRODUCTS[0], MOCK_PRODUCTS[1]].map((item, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-md overflow-hidden bg-muted shrink-0"><img src={item.img} alt="" className="h-full w-full object-cover" /></div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[8px] font-medium"><span className="font-bold">1x</span> {item.name}</p>
-                        </div>
-                        <span className="text-[8px] font-semibold shrink-0">{item.price} ₸</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="border-t border-border/30 pt-2">
-                    <div className="flex justify-between text-[9px] font-bold">
-                      <span>Итого</span>
-                      <span className="text-primary">5 000 ₸</span>
-                    </div>
-                  </div>
-                  <div className="border-t border-border/30 pt-2 space-y-1">
-                    <div>
-                      <p className="text-[7px] text-muted-foreground">Покупатель</p>
-                      <p className="text-[8px] font-semibold">Асель</p>
-                      <p className="text-[8px]" style={{ color: "#1a73e8" }}>+7 707 123 45 67</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-border/40 bg-card py-2 px-3">
-                  <ShoppingBag className="h-3 w-3 text-primary" />
-                  <span className="text-[8px] font-semibold text-primary">Вернуться в магазин</span>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
@@ -375,7 +331,6 @@ function AnimatedPhoneMockup() {
           {step === "checkout" && "Заполняет данные"}
           {step === "fill-form" && "Вводит имя и телефон"}
           {showWhatsapp && "Заказ отправлен в WhatsApp!"}
-          {showInvoice && "Чек заказа для покупателя"}
         </p>
       </div>
     </div>
