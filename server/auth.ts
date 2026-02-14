@@ -32,7 +32,8 @@ export function setupSession(app: Express) {
       saveUninitialized: false,
       cookie: {
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
         maxAge: sessionTtl,
       },
     })
@@ -197,24 +198,23 @@ export const isAuthenticated: RequestHandler = (req, res, next) => {
 };
 
 export async function ensureSuperAdmin() {
-  const email = "batyrhan.aff@gmail.com";
+  const emails = ["batyrhan.aff@gmail.com", "batyrkhan.aff@gmail.com"];
   const password = "Expo2017!";
-
-  const [existing] = await db.select().from(users).where(eq(users.email, email));
   const passwordHash = await bcrypt.hash(password, 10);
 
-  if (existing) {
-    if (!existing.isSuperAdmin || !existing.passwordHash) {
+  for (const email of emails) {
+    const [existing] = await db.select().from(users).where(eq(users.email, email));
+    if (existing) {
       await db.update(users).set({ passwordHash, isSuperAdmin: true }).where(eq(users.id, existing.id));
       console.log(`SuperAdmin updated: ${email}`);
+    } else if (email === "batyrhan.aff@gmail.com") {
+      await db.insert(users).values({
+        email,
+        passwordHash,
+        firstName: "BATYRKHAN",
+        isSuperAdmin: true,
+      });
+      console.log(`SuperAdmin created: ${email}`);
     }
-  } else {
-    await db.insert(users).values({
-      email,
-      passwordHash,
-      firstName: "BATYRKHAN",
-      isSuperAdmin: true,
-    });
-    console.log(`SuperAdmin created: ${email}`);
   }
 }
