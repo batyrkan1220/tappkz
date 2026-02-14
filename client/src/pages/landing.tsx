@@ -47,7 +47,7 @@ const MOCK_PRODUCTS = [
   { name: "Медовик", price: "5 800", cat: "Торты", img: mockMedovik },
   { name: "Круассан", price: "750", cat: "Выпечка", img: mockCroissant },
   { name: "Трюфели набор", price: "7 400", old: "8 900", cat: "Конфеты", img: mockTruffles },
-  { name: "Тарт ягодный", price: "3 900", cat: "Десерты", img: mockBerryTart },
+  { name: "Торт ягодный", price: "3 900", cat: "Десерты", img: mockBerryTart },
   { name: "Тирамису", price: "2 200", cat: "Десерты", img: mockTiramisu },
   { name: "Синнабон", price: "1 400", cat: "Выпечка", img: mockCinnamonRoll },
 ];
@@ -346,7 +346,7 @@ function AnimatedPhoneMockup() {
                     <p className="font-semibold mb-0.5">Заказ №285</p>
                     <p>1x Торт Наполеон — 6 500 ₸</p>
                     <p>1x Чизкейк клубника — 1 800 ₸</p>
-                    <p>1x Тарт ягодный — 3 900 ₸</p>
+                    <p>1x Торт ягодный — 3 900 ₸</p>
                     <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 12 200 ₸</p>
                     <p className="mt-1">Имя: Айгуль</p>
                     <p>Тел: +7 701 456 78 90</p>
@@ -541,7 +541,7 @@ export default function LandingPage() {
                       <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
                         <p>1x Торт Наполеон — 6 500 ₸</p>
                         <p>1x Чизкейк клубника — 1 800 ₸</p>
-                        <p>1x Тарт ягодный — 3 900 ₸</p>
+                        <p>1x Торт ягодный — 3 900 ₸</p>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-2">
                         <p className="text-sm font-bold">Итого: 12 200 ₸</p>
