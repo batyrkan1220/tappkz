@@ -13,19 +13,31 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink, ShoppingBag, ClipboardList, Users, BarChart3, Shield, Crown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation, Link } from "wouter";
-import { getBusinessLabels, type Store } from "@shared/schema";
+import { getBusinessLabels, type Store, type Order } from "@shared/schema";
 
 export function AppSidebar({ store }: { store?: Store | null }) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const labels = getBusinessLabels(store?.businessType);
 
+  const { data: orders = [] } = useQuery<Order[]>({
+    queryKey: ["/api/my-store/orders"],
+    refetchInterval: 15000,
+    enabled: !!store,
+  });
+
+  const pendingCount = orders.filter(
+    (o) => o.status === "pending" || o.paymentStatus === "unpaid" || o.fulfillmentStatus === "unfulfilled"
+  ).length;
+
   const menuItems = [
     { title: "Панель", url: "/admin", icon: LayoutDashboard },
     { title: "Аналитика", url: "/admin/analytics", icon: BarChart3 },
-    { title: "Заказы", url: "/admin/orders", icon: ClipboardList },
+    { title: "Заказы", url: "/admin/orders", icon: ClipboardList, badge: pendingCount },
     { title: "Клиенты", url: "/admin/customers", icon: Users },
     { title: labels.itemLabelPlural, url: "/admin/products", icon: Package },
     { title: "Категории", url: "/admin/categories", icon: FolderOpen },
@@ -62,7 +74,12 @@ export function AppSidebar({ store }: { store?: Store | null }) {
                   <SidebarMenuButton asChild isActive={location === item.url} data-testid={`link-sidebar-${item.title}`}>
                     <Link href={item.url}>
                       <item.icon className="h-4 w-4" />
-                      <span className="font-medium">{item.title}</span>
+                      <span className="font-medium flex-1">{item.title}</span>
+                      {"badge" in item && (item as any).badge > 0 && (
+                        <Badge variant="secondary" className="ml-auto rounded-full text-[10px] px-1.5 py-0 min-w-[20px] text-center font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 no-default-hover-elevate no-default-active-elevate" data-testid="badge-sidebar-orders-count">
+                          {(item as any).badge}
+                        </Badge>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
