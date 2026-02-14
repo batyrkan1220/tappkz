@@ -23,7 +23,10 @@ type CustomerWithStatus = Customer & {
   confirmedOrders: number;
   pendingOrders: number;
   cancelledOrders: number;
+  earliestOrderAt: string | null;
 };
+
+const TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
 function getCustomerStatus(customer: CustomerWithStatus): { label: string; className: string } {
   const confirmed = customer.confirmedOrders || 0;
@@ -31,11 +34,19 @@ function getCustomerStatus(customer: CustomerWithStatus): { label: string; class
   const total = customer.totalOrders || 0;
 
   if (total === 0) return { label: "Новый", className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" };
-  if (confirmed === 0 && pending > 0) return { label: "Ожидает подтверждения", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" };
-  if (confirmed === 0) return { label: "Не заказал", className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" };
+
+  if (confirmed >= 5) return { label: "Лояльный", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" };
+  if (confirmed >= 2) return { label: "Постоянный", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" };
   if (confirmed === 1) return { label: "Первый заказ", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" };
-  if (confirmed <= 4) return { label: "Постоянный", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" };
-  return { label: "Лояльный", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" };
+
+  if (pending > 0) {
+    const isRecent = customer.earliestOrderAt &&
+      (Date.now() - new Date(customer.earliestOrderAt).getTime()) < TWELVE_HOURS;
+    if (isRecent) return { label: "Новый", className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" };
+    return { label: "Ожидает подтверждения", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" };
+  }
+
+  return { label: "Не заказал", className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" };
 }
 
 const FILTER_TABS = [
@@ -114,15 +125,13 @@ export default function CustomersPage() {
   });
 
   const filteredCustomers = customers.filter((c) => {
-    const total = c.totalOrders || 0;
-    const confirmed = c.confirmedOrders || 0;
-    const pending = c.pendingOrders || 0;
-    if (filter === "new" && total !== 0) return false;
-    if (filter === "awaiting" && !(confirmed === 0 && pending > 0)) return false;
-    if (filter === "not_ordered" && !(total > 0 && confirmed === 0 && pending === 0)) return false;
-    if (filter === "first_order" && confirmed !== 1) return false;
-    if (filter === "regular" && (confirmed < 2 || confirmed > 4)) return false;
-    if (filter === "loyal" && confirmed < 5) return false;
+    const status = getCustomerStatus(c);
+    if (filter === "new" && status.label !== "Новый") return false;
+    if (filter === "awaiting" && status.label !== "Ожидает подтверждения") return false;
+    if (filter === "not_ordered" && status.label !== "Не заказал") return false;
+    if (filter === "first_order" && status.label !== "Первый заказ") return false;
+    if (filter === "regular" && status.label !== "Постоянный") return false;
+    if (filter === "loyal" && status.label !== "Лояльный") return false;
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -141,12 +150,12 @@ export default function CustomersPage() {
   const avgOrderValue = totalOrdersAll > 0 ? Math.round(totalSpentAll / totalOrdersAll) : 0;
 
   const statusCounts = {
-    new: customers.filter((c) => (c.totalOrders || 0) === 0).length,
-    awaiting: customers.filter((c) => (c.confirmedOrders || 0) === 0 && (c.pendingOrders || 0) > 0).length,
-    not_ordered: customers.filter((c) => (c.totalOrders || 0) > 0 && (c.confirmedOrders || 0) === 0 && (c.pendingOrders || 0) === 0).length,
-    first_order: customers.filter((c) => (c.confirmedOrders || 0) === 1).length,
-    regular: customers.filter((c) => { const o = c.confirmedOrders || 0; return o >= 2 && o <= 4; }).length,
-    loyal: customers.filter((c) => (c.confirmedOrders || 0) >= 5).length,
+    new: customers.filter((c) => getCustomerStatus(c).label === "Новый").length,
+    awaiting: customers.filter((c) => getCustomerStatus(c).label === "Ожидает подтверждения").length,
+    not_ordered: customers.filter((c) => getCustomerStatus(c).label === "Не заказал").length,
+    first_order: customers.filter((c) => getCustomerStatus(c).label === "Первый заказ").length,
+    regular: customers.filter((c) => getCustomerStatus(c).label === "Постоянный").length,
+    loyal: customers.filter((c) => getCustomerStatus(c).label === "Лояльный").length,
   };
 
   if (isLoading) {

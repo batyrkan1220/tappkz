@@ -624,11 +624,18 @@ export async function registerRoutes(
         const cancelledOrders = customerOrders.filter(
           (o) => o.status === "cancelled"
         ).length;
+        const earliestOrderAt = customerOrders.length > 0
+          ? customerOrders.reduce((earliest, o) => {
+              const t = new Date(o.createdAt!).getTime();
+              return t < earliest ? t : earliest;
+            }, Infinity)
+          : null;
         return {
           ...c,
           confirmedOrders,
           pendingOrders,
           cancelledOrders,
+          earliestOrderAt: earliestOrderAt ? new Date(earliestOrderAt).toISOString() : null,
         };
       });
 
