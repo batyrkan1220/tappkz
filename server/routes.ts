@@ -904,7 +904,11 @@ export async function registerRoutes(
         return res.json({ configured: false, accounts: [] });
       }
       const data = await unipileFetch("/accounts");
-      const whatsappAccounts = (data.items || []).filter((a: any) => a.provider === "WHATSAPP");
+      const whatsappAccounts = (data.items || []).filter((a: any) => {
+        const isWhatsApp = a.provider === "WHATSAPP" || a.type === "WHATSAPP";
+        const isActive = (a.sources || []).some((s: any) => s.status === "OK");
+        return isWhatsApp && isActive;
+      });
       res.json({ configured: true, accounts: whatsappAccounts });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
