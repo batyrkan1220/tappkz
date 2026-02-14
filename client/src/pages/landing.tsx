@@ -175,7 +175,7 @@ export default function LandingPage() {
                           <p className="text-[10px] font-semibold leading-tight">{item.name}</p>
                           <p className="text-[8px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{item.desc}</p>
                           <div className="mt-1.5 flex items-center gap-1">
-                            <span className="text-[10px] font-bold text-rose-600">{item.price} ₸</span>
+                            <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">{item.price} ₸</span>
                             {item.old && <span className="text-[8px] text-muted-foreground line-through">{item.old} ₸</span>}
                           </div>
                         </div>
