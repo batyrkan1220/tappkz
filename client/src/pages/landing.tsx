@@ -67,7 +67,6 @@ type DemoStep =
 const STEP_ORDER: DemoStep[] = [
   "browse",
   "tap1", "added1",
-  "scroll-down",
   "switch-cat",
   "tap2", "added2",
   "tap3", "added3",
@@ -112,22 +111,22 @@ function AnimatedPhoneMockup() {
   const stepIdx = STEP_ORDER.indexOf(step);
   const cartCount =
     stepIdx <= 1 ? 0 :
-    stepIdx <= 4 ? 1 :
-    stepIdx <= 6 ? 2 : 3;
+    stepIdx <= 3 ? 1 :
+    stepIdx <= 5 ? 2 : 3;
 
   const cartTotals = ["", "6 500 ₸", "8 300 ₸", "10 500 ₸"];
   const cartTotal = cartTotals[cartCount];
 
   const showStorefront = [
     "browse", "tap1", "added1",
-    "scroll-down", "switch-cat",
+    "switch-cat",
     "tap2", "added2", "tap3", "added3",
   ].includes(step);
   const showCart = step === "cart-open";
   const showCheckout = step === "checkout" || step === "fill-form";
   const showWhatsapp = step === "whatsapp";
 
-  const isScrolled = stepIdx >= STEP_ORDER.indexOf("scroll-down");
+  const isScrolled = false;
   const isCatSwitched = stepIdx >= STEP_ORDER.indexOf("switch-cat") && stepIdx <= STEP_ORDER.indexOf("added3");
 
   const tappedProduct = step === "tap1" ? 0 : -1;
@@ -137,8 +136,8 @@ function AnimatedPhoneMockup() {
   if (stepIdx >= 2) addedProducts.add(0);
 
   const addedDesserts = new Set<number>();
-  if (stepIdx >= 6) addedDesserts.add(0);
-  if (stepIdx >= 8) addedDesserts.add(2);
+  if (stepIdx >= 5) addedDesserts.add(0);
+  if (stepIdx >= 7) addedDesserts.add(2);
 
   const showAddedAnimation = step === "added1";
   const showDessertAddedAnimation = step === "added2" || step === "added3";
