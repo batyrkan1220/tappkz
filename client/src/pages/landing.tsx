@@ -36,7 +36,7 @@ const MOCK_PRODUCTS = [
   { name: "Манты домашние", price: "2 400", img: mockPlov },
 ];
 
-const STEP_DURATIONS = [2200, 1400, 1400, 1400, 2000, 1800, 1800, 2200, 2600];
+const STEP_DURATIONS = [2200, 1400, 1400, 1400, 2000, 1800, 1800, 2200, 2600, 2800];
 
 type DemoStep =
   | "browse"
@@ -47,7 +47,8 @@ type DemoStep =
   | "cart-open"
   | "checkout"
   | "fill-form"
-  | "whatsapp";
+  | "whatsapp"
+  | "invoice";
 
 const STEP_ORDER: DemoStep[] = [
   "browse",
@@ -59,6 +60,7 @@ const STEP_ORDER: DemoStep[] = [
   "checkout",
   "fill-form",
   "whatsapp",
+  "invoice",
 ];
 
 function AnimatedPhoneMockup() {
@@ -92,6 +94,7 @@ function AnimatedPhoneMockup() {
   const showCart = step === "cart-open";
   const showCheckout = step === "checkout" || step === "fill-form";
   const showWhatsapp = step === "whatsapp";
+  const showInvoice = step === "invoice";
 
   const tappedProduct = step === "tap1" ? 0 : step === "tap2" ? 1 : -1;
 
@@ -99,329 +102,267 @@ function AnimatedPhoneMockup() {
 
   return (
     <div className="relative" data-testid="mockup-phone">
-      <div className="absolute -inset-4 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent rounded-[3rem] blur-2xl" />
-      <div className="relative mx-auto w-[300px] rounded-[2.5rem] border-[8px] border-foreground/90 bg-white dark:bg-zinc-900 p-1.5 shadow-2xl">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-24 bg-foreground/90 rounded-b-2xl z-10" />
-        <div className="rounded-[2rem] overflow-hidden bg-white dark:bg-zinc-900 relative" style={{ height: "440px" }}>
+      <div className="absolute -inset-4 bg-gradient-to-b from-primary/20 via-primary/5 to-transparent rounded-[3.5rem] blur-2xl" />
+      <div className="relative mx-auto w-[300px] rounded-[3rem] bg-gradient-to-b from-zinc-600 via-zinc-800 to-zinc-600 dark:from-zinc-500 dark:via-zinc-700 dark:to-zinc-500 p-[4px] shadow-2xl shadow-black/50">
+        <div className="rounded-[2.8rem] bg-black p-[2px]">
+          <div className="rounded-[2.7rem] overflow-hidden bg-white dark:bg-zinc-900 relative" style={{ height: "460px" }}>
+            <div className="absolute top-[10px] left-1/2 -translate-x-1/2 h-[25px] w-[100px] bg-black rounded-full z-20 flex items-center justify-center">
+              <div className="h-[8px] w-[8px] rounded-full bg-zinc-900 ring-[1.5px] ring-zinc-700/50" />
+            </div>
 
-          <div
-            className="absolute inset-0 transition-all duration-500"
-            style={{
-              opacity: showStorefront ? 1 : 0,
-              transform: showStorefront ? "translateX(0)" : "translateX(-100%)",
-              pointerEvents: showStorefront ? "auto" : "none",
-            }}
-          >
-            <div className="flex items-center justify-between gap-2 px-3 pt-8 pb-2 border-b border-border/30">
-              <div className="h-6 w-6 flex items-center justify-center">
-                <Menu className="h-3.5 w-3.5 text-foreground/70" />
-              </div>
-              <div className="w-6" />
-              <div className="flex items-center gap-1">
+            <div className="absolute inset-0 transition-all duration-500" style={{ opacity: showStorefront ? 1 : 0, transform: showStorefront ? "translateX(0)" : "translateX(-100%)", pointerEvents: showStorefront ? "auto" : "none" }}>
+              <div className="flex items-center justify-between gap-2 px-3 pt-[42px] pb-2 border-b border-border/30">
                 <div className="h-6 w-6 flex items-center justify-center">
-                  <Search className="h-3.5 w-3.5 text-foreground/70" />
+                  <Menu className="h-3.5 w-3.5 text-foreground/70" />
                 </div>
-                <div className="h-6 w-6 flex items-center justify-center relative">
-                  <ShoppingBag className="h-3.5 w-3.5 text-foreground/70" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary text-[6px] text-white flex items-center justify-center font-bold animate-in zoom-in duration-300">
-                      {cartCount}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="relative mx-2.5 mt-2">
-              <div className="h-[68px] w-full overflow-hidden rounded-xl">
-                <img src={mockBanner} alt="" className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/25 rounded-xl" />
-              </div>
-            </div>
-            <div className="flex flex-col items-center -mt-5 relative z-10">
-              <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md flex items-center justify-center text-white text-[10px] font-bold bg-primary">
-                DA
-              </div>
-              <p className="text-[10px] font-bold tracking-tight mt-1">Достархан</p>
-              <p className="text-[7px] text-muted-foreground flex items-center gap-0.5">
-                <MapPin className="h-1.5 w-1.5" /> Алматы
-              </p>
-            </div>
-
-            <div className="mx-3 mt-2 border-b border-border/30 pb-0">
-              <div className="flex">
-                <div className="flex-1 text-center pb-1.5 border-b-2 border-foreground">
-                  <span className="text-[9px] font-semibold">Меню</span>
-                </div>
-                <div className="flex-1 text-center pb-1.5 text-muted-foreground">
-                  <span className="text-[9px] font-medium flex items-center justify-center gap-0.5">
-                    <Search className="h-2 w-2" /> Поиск
-                  </span>
+                <div className="w-6" />
+                <div className="flex items-center gap-1">
+                  <div className="h-6 w-6 flex items-center justify-center">
+                    <Search className="h-3.5 w-3.5 text-foreground/70" />
+                  </div>
+                  <div className="h-6 w-6 flex items-center justify-center relative">
+                    <ShoppingBag className="h-3.5 w-3.5 text-foreground/70" />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary text-[6px] text-white flex items-center justify-center font-bold animate-in zoom-in duration-300">{cartCount}</span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="px-3 pt-2 pb-1.5">
-              <div className="flex gap-1.5 overflow-hidden">
-                <span className="shrink-0 rounded-full bg-primary text-white px-2 py-[3px] text-[8px] font-semibold">Все</span>
-                <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Горячее</span>
-                <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Шашлыки</span>
+              <div className="relative mx-2.5 mt-2">
+                <div className="h-[68px] w-full overflow-hidden rounded-xl">
+                  <img src={mockBanner} alt="" className="h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/5 to-black/25 rounded-xl" />
+                </div>
               </div>
-            </div>
-
-            <div className="px-3 pb-2">
-              <div className="grid grid-cols-2 gap-1.5">
-                {MOCK_PRODUCTS.map((item, i) => (
-                  <div
-                    key={i}
-                    className={`overflow-hidden rounded-lg border bg-card transition-all duration-300 ${
-                      tappedProduct === i
-                        ? "border-primary ring-2 ring-primary/30 scale-[0.96]"
-                        : "border-border/40"
-                    }`}
-                    data-testid={`mockup-product-${i}`}
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-muted">
-                      <img src={item.img} alt={item.name} className="h-full w-full object-cover" />
-                      {item.old && (
-                        <span className="absolute top-1 left-1 rounded-full bg-primary text-white text-[6px] font-bold px-1 py-[1px]">
-                          -13%
-                        </span>
-                      )}
-                      <div
-                        className={`absolute bottom-1 right-1 h-5 w-5 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 ${
-                          tappedProduct === i
-                            ? "bg-primary scale-110"
-                            : "bg-white/90"
-                        }`}
-                      >
-                        {tappedProduct === i ? (
-                          <Check className="h-2.5 w-2.5 text-white" />
-                        ) : (
-                          <Plus className={`h-2.5 w-2.5 ${
-                            (showAddedAnimation && ((step === "added1" && i === 0) || (step === "added2" && i === 1)))
-                              ? "text-primary"
-                              : "text-foreground/70"
-                          }`} />
+              <div className="flex flex-col items-center -mt-5 relative z-10">
+                <div className="h-11 w-11 rounded-full border-[3px] border-white dark:border-zinc-900 shadow-md flex items-center justify-center text-white text-[10px] font-bold bg-primary">DA</div>
+                <p className="text-[10px] font-bold tracking-tight mt-1">Достархан</p>
+                <p className="text-[7px] text-muted-foreground flex items-center gap-0.5"><MapPin className="h-1.5 w-1.5" /> Алматы</p>
+              </div>
+              <div className="mx-3 mt-2 border-b border-border/30 pb-0">
+                <div className="flex">
+                  <div className="flex-1 text-center pb-1.5 border-b-2 border-foreground"><span className="text-[9px] font-semibold">Меню</span></div>
+                  <div className="flex-1 text-center pb-1.5 text-muted-foreground"><span className="text-[9px] font-medium flex items-center justify-center gap-0.5"><Search className="h-2 w-2" /> Поиск</span></div>
+                </div>
+              </div>
+              <div className="px-3 pt-2 pb-1.5">
+                <div className="flex gap-1.5 overflow-hidden">
+                  <span className="shrink-0 rounded-full bg-primary text-white px-2 py-[3px] text-[8px] font-semibold">Все</span>
+                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Горячее</span>
+                  <span className="shrink-0 rounded-full bg-muted text-foreground px-2 py-[3px] text-[8px] font-medium">Шашлыки</span>
+                </div>
+              </div>
+              <div className="px-3 pb-2">
+                <div className="grid grid-cols-2 gap-1.5">
+                  {MOCK_PRODUCTS.map((item, i) => (
+                    <div key={i} className={`overflow-hidden rounded-lg border bg-card transition-all duration-300 ${tappedProduct === i ? "border-primary ring-2 ring-primary/30 scale-[0.96]" : "border-border/40"}`} data-testid={`mockup-product-${i}`}>
+                      <div className="relative aspect-square overflow-hidden bg-muted">
+                        <img src={item.img} alt={item.name} className="h-full w-full object-cover" />
+                        {item.old && <span className="absolute top-1 left-1 rounded-full bg-primary text-white text-[6px] font-bold px-1 py-[1px]">-13%</span>}
+                        <div className={`absolute bottom-1 right-1 h-5 w-5 rounded-full flex items-center justify-center shadow-sm transition-all duration-300 ${tappedProduct === i ? "bg-primary scale-110" : "bg-white/90"}`}>
+                          {tappedProduct === i ? <Check className="h-2.5 w-2.5 text-white" /> : <Plus className={`h-2.5 w-2.5 ${(showAddedAnimation && ((step === "added1" && i === 0) || (step === "added2" && i === 1))) ? "text-primary" : "text-foreground/70"}`} />}
+                        </div>
+                        {((step === "added1" && i === 0) || (step === "added2" && i === 1)) && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="h-8 w-8 rounded-full bg-primary/90 flex items-center justify-center animate-in zoom-in fade-in duration-300"><Check className="h-4 w-4 text-white" /></div>
+                          </div>
                         )}
                       </div>
-
-                      {((step === "added1" && i === 0) || (step === "added2" && i === 1)) && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-8 w-8 rounded-full bg-primary/90 flex items-center justify-center animate-in zoom-in fade-in duration-300">
-                            <Check className="h-4 w-4 text-white" />
-                          </div>
+                      <div className="p-1.5">
+                        <p className="text-[8px] font-semibold leading-tight line-clamp-2">{item.name}</p>
+                        <div className="mt-0.5 flex items-center gap-1">
+                          <span className="text-[8px] font-bold text-primary">{item.price} ₸</span>
+                          {item.old && <span className="text-[6px] text-muted-foreground line-through">{item.old} ₸</span>}
                         </div>
-                      )}
-                    </div>
-                    <div className="p-1.5">
-                      <p className="text-[8px] font-semibold leading-tight line-clamp-2">{item.name}</p>
-                      <div className="mt-0.5 flex items-center gap-1">
-                        <span className="text-[8px] font-bold text-primary">{item.price} ₸</span>
-                        {item.old && <span className="text-[6px] text-muted-foreground line-through">{item.old} ₸</span>}
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {cartCount > 0 && (
-              <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 animate-in slide-in-from-bottom duration-400">
-                <div className="flex items-center justify-between rounded-xl py-2 px-3 text-white" style={{ backgroundColor: "hsl(var(--primary))" }}>
-                  <div className="flex items-center gap-1.5">
-                    <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white/20 px-1 text-[7px] font-bold">{cartCount}</span>
-                    <span className="text-[9px] font-semibold">Корзина</span>
-                  </div>
-                  <span className="text-[9px] font-bold">{cartTotal}</span>
+                  ))}
                 </div>
               </div>
-            )}
-          </div>
-
-          <div
-            className="absolute inset-0 transition-all duration-500"
-            style={{
-              opacity: showCart ? 1 : 0,
-              transform: showCart ? "translateX(0)" : "translateX(100%)",
-              pointerEvents: showCart ? "auto" : "none",
-            }}
-          >
-            <div className="flex items-center gap-2 px-3 pt-8 pb-2 border-b border-border/30">
-              <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
-              <span className="text-[10px] font-bold flex-1">Корзина</span>
-              <span className="text-[8px] text-muted-foreground">2 товара</span>
-            </div>
-
-            <div className="px-3 pt-3 space-y-2">
-              {[MOCK_PRODUCTS[0], MOCK_PRODUCTS[1]].map((item, i) => (
-                <div key={i} className="flex items-center gap-2 rounded-lg border border-border/40 p-2 bg-card">
-                  <div className="h-11 w-11 rounded-lg overflow-hidden bg-muted shrink-0">
-                    <img src={item.img} alt={item.name} className="h-full w-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[9px] font-semibold leading-tight">{item.name}</p>
-                    <p className="text-[8px] text-primary font-bold mt-0.5">{item.price} ₸</p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold">-</div>
-                    <span className="text-[9px] font-bold w-3 text-center">1</span>
-                    <div className="h-4 w-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">+</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mx-3 mt-4 pt-3 border-t border-border/30 space-y-1">
-              <div className="flex justify-between text-[8px] text-muted-foreground">
-                <span>Плов по-узбекски</span>
-                <span>2 800 ₸</span>
-              </div>
-              <div className="flex justify-between text-[8px] text-muted-foreground">
-                <span>Лагман домашний</span>
-                <span>2 200 ₸</span>
-              </div>
-              <div className="flex justify-between text-[10px] font-bold mt-2 pt-2 border-t border-border/30">
-                <span>Итого</span>
-                <span>5 000 ₸</span>
-              </div>
-            </div>
-
-            <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-              <div className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px]" style={{ backgroundColor: "hsl(var(--primary))" }}>
-                Оформить заказ
-                <ArrowRight className="h-3 w-3" />
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="absolute inset-0 transition-all duration-500"
-            style={{
-              opacity: showCheckout ? 1 : 0,
-              transform: showCheckout ? "translateX(0)" : "translateX(100%)",
-              pointerEvents: showCheckout ? "auto" : "none",
-            }}
-          >
-            <div className="flex items-center gap-2 px-3 pt-8 pb-2 border-b border-border/30">
-              <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
-              <span className="text-[10px] font-bold flex-1">Оформление заказа</span>
-            </div>
-
-            <div className="px-3 pt-3 space-y-3">
-              <div className="space-y-2">
-                <div>
-                  <label className="text-[8px] text-muted-foreground font-medium mb-0.5 block">Ваше имя</label>
-                  <div className={`rounded-lg border px-2 py-1.5 text-[9px] transition-all duration-700 ${step === "fill-form" ? "border-primary bg-primary/5" : "border-border/40 bg-muted/30"}`}>
-                    <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>
-                      {step === "fill-form" ? "Асель" : "Введите имя"}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label className="text-[8px] text-muted-foreground font-medium mb-0.5 block">Телефон</label>
-                  <div className={`rounded-lg border px-2 py-1.5 text-[9px] transition-all duration-700 ${step === "fill-form" ? "border-primary bg-primary/5" : "border-border/40 bg-muted/30"}`}>
-                    <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>
-                      {step === "fill-form" ? "+7 707 123 45 67" : "+7 (___) ___ __ __"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-border/40 p-2 bg-card space-y-1.5">
-                <p className="text-[8px] font-semibold text-muted-foreground">Ваш заказ</p>
-                {[MOCK_PRODUCTS[0], MOCK_PRODUCTS[1]].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between">
+              {cartCount > 0 && (
+                <div className="absolute bottom-0 left-0 right-0 px-3 pb-3 animate-in slide-in-from-bottom duration-400">
+                  <div className="flex items-center justify-between rounded-xl py-2 px-3 text-white" style={{ backgroundColor: "hsl(var(--primary))" }}>
                     <div className="flex items-center gap-1.5">
-                      <div className="h-6 w-6 rounded overflow-hidden bg-muted">
-                        <img src={item.img} alt="" className="h-full w-full object-cover" />
-                      </div>
-                      <span className="text-[8px]">{item.name}</span>
+                      <span className="flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white/20 px-1 text-[7px] font-bold">{cartCount}</span>
+                      <span className="text-[9px] font-semibold">Корзина</span>
                     </div>
-                    <span className="text-[8px] font-bold">{item.price} ₸</span>
+                    <span className="text-[9px] font-bold">{cartTotal}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="absolute inset-0 transition-all duration-500" style={{ opacity: showCart ? 1 : 0, transform: showCart ? "translateX(0)" : "translateX(100%)", pointerEvents: showCart ? "auto" : "none" }}>
+              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b border-border/30">
+                <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
+                <span className="text-[10px] font-bold flex-1">Корзина</span>
+                <span className="text-[8px] text-muted-foreground">2 товара</span>
+              </div>
+              <div className="px-3 pt-3 space-y-2">
+                {[MOCK_PRODUCTS[0], MOCK_PRODUCTS[1]].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 rounded-lg border border-border/40 p-2 bg-card">
+                    <div className="h-11 w-11 rounded-lg overflow-hidden bg-muted shrink-0"><img src={item.img} alt={item.name} className="h-full w-full object-cover" /></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] font-semibold leading-tight">{item.name}</p>
+                      <p className="text-[8px] text-primary font-bold mt-0.5">{item.price} ₸</p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[8px] font-bold">-</div>
+                      <span className="text-[9px] font-bold w-3 text-center">1</span>
+                      <div className="h-4 w-4 rounded-full bg-primary text-white flex items-center justify-center text-[8px] font-bold">+</div>
+                    </div>
                   </div>
                 ))}
-                <div className="flex justify-between pt-1.5 border-t border-border/30">
-                  <span className="text-[9px] font-bold">Итого</span>
-                  <span className="text-[9px] font-bold text-primary">5 000 ₸</span>
+              </div>
+              <div className="mx-3 mt-4 pt-3 border-t border-border/30 space-y-1">
+                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Плов по-узбекски</span><span>2 800 ₸</span></div>
+                <div className="flex justify-between text-[8px] text-muted-foreground"><span>Лагман домашний</span><span>2 200 ₸</span></div>
+                <div className="flex justify-between text-[10px] font-bold mt-2 pt-2 border-t border-border/30"><span>Итого</span><span>5 000 ₸</span></div>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                <div className="flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px]" style={{ backgroundColor: "hsl(var(--primary))" }}>Оформить заказ <ArrowRight className="h-3 w-3" /></div>
+              </div>
+            </div>
+
+            <div className="absolute inset-0 transition-all duration-500" style={{ opacity: showCheckout ? 1 : 0, transform: showCheckout ? "translateX(0)" : "translateX(100%)", pointerEvents: showCheckout ? "auto" : "none" }}>
+              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b border-border/30">
+                <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
+                <span className="text-[10px] font-bold flex-1">Оформление заказа</span>
+              </div>
+              <div className="px-3 pt-3 space-y-3">
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-[8px] text-muted-foreground font-medium mb-0.5 block">Ваше имя</label>
+                    <div className={`rounded-lg border px-2 py-1.5 text-[9px] transition-all duration-700 ${step === "fill-form" ? "border-primary bg-primary/5" : "border-border/40 bg-muted/30"}`}>
+                      <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>{step === "fill-form" ? "Асель" : "Введите имя"}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[8px] text-muted-foreground font-medium mb-0.5 block">Телефон</label>
+                    <div className={`rounded-lg border px-2 py-1.5 text-[9px] transition-all duration-700 ${step === "fill-form" ? "border-primary bg-primary/5" : "border-border/40 bg-muted/30"}`}>
+                      <span className={`transition-opacity duration-500 ${step === "fill-form" ? "opacity-100 text-foreground" : "opacity-40 text-muted-foreground"}`}>{step === "fill-form" ? "+7 707 123 45 67" : "+7 (___) ___ __ __"}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
-              <div className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px] transition-all duration-500 ${step === "fill-form" ? "opacity-100" : "opacity-40"}`} style={{ backgroundColor: "#25D366" }}>
-                <SiWhatsapp className="h-3.5 w-3.5" />
-                Отправить в WhatsApp
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="absolute inset-0 transition-all duration-500 flex flex-col"
-            style={{
-              opacity: showWhatsapp ? 1 : 0,
-              transform: showWhatsapp ? "scale(1)" : "scale(0.95)",
-              pointerEvents: showWhatsapp ? "auto" : "none",
-            }}
-          >
-            <div className="flex items-center gap-2 px-3 pt-8 pb-2 border-b" style={{ borderColor: "#25D366", backgroundColor: "#dcf8c6" }}>
-              <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ color: "#075E54" }} />
-              <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-[7px] font-bold">DA</div>
-              <div className="flex-1">
-                <p className="text-[9px] font-bold" style={{ color: "#075E54" }}>Достархан</p>
-                <p className="text-[7px]" style={{ color: "#128C7E" }}>онлайн</p>
-              </div>
-              <Phone className="h-3 w-3" style={{ color: "#075E54" }} />
-            </div>
-
-            <div className="flex-1 px-3 pt-4 space-y-2" style={{ backgroundColor: "#ece5dd" }}>
-              <div className="flex justify-end">
-                <div className="max-w-[85%] rounded-lg px-2 py-1.5 text-[8px] leading-relaxed shadow-sm" style={{ backgroundColor: "#dcf8c6" }}>
-                  <p className="font-semibold mb-0.5">Новый заказ №142</p>
-                  <p>Плов по-узбекски — 2 800 ₸</p>
-                  <p>Лагман домашний — 2 200 ₸</p>
-                  <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 5 000 ₸</p>
-                  <p className="mt-1">Имя: Асель</p>
-                  <p>Тел: +7 707 123 45 67</p>
-                  <div className="flex items-center justify-end gap-0.5 mt-1">
-                    <span className="text-[6px]" style={{ color: "#999" }}>12:34</span>
-                    <Check className="h-2 w-2" style={{ color: "#53bdeb" }} />
-                    <Check className="h-2 w-2 -ml-1.5" style={{ color: "#53bdeb" }} />
+                <div className="rounded-lg border border-border/40 p-2 bg-card space-y-1.5">
+                  <p className="text-[8px] font-semibold text-muted-foreground">Ваш заказ</p>
+                  {[MOCK_PRODUCTS[0], MOCK_PRODUCTS[1]].map((item, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-6 w-6 rounded overflow-hidden bg-muted"><img src={item.img} alt="" className="h-full w-full object-cover" /></div>
+                        <span className="text-[8px]">{item.name}</span>
+                      </div>
+                      <span className="text-[8px] font-bold">{item.price} ₸</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between pt-1.5 border-t border-border/30">
+                    <span className="text-[9px] font-bold">Итого</span>
+                    <span className="text-[9px] font-bold text-primary">5 000 ₸</span>
                   </div>
                 </div>
               </div>
-
-              <div className="flex justify-start">
-                <div className="max-w-[75%] rounded-lg px-2 py-1.5 text-[8px] bg-white shadow-sm">
-                  <p>Здравствуйте! Ваш заказ принят, готовим</p>
-                  <div className="flex items-center justify-end gap-0.5 mt-1">
-                    <span className="text-[6px]" style={{ color: "#999" }}>12:35</span>
-                  </div>
+              <div className="absolute bottom-0 left-0 right-0 px-3 pb-3">
+                <div className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-3 text-white font-semibold text-[10px] transition-all duration-500 ${step === "fill-form" ? "opacity-100" : "opacity-40"}`} style={{ backgroundColor: "#25D366" }}>
+                  <SiWhatsapp className="h-3.5 w-3.5" /> Отправить в WhatsApp
                 </div>
               </div>
             </div>
 
-            <div className="px-2 py-2 flex items-center gap-1.5" style={{ backgroundColor: "#f0f0f0" }}>
-              <div className="flex-1 rounded-full bg-white px-2.5 py-1.5 text-[8px] text-muted-foreground">
-                Написать сообщение...
+            <div className="absolute inset-0 transition-all duration-500 flex flex-col" style={{ opacity: showWhatsapp ? 1 : 0, transform: showWhatsapp ? "scale(1)" : "scale(0.95)", pointerEvents: showWhatsapp ? "auto" : "none" }}>
+              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b" style={{ borderColor: "#25D366", backgroundColor: "#dcf8c6" }}>
+                <ArrowRight className="h-3.5 w-3.5 rotate-180" style={{ color: "#075E54" }} />
+                <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center text-white text-[7px] font-bold">DA</div>
+                <div className="flex-1">
+                  <p className="text-[9px] font-bold" style={{ color: "#075E54" }}>Достархан</p>
+                  <p className="text-[7px]" style={{ color: "#128C7E" }}>онлайн</p>
+                </div>
+                <Phone className="h-3 w-3" style={{ color: "#075E54" }} />
               </div>
-              <div className="h-6 w-6 rounded-full flex items-center justify-center" style={{ backgroundColor: "#25D366" }}>
-                <Send className="h-2.5 w-2.5 text-white" />
+              <div className="flex-1 px-3 pt-3 space-y-2 overflow-hidden" style={{ backgroundColor: "#ece5dd" }}>
+                <div className="flex justify-end">
+                  <div className="max-w-[88%] rounded-lg px-2 py-1.5 text-[8px] leading-relaxed shadow-sm" style={{ backgroundColor: "#dcf8c6" }}>
+                    <p className="font-semibold mb-0.5">Заказ №142</p>
+                    <p>1x Плов по-узбекски — 2 800 ₸</p>
+                    <p>1x Лагман домашний — 2 200 ₸</p>
+                    <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 5 000 ₸</p>
+                    <p className="mt-1">Имя: Асель</p>
+                    <p>Тел: +7 707 123 45 67</p>
+                    <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: takesale.kz/invoice/142</p>
+                    <div className="flex items-center justify-end gap-0.5 mt-1">
+                      <span className="text-[6px]" style={{ color: "#999" }}>12:34</span>
+                      <Check className="h-2 w-2" style={{ color: "#53bdeb" }} />
+                      <Check className="h-2 w-2 -ml-1.5" style={{ color: "#53bdeb" }} />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-start">
+                  <div className="max-w-[75%] rounded-lg px-2 py-1.5 text-[8px] bg-white shadow-sm">
+                    <p>Ваш заказ принят, готовим!</p>
+                    <div className="flex items-center justify-end gap-0.5 mt-1">
+                      <span className="text-[6px]" style={{ color: "#999" }}>12:35</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="px-2 py-2 flex items-center gap-1.5" style={{ backgroundColor: "#f0f0f0" }}>
+                <div className="flex-1 rounded-full bg-white px-2.5 py-1.5 text-[8px] text-muted-foreground">Написать сообщение...</div>
+                <div className="h-6 w-6 rounded-full flex items-center justify-center" style={{ backgroundColor: "#25D366" }}><Send className="h-2.5 w-2.5 text-white" /></div>
               </div>
             </div>
-          </div>
 
+            <div className="absolute inset-0 transition-all duration-500 flex flex-col" style={{ opacity: showInvoice ? 1 : 0, transform: showInvoice ? "scale(1)" : "scale(0.95)", pointerEvents: showInvoice ? "auto" : "none" }}>
+              <div className="flex items-center gap-2 px-3 pt-[42px] pb-2 border-b border-border/30 bg-white dark:bg-zinc-900">
+                <ArrowRight className="h-3.5 w-3.5 text-foreground/70 rotate-180" />
+                <span className="text-[10px] font-bold flex-1">Достархан</span>
+              </div>
+              <div className="flex-1 overflow-hidden bg-muted/30 px-3 pt-3">
+                <div className="rounded-lg border border-border/40 bg-card p-3 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold">Заказ №142</p>
+                      <p className="text-[7px] text-muted-foreground">14 февраля 2026, 12:34</p>
+                    </div>
+                    <span className="rounded-full px-2 py-0.5 text-[7px] font-semibold bg-amber-100 text-amber-800">Ожидает</span>
+                  </div>
+                  <div className="border-t border-border/30 pt-2 space-y-1.5">
+                    {[MOCK_PRODUCTS[0], MOCK_PRODUCTS[1]].map((item, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-md overflow-hidden bg-muted shrink-0"><img src={item.img} alt="" className="h-full w-full object-cover" /></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[8px] font-medium"><span className="font-bold">1x</span> {item.name}</p>
+                        </div>
+                        <span className="text-[8px] font-semibold shrink-0">{item.price} ₸</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-border/30 pt-2">
+                    <div className="flex justify-between text-[9px] font-bold">
+                      <span>Итого</span>
+                      <span className="text-primary">5 000 ₸</span>
+                    </div>
+                  </div>
+                  <div className="border-t border-border/30 pt-2 space-y-1">
+                    <div>
+                      <p className="text-[7px] text-muted-foreground">Покупатель</p>
+                      <p className="text-[8px] font-semibold">Асель</p>
+                      <p className="text-[8px]" style={{ color: "#1a73e8" }}>+7 707 123 45 67</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-border/40 bg-card py-2 px-3">
+                  <ShoppingBag className="h-3 w-3 text-primary" />
+                  <span className="text-[8px] font-semibold text-primary">Вернуться в магазин</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
 
       <div className="flex justify-center gap-1.5 mt-4">
-        {STEP_ORDER.map((s, i) => (
-          <div
-            key={i}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              i === stepIndex ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/25"
-            }`}
-          />
+        {STEP_ORDER.map((_, i) => (
+          <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === stepIndex ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/25"}`} />
         ))}
       </div>
 
@@ -434,6 +375,7 @@ function AnimatedPhoneMockup() {
           {step === "checkout" && "Заполняет данные"}
           {step === "fill-form" && "Вводит имя и телефон"}
           {showWhatsapp && "Заказ отправлен в WhatsApp!"}
+          {showInvoice && "Чек заказа для покупателя"}
         </p>
       </div>
     </div>
