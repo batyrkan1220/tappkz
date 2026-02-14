@@ -609,7 +609,30 @@ export async function registerRoutes(
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const customersList = await storage.getCustomersByStore(store.id);
-      res.json(customersList);
+      const storeOrders = await storage.getOrdersByStore(store.id);
+
+      const customersWithStatus = customersList.map((c) => {
+        const customerOrders = storeOrders.filter(
+          (o) => o.customerPhone === c.phone
+        );
+        const confirmedOrders = customerOrders.filter(
+          (o) => o.status === "confirmed" || o.status === "completed"
+        ).length;
+        const pendingOrders = customerOrders.filter(
+          (o) => o.status === "pending"
+        ).length;
+        const cancelledOrders = customerOrders.filter(
+          (o) => o.status === "cancelled"
+        ).length;
+        return {
+          ...c,
+          confirmedOrders,
+          pendingOrders,
+          cancelledOrders,
+        };
+      });
+
+      res.json(customersWithStatus);
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }

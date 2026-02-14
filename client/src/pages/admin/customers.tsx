@@ -19,17 +19,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Customer } from "@shared/schema";
 
-function getCustomerStatus(customer: Customer): { label: string; className: string } {
-  const orders = customer.totalOrders || 0;
-  if (orders === 0) return { label: "Новый", className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" };
-  if (orders === 1) return { label: "Первый заказ", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" };
-  if (orders <= 4) return { label: "Постоянный", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" };
+type CustomerWithStatus = Customer & {
+  confirmedOrders: number;
+  pendingOrders: number;
+  cancelledOrders: number;
+};
+
+function getCustomerStatus(customer: CustomerWithStatus): { label: string; className: string } {
+  const confirmed = customer.confirmedOrders || 0;
+  const pending = customer.pendingOrders || 0;
+  const total = customer.totalOrders || 0;
+
+  if (total === 0) return { label: "Новый", className: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" };
+  if (confirmed === 0 && pending > 0) return { label: "Ожидает подтверждения", className: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400" };
+  if (confirmed === 0) return { label: "Не заказал", className: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400" };
+  if (confirmed === 1) return { label: "Первый заказ", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" };
+  if (confirmed <= 4) return { label: "Постоянный", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" };
   return { label: "Лояльный", className: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400" };
 }
 
 const FILTER_TABS = [
   { key: "all", label: "Все" },
   { key: "new", label: "Новые" },
+  { key: "awaiting", label: "Ожидают" },
+  { key: "not_ordered", label: "Не заказал" },
   { key: "first_order", label: "Первый заказ" },
   { key: "regular", label: "Постоянные" },
   { key: "loyal", label: "Лояльные" },
@@ -55,7 +68,7 @@ export default function CustomersPage() {
   const [editCustomer, setEditCustomer] = useState<Customer | null>(null);
   const { toast } = useToast();
 
-  const { data: customers = [], isLoading } = useQuery<Customer[]>({
+  const { data: customers = [], isLoading } = useQuery<CustomerWithStatus[]>({
     queryKey: ["/api/my-store/customers"],
   });
 
@@ -101,11 +114,15 @@ export default function CustomersPage() {
   });
 
   const filteredCustomers = customers.filter((c) => {
-    const orders = c.totalOrders || 0;
-    if (filter === "new" && orders !== 0) return false;
-    if (filter === "first_order" && orders !== 1) return false;
-    if (filter === "regular" && (orders < 2 || orders > 4)) return false;
-    if (filter === "loyal" && orders < 5) return false;
+    const total = c.totalOrders || 0;
+    const confirmed = c.confirmedOrders || 0;
+    const pending = c.pendingOrders || 0;
+    if (filter === "new" && total !== 0) return false;
+    if (filter === "awaiting" && !(confirmed === 0 && pending > 0)) return false;
+    if (filter === "not_ordered" && !(total > 0 && confirmed === 0 && pending === 0)) return false;
+    if (filter === "first_order" && confirmed !== 1) return false;
+    if (filter === "regular" && (confirmed < 2 || confirmed > 4)) return false;
+    if (filter === "loyal" && confirmed < 5) return false;
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -125,9 +142,11 @@ export default function CustomersPage() {
 
   const statusCounts = {
     new: customers.filter((c) => (c.totalOrders || 0) === 0).length,
-    first_order: customers.filter((c) => (c.totalOrders || 0) === 1).length,
-    regular: customers.filter((c) => { const o = c.totalOrders || 0; return o >= 2 && o <= 4; }).length,
-    loyal: customers.filter((c) => (c.totalOrders || 0) >= 5).length,
+    awaiting: customers.filter((c) => (c.confirmedOrders || 0) === 0 && (c.pendingOrders || 0) > 0).length,
+    not_ordered: customers.filter((c) => (c.totalOrders || 0) > 0 && (c.confirmedOrders || 0) === 0 && (c.pendingOrders || 0) === 0).length,
+    first_order: customers.filter((c) => (c.confirmedOrders || 0) === 1).length,
+    regular: customers.filter((c) => { const o = c.confirmedOrders || 0; return o >= 2 && o <= 4; }).length,
+    loyal: customers.filter((c) => (c.confirmedOrders || 0) >= 5).length,
   };
 
   if (isLoading) {
