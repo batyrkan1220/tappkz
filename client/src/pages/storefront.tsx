@@ -973,11 +973,11 @@ export default function StorefrontPage() {
       </Dialog>
 
       <footer className="mx-auto max-w-lg border-t border-border/30 px-4 py-6 text-center">
-        <a href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground" data-testid="link-footer-takesale">
+        <a href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground" data-testid="link-footer-tapp">
           <div className="flex h-5 w-5 items-center justify-center rounded bg-foreground">
             <ShoppingBag className="h-3 w-3 text-background" />
           </div>
-          <span>Сделано в <span className="font-semibold text-foreground">TakeSale</span></span>
+          <span>Сделано в <span className="font-semibold text-foreground">Tapp</span></span>
         </a>
       </footer>
     </div>

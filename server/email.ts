@@ -42,13 +42,13 @@ export async function sendPasswordResetEmail(toEmail: string, code: string) {
   const { client, fromEmail } = await getResendClient();
 
   await client.emails.send({
-    from: fromEmail || 'TakeSale <noreply@resend.dev>',
+    from: fromEmail || 'Tapp <noreply@resend.dev>',
     to: toEmail,
-    subject: 'TakeSale — Код восстановления пароля',
+    subject: 'Tapp — Код восстановления пароля',
     html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px;">
         <div style="text-align: center; margin-bottom: 32px;">
-          <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">TakeSale</h1>
+          <h1 style="font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 0;">Tapp</h1>
         </div>
         <p style="color: #333; font-size: 16px; line-height: 1.5;">Вы запросили восстановление пароля. Используйте код ниже:</p>
         <div style="background: #f4f4f5; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">

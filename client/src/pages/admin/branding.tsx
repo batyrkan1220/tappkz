@@ -472,7 +472,7 @@ export default function BrandingPage() {
                 <div className="flex h-3.5 w-3.5 items-center justify-center rounded bg-foreground">
                   <ShoppingBag className="h-2 w-2 text-background" />
                 </div>
-                <span>Сделано в <span className="font-semibold text-foreground">TakeSale</span></span>
+                <span>Сделано в <span className="font-semibold text-foreground">Tapp</span></span>
               </div>
             </div>
           </div>

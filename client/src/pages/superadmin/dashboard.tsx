@@ -133,7 +133,7 @@ export default function SuperAdminDashboard() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-superadmin-dashboard-title">Панель SuperAdmin</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Обзор платформы TakeSale</p>
+          <p className="mt-1 text-sm text-muted-foreground">Обзор платформы Tapp</p>
         </div>
         <div className="flex items-center gap-2">
           {(["7d", "30d", "90d"] as TrendPeriod[]).map((p) => (

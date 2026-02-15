@@ -181,7 +181,7 @@ function SettingsTab() {
 
           <Button
             variant="outline"
-            onClick={() => testMutation.mutate({ phone: testPhone, message: "TakeSale: Тестовое сообщение WhatsApp API" })}
+            onClick={() => testMutation.mutate({ phone: testPhone, message: "Tapp: Тестовое сообщение WhatsApp API" })}
             disabled={testMutation.isPending || !testPhone}
             data-testid="button-send-test"
           >

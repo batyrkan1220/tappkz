@@ -62,7 +62,7 @@ export function UpgradeBanner() {
             <TrendingUp className="h-4 w-4 text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold" data-testid="text-upgrade-promo-title">Развивайте бизнес с TakeSale</p>
+            <p className="text-sm font-semibold" data-testid="text-upgrade-promo-title">Развивайте бизнес с Tapp</p>
             <p className="text-xs text-muted-foreground">Безлимитные заказы, изображения, свой домен и аналитика</p>
           </div>
           <Link href="/admin/subscription" data-testid="link-upgrade-promo">

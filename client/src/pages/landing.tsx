@@ -351,7 +351,7 @@ function AnimatedPhoneMockup() {
                     <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 12 200 ₸</p>
                     <p className="mt-1">Имя: Айгуль</p>
                     <p>Тел: +7 701 456 78 90</p>
-                    <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: takesale.kz/invoice/285</p>
+                    <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: tapp.kz/invoice/285</p>
                     <div className="flex items-center justify-end gap-0.5 mt-1">
                       <span className="text-[6px]" style={{ color: "#999" }}>12:34</span>
                       <Check className="h-2 w-2" style={{ color: "#53bdeb" }} />
@@ -437,7 +437,7 @@ export default function LandingPage() {
           "Безлимитные заказы",
           "Безлимитные изображения",
           "Кастомный домен",
-          "Убрать логотип TakeSale",
+          "Убрать логотип Tapp",
           "Расширенная аналитика",
           "Приоритетная поддержка",
         ],
@@ -470,7 +470,7 @@ export default function LandingPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <ShoppingBag className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-lg font-extrabold tracking-tight" data-testid="text-brand-name">TakeSale</span>
+            <span className="text-lg font-extrabold tracking-tight" data-testid="text-brand-name">Tapp</span>
           </div>
 
           <div className="hidden md:flex items-center gap-6">
@@ -946,7 +946,7 @@ export default function LandingPage() {
               <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
                 <ShoppingBag className="h-3.5 w-3.5 text-primary-foreground" />
               </div>
-              <span className="text-sm font-extrabold tracking-tight">TakeSale</span>
+              <span className="text-sm font-extrabold tracking-tight">Tapp</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               <a href="#features" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-features">Возможности</a>
@@ -954,7 +954,7 @@ export default function LandingPage() {
               <a href="#pricing" className="text-sm text-muted-foreground font-medium" data-testid="link-footer-pricing">Тарифы</a>
             </div>
             <p className="text-xs text-muted-foreground" data-testid="text-footer-copyright">
-              TakeSale 2026
+              Tapp 2026
             </p>
           </div>
         </div>

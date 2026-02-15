@@ -1,7 +1,7 @@
-# TakeSale - WhatsApp Storefront Platform
+# Tapp (tapp.kz) - WhatsApp Storefront Platform
 
 ## Overview
-Multi-tenant SaaS platform for Kazakhstan SMBs to create branded mobile storefronts with WhatsApp order checkout. UI is in Russian (RU).
+Multi-tenant SaaS platform for global SMBs to create branded mobile storefronts with WhatsApp order checkout. UI is in Russian (RU). Rebranded from TakeSale to Tapp.
 
 ## Architecture
 - **Frontend**: React + Vite + Tailwind CSS + shadcn/ui + wouter routing

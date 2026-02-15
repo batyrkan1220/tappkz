@@ -56,7 +56,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
               <ShoppingBag className="h-4 w-4 text-background" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-extrabold tracking-tight" data-testid="text-sidebar-brand">TakeSale</p>
+              <p className="truncate text-sm font-extrabold tracking-tight" data-testid="text-sidebar-brand">Tapp</p>
               {store && (
                 <p className="truncate text-xs text-muted-foreground" data-testid="text-sidebar-store-name">{store.name}</p>
               )}

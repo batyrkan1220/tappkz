@@ -43,7 +43,7 @@ function SuperAdminSidebar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-extrabold tracking-tight" data-testid="text-superadmin-brand">SuperAdmin</p>
-            <p className="truncate text-xs text-muted-foreground">TakeSale</p>
+            <p className="truncate text-xs text-muted-foreground">Tapp</p>
           </div>
         </div>
       </SidebarHeader>

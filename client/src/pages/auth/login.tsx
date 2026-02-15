@@ -52,7 +52,7 @@ export default function LoginPage() {
               <ShoppingBag className="h-7 w-7 text-background" />
             </div>
           </Link>
-          <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-login-title">Войти в TakeSale</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-login-title">Войти в Tapp</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">Введите email и пароль для входа</p>
         </div>
 

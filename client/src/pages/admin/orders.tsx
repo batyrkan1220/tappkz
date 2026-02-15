@@ -120,7 +120,7 @@ export default function OrdersPage() {
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(() => {
-    const saved = localStorage.getItem("takesale_order_sound");
+    const saved = localStorage.getItem("tapp_order_sound");
     return saved !== "false";
   });
   const prevOrderIdsRef = useRef<Set<number> | null>(null);
@@ -135,7 +135,7 @@ export default function OrdersPage() {
   const toggleSound = useCallback(() => {
     setSoundEnabled((prev) => {
       const next = !prev;
-      localStorage.setItem("takesale_order_sound", String(next));
+      localStorage.setItem("tapp_order_sound", String(next));
       if (next) {
         playNotificationSound();
       }

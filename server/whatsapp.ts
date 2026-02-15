@@ -196,7 +196,7 @@ interface OnboardingConfig {
 
 const DEFAULT_ONBOARDING: OnboardingConfig = {
   welcomeEnabled: true,
-  welcomeMessage: `Добро пожаловать в TakeSale! 🎉
+  welcomeMessage: `Добро пожаловать в Tapp! 🎉
 
 Вы сделали первый шаг к онлайн-продажам через WhatsApp.
 
@@ -209,7 +209,7 @@ const DEFAULT_ONBOARDING: OnboardingConfig = {
   storeCreatedEnabled: true,
   storeCreatedMessage: `Отлично! Ваш магазин "{store_name}" создан! 🏪
 
-Ваша витрина: takesale.replit.app/s/{slug}
+Ваша витрина: tapp.kz/s/{slug}
 
 Следующие шаги:
 1️⃣ Создайте категории товаров
