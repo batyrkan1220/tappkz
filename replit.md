@@ -122,7 +122,7 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - Added admin customers page at /admin/customers
 - Added admin orders page at /admin/orders
 - Added order/invoice system with WhatsApp integration
-- Removed Kaspi payment integration (temporarily disabled, DB schema preserved)
+- Kaspi payment integration: admin settings (enable/disable, phone, recipient name), checkout payment method selector (WhatsApp vs Kaspi), invoice page with copy-to-clipboard payment instructions; Kaspi orders redirect to invoice instead of WhatsApp; stored in store_settings (kaspiEnabled, kaspiPayUrl, kaspiRecipientName)
 - Added Zod validation schemas on all API routes
 - Unified color scheme: primary blue across all admin pages, landing page updated with full feature set
 - Plan/tariff management: planStartedAt, planExpiresAt fields in stores table, PLAN_PRICES/PLAN_NAMES constants

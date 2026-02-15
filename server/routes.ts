@@ -86,6 +86,9 @@ const settingsSchema = z.object({
   checkoutCommentEnabled: z.boolean().optional(),
   instagramUrl: z.string().max(200).nullable().optional(),
   phoneNumber: z.string().max(30).nullable().optional(),
+  kaspiEnabled: z.boolean().optional(),
+  kaspiPayUrl: z.string().max(30).nullable().optional(),
+  kaspiRecipientName: z.string().max(100).nullable().optional(),
 });
 
 const whatsappSchema = z.object({
@@ -413,9 +416,9 @@ export async function registerRoutes(
         checkoutCommentEnabled: data.checkoutCommentEnabled ?? existingSettings?.checkoutCommentEnabled ?? false,
         currency: "KZT",
         whatsappTemplate: existingSettings?.whatsappTemplate || "",
-        kaspiEnabled: existingSettings?.kaspiEnabled ?? false,
-        kaspiPayUrl: existingSettings?.kaspiPayUrl || null,
-        kaspiRecipientName: existingSettings?.kaspiRecipientName || null,
+        kaspiEnabled: data.kaspiEnabled !== undefined ? data.kaspiEnabled : (existingSettings?.kaspiEnabled ?? false),
+        kaspiPayUrl: data.kaspiPayUrl !== undefined ? (data.kaspiPayUrl || null) : (existingSettings?.kaspiPayUrl || null),
+        kaspiRecipientName: data.kaspiRecipientName !== undefined ? (data.kaspiRecipientName || null) : (existingSettings?.kaspiRecipientName || null),
       });
       res.json(settings);
     } catch (e: any) {
@@ -682,7 +685,18 @@ export async function registerRoutes(
       const allStores = await storage.getAllStores();
       const store = allStores.find(s => s.id === order.storeId);
 
-      res.json({ order, storeName: store?.name, storeSlug: store?.slug });
+      let kaspiInfo = null;
+      if (store) {
+        const settings = await storage.getSettings(store.id);
+        if (settings?.kaspiEnabled && settings.kaspiPayUrl) {
+          kaspiInfo = {
+            phone: settings.kaspiPayUrl,
+            recipientName: settings.kaspiRecipientName || store.name,
+          };
+        }
+      }
+
+      res.json({ order, storeName: store?.name, storeSlug: store?.slug, kaspiInfo });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
