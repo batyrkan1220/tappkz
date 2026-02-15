@@ -106,6 +106,12 @@ export default function LoginPage() {
                 </>
               )}
             </Button>
+
+            <div className="text-center">
+              <Link href="/forgot-password" className="text-xs text-muted-foreground" data-testid="link-forgot-password">
+                Забыли пароль?
+              </Link>
+            </div>
           </form>
         </Card>
 

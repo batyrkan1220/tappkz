@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
 import LoginPage from "@/pages/auth/login";
 import RegisterPage from "@/pages/auth/register";
+import ForgotPasswordPage from "@/pages/auth/forgot-password";
 import StorefrontPage from "@/pages/storefront";
 import InvoicePage from "@/pages/invoice";
 import AdminLayout from "@/pages/admin/admin-layout";
@@ -63,6 +64,7 @@ function Router() {
       <Route path="/" component={HomePage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
+      <Route path="/forgot-password" component={ForgotPasswordPage} />
       <Route path="/admin" component={() => <AdminRoute component={Dashboard} />} />
       <Route path="/admin/products" component={() => <AdminRoute component={ProductsPage} />} />
       <Route path="/admin/categories" component={() => <AdminRoute component={CategoriesPage} />} />
