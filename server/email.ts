@@ -41,12 +41,8 @@ async function getResendClient() {
 export async function sendPasswordResetEmail(toEmail: string, code: string) {
   const { client, fromEmail } = await getResendClient();
 
-  const senderAddress = (fromEmail && !fromEmail.includes('gmail.com') && !fromEmail.includes('yahoo.com') && !fromEmail.includes('mail.ru') && !fromEmail.includes('yandex.'))
-    ? fromEmail
-    : 'Tapp <onboarding@resend.dev>';
-
   await client.emails.send({
-    from: senderAddress,
+    from: 'Tapp <noreply@tapp.kz>',
     to: toEmail,
     subject: 'Tapp — Код восстановления пароля',
     html: `
@@ -92,9 +88,7 @@ export async function sendBroadcastEmail(
   onProgress?: (success: number, fail: number) => void
 ): Promise<{ success: number; fail: number }> {
   const { client, fromEmail } = await getResendClient();
-  const from = (fromEmail && !fromEmail.includes('gmail.com') && !fromEmail.includes('yahoo.com') && !fromEmail.includes('mail.ru') && !fromEmail.includes('yandex.'))
-    ? fromEmail
-    : 'Tapp <onboarding@resend.dev>';
+  const from = 'Tapp <noreply@tapp.kz>';
   const wrappedHtml = wrapEmailHtml(subject, htmlBody);
 
   let success = 0;
