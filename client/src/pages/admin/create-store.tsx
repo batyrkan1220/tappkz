@@ -153,7 +153,7 @@ export default function CreateStorePage() {
             <div>
               <Label className="font-semibold">URL магазина *</Label>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <span className="shrink-0">/s/</span>
+                <span className="shrink-0">tapp.kz/</span>
                 <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-store" data-testid="input-create-store-slug" />
               </div>
             </div>

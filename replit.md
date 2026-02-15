@@ -15,7 +15,7 @@ Multi-tenant SaaS platform for global SMBs to create branded mobile storefronts 
 - `/` - Landing page (logged out) / Admin dashboard (logged in)
 - `/login` - Login page (email/password)
 - `/register` - Registration page
-- `/s/:slug` - Public storefront for a store
+- `/:slug` - Public storefront for a store (e.g. tapp.kz/mystore)
 - `/invoice/:id` - Public invoice/order receipt page
 
 ### Admin (authenticated)

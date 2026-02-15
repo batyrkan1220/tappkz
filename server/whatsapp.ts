@@ -209,7 +209,7 @@ const DEFAULT_ONBOARDING: OnboardingConfig = {
   storeCreatedEnabled: true,
   storeCreatedMessage: `Отлично! Ваш магазин "{store_name}" создан! 🏪
 
-Ваша витрина: tapp.kz/s/{slug}
+Ваша витрина: tapp.kz/{slug}
 
 Следующие шаги:
 1️⃣ Создайте категории товаров

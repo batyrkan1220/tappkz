@@ -351,7 +351,7 @@ export default function SuperAdminDashboard() {
               <div className="flex items-center justify-between gap-3 rounded-md border px-4 py-3 hover-elevate cursor-pointer" data-testid={`row-recent-store-${store.id}`}>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold truncate">{store.name}</p>
-                  <p className="text-xs text-muted-foreground">/s/{store.slug}</p>
+                  <p className="text-xs text-muted-foreground">/{store.slug}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge variant="secondary" className={planColors[store.plan] || ""}>

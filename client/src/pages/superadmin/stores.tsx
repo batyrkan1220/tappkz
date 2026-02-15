@@ -121,7 +121,7 @@ function StoreRow({ store, onChangePlan, onToggleActive, isPlanPending, isActive
                   </Badge>
                 )}
               </div>
-              <p className="mt-1.5 text-sm text-muted-foreground">/s/{store.slug} {store.city ? `· ${store.city}` : ""}</p>
+              <p className="mt-1.5 text-sm text-muted-foreground">/{store.slug} {store.city ? `· ${store.city}` : ""}</p>
               <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
                 <span>{bt?.label || "Не указан"}</span>
                 <span>Владелец: {store.ownerEmail || "—"}</span>
@@ -142,7 +142,7 @@ function StoreRow({ store, onChangePlan, onToggleActive, isPlanPending, isActive
           </Link>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer">
+            <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="icon" data-testid={`button-view-store-${store.id}`}>
                 <ExternalLink className="h-4 w-4" />
               </Button>

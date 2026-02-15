@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   if (!store) return null;
 
-  const storeUrl = `${window.location.origin}/s/${store.slug}`;
+  const storeUrl = `${window.location.origin}/${store.slug}`;
   const hasCategories = (categories?.length ?? 0) > 0;
   const hasProducts = (products?.length ?? 0) > 0;
   const isOnboarded = hasCategories && hasProducts;
@@ -58,7 +58,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-dashboard-title">Панель управления</h1>
           <p className="mt-1 text-sm text-muted-foreground" data-testid="text-dashboard-store">Магазин: {store.name}</p>
         </div>
-        <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer" data-testid="link-view-store">
+        <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" data-testid="link-view-store">
           <Button variant="outline" className="rounded-full font-semibold" data-testid="button-view-store">
             <ExternalLink className="mr-1.5 h-4 w-4" />
             Открыть магазин

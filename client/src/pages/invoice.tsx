@@ -82,7 +82,7 @@ export default function InvoicePage() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4">
       <div className="mx-auto max-w-md">
         {storeSlug && (
-          <a href={`/s/${storeSlug}`}>
+          <a href={`/${storeSlug}`}>
             <Button variant="ghost" className="mb-3 gap-2" data-testid="button-back-to-store">
               <ArrowLeft className="h-4 w-4" />
               {storeName}

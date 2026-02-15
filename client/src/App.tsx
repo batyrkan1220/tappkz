@@ -85,8 +85,8 @@ function Router() {
       <Route path="/superadmin/events" component={() => <SuperAdminRoute component={SuperAdminEvents} />} />
       <Route path="/superadmin/tariffs" component={() => <SuperAdminRoute component={SuperAdminTariffs} />} />
       <Route path="/superadmin/whatsapp" component={() => <SuperAdminRoute component={SuperAdminWhatsApp} />} />
-      <Route path="/s/:slug" component={StorefrontPage} />
       <Route path="/invoice/:id" component={InvoicePage} />
+      <Route path="/:slug" component={StorefrontPage} />
       <Route component={NotFound} />
     </Switch>
   );

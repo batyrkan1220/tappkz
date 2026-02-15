@@ -217,11 +217,11 @@ export default function SuperAdminStoreDetail() {
             {isExpired && <Badge variant="destructive">Просрочен</Badge>}
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
-            /s/{store.slug} · {bt?.label || "Не указан"} · Владелец: {data.ownerEmail || "—"}
+            /{store.slug} · {bt?.label || "Не указан"} · Владелец: {data.ownerEmail || "—"}
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="icon" data-testid="button-view-storefront">
               <ExternalLink className="h-4 w-4" />
             </Button>
@@ -483,7 +483,7 @@ export default function SuperAdminStoreDetail() {
         <Card className="p-5">
           <p className="text-sm text-muted-foreground">
             Всего товаров: {data.productsCount}/{planLimit} (лимит тарифа {store.plan.toUpperCase()}).
-            <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+            <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
               Посмотреть магазин
             </a>
           </p>

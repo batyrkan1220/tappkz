@@ -110,7 +110,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild data-testid="link-sidebar-storefront">
-                    <a href={`/s/${store.slug}`} target="_blank" rel="noopener noreferrer">
+                    <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4" />
                       <span className="font-medium">Открыть магазин</span>
                     </a>
