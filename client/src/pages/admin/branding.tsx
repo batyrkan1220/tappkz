@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Trash2, Palette, CheckCircle2, ImageIcon, ShoppingBag, MapPin, ShoppingCart, Plus, Menu, Search } from "lucide-react";
+import { Upload, Trash2, Palette, CheckCircle2, ImageIcon, ShoppingBag, MapPin, ShoppingCart, Plus, Menu, Search, Pipette, Hash } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp } from "react-icons/si";
 import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
@@ -49,6 +49,122 @@ const FONT_STYLES = [
   { value: "classic", label: "Классический", cls: "font-serif" },
   { value: "rounded", label: "Округлый", cls: "font-sans tracking-wide" },
 ];
+
+function isValidHex(hex: string): boolean {
+  return /^#[0-9A-Fa-f]{6}$/.test(hex);
+}
+
+function normalizeHex(val: string): string {
+  let hex = val.replace(/[^0-9A-Fa-f#]/g, "");
+  if (!hex.startsWith("#")) hex = "#" + hex;
+  return hex.slice(0, 7);
+}
+
+interface ColorPickerProps {
+  value: string;
+  onChange: (color: string) => void;
+  label: string;
+  description?: string;
+  allowNone?: boolean;
+  isNone?: boolean;
+  onClearClick?: () => void;
+  testIdPrefix: string;
+}
+
+function ColorPicker({ value, onChange, label, description, allowNone, isNone, onClearClick, testIdPrefix }: ColorPickerProps) {
+  const [hexInput, setHexInput] = useState(value);
+  const colorInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setHexInput(value);
+  }, [value]);
+
+  const handleHexChange = (input: string) => {
+    const normalized = normalizeHex(input);
+    setHexInput(normalized);
+    if (isValidHex(normalized)) {
+      onChange(normalized);
+    }
+  };
+
+  const handleHexBlur = () => {
+    if (!isValidHex(hexInput)) {
+      setHexInput(value);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <Label className="mb-1 block text-sm font-semibold">{label}</Label>
+        {description && <p className="mb-2 text-xs text-muted-foreground">{description}</p>}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        {allowNone && (
+          <button
+            onClick={onClearClick}
+            className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 border-dashed text-xs text-muted-foreground ${isNone ? "ring-2 ring-offset-2 ring-foreground" : ""}`}
+            data-testid={`${testIdPrefix}-none`}
+          >
+            --
+          </button>
+        )}
+        {(allowNone ? PRIMARY_COLORS.slice(0, 8) : PRIMARY_COLORS).map((c) => (
+          <button
+            key={c.value}
+            onClick={() => { onChange(c.value); setHexInput(c.value); }}
+            className={`relative h-9 w-9 rounded-lg transition-all ${!isNone && value === c.value ? "ring-2 ring-offset-2 ring-foreground" : ""}`}
+            style={{ backgroundColor: c.value }}
+            title={c.label}
+            data-testid={`${testIdPrefix}-${c.value}`}
+          >
+            {!isNone && value === c.value && (
+              <CheckCircle2 className="absolute inset-0 m-auto h-4 w-4 text-white" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div
+          className="relative h-9 w-9 shrink-0 rounded-lg border cursor-pointer overflow-hidden"
+          style={{ backgroundColor: isNone ? "#6b7280" : value }}
+          onClick={() => colorInputRef.current?.click()}
+          data-testid={`${testIdPrefix}-picker`}
+        >
+          <Pipette className="absolute inset-0 m-auto h-4 w-4 text-white/80" />
+          <input
+            ref={colorInputRef}
+            type="color"
+            value={isNone ? "#6b7280" : value}
+            onChange={(e) => { onChange(e.target.value); setHexInput(e.target.value); }}
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            data-testid={`${testIdPrefix}-color-input`}
+          />
+        </div>
+
+        <div className="relative flex-1 max-w-[160px]">
+          <Hash className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            value={hexInput.replace("#", "")}
+            onChange={(e) => handleHexChange(e.target.value)}
+            onBlur={handleHexBlur}
+            placeholder="2563eb"
+            maxLength={6}
+            className="pl-8 font-mono text-sm uppercase"
+            data-testid={`${testIdPrefix}-hex-input`}
+          />
+        </div>
+
+        <div
+          className="h-9 w-9 shrink-0 rounded-lg border"
+          style={{ backgroundColor: isNone ? "transparent" : value }}
+          data-testid={`${testIdPrefix}-preview`}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function BrandingPage() {
   const { toast } = useToast();
@@ -153,67 +269,26 @@ export default function BrandingPage() {
           <Card className="p-5">
             <h2 className="mb-4 text-base font-bold">Фирменные цвета</h2>
 
-            <div className="space-y-4">
-              <div>
-                <Label className="mb-2 block text-sm font-semibold">Основной цвет</Label>
-                <div className="flex flex-wrap items-center gap-2">
-                  {PRIMARY_COLORS.map((c) => (
-                    <button
-                      key={c.value}
-                      onClick={() => setPrimaryColor(c.value)}
-                      className={`relative h-9 w-9 rounded-lg transition-all ${primaryColor === c.value ? "ring-2 ring-offset-2 ring-foreground" : ""}`}
-                      style={{ backgroundColor: c.value }}
-                      title={c.label}
-                      data-testid={`button-color-${c.value}`}
-                    >
-                      {primaryColor === c.value && (
-                        <CheckCircle2 className="absolute inset-0 m-auto h-4 w-4 text-white" />
-                      )}
-                    </button>
-                  ))}
-                  <Input
-                    type="color"
-                    value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
-                    className="h-9 w-14 cursor-pointer p-0.5"
-                    data-testid="input-custom-color"
-                  />
-                </div>
-              </div>
+            <div className="space-y-6">
+              <ColorPicker
+                value={primaryColor}
+                onChange={setPrimaryColor}
+                label="Основной цвет"
+                description="Используется для кнопок, корзины и акцентов"
+                testIdPrefix="primary"
+              />
 
-              <div>
-                <Label className="mb-2 block text-sm font-semibold">Дополнительный цвет</Label>
-                <p className="mb-2 text-xs text-muted-foreground">Для акцентов и скидок</p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={() => setSecondaryColor(null)}
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg border-2 border-dashed text-xs text-muted-foreground ${!secondaryColor ? "ring-2 ring-offset-2 ring-foreground" : ""}`}
-                    data-testid="button-secondary-none"
-                  >
-                    --
-                  </button>
-                  {PRIMARY_COLORS.slice(0, 8).map((c) => (
-                    <button
-                      key={c.value}
-                      onClick={() => setSecondaryColor(c.value)}
-                      className={`relative h-9 w-9 rounded-lg transition-all ${secondaryColor === c.value ? "ring-2 ring-offset-2 ring-foreground" : ""}`}
-                      style={{ backgroundColor: c.value }}
-                      title={c.label}
-                      data-testid={`button-secondary-${c.value}`}
-                    >
-                      {secondaryColor === c.value && (
-                        <CheckCircle2 className="absolute inset-0 m-auto h-4 w-4 text-white" />
-                      )}
-                    </button>
-                  ))}
-                  <Input
-                    type="color"
-                    value={secondaryColor || "#6b7280"}
-                    onChange={(e) => setSecondaryColor(e.target.value)}
-                    className="h-9 w-14 cursor-pointer p-0.5"
-                    data-testid="input-custom-secondary"
-                  />
-                </div>
+              <div className="border-t pt-4">
+                <ColorPicker
+                  value={secondaryColor || "#6b7280"}
+                  onChange={(c) => setSecondaryColor(c)}
+                  label="Дополнительный цвет"
+                  description="Для скидок, акций и дополнительных акцентов"
+                  allowNone
+                  isNone={!secondaryColor}
+                  onClearClick={() => setSecondaryColor(null)}
+                  testIdPrefix="secondary"
+                />
               </div>
             </div>
           </Card>
@@ -224,9 +299,10 @@ export default function BrandingPage() {
 
           <Card className="p-5">
             <h2 className="mb-4 text-base font-bold">Логотип и баннер</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <Label className="mb-2 block text-sm font-semibold">Логотип</Label>
+                <p className="mb-2 text-xs text-muted-foreground">Квадратное изображение, отображается в шапке</p>
                 {logoUrl ? (
                   <div className="relative inline-block">
                     <img src={logoUrl} alt="Logo" className="h-24 w-24 rounded-xl border object-cover" />
@@ -250,6 +326,7 @@ export default function BrandingPage() {
 
               <div>
                 <Label className="mb-2 block text-sm font-semibold">Баннер</Label>
+                <p className="mb-2 text-xs text-muted-foreground">Горизонтальное изображение в верхней части</p>
                 {bannerUrl ? (
                   <div className="relative">
                     <img src={bannerUrl} alt="Banner" className="h-24 w-full rounded-xl border object-cover" />
@@ -273,7 +350,7 @@ export default function BrandingPage() {
             </div>
 
             {bannerUrl && (
-              <div className="mt-4 flex items-center justify-between gap-4">
+              <div className="mt-4 flex items-center justify-between gap-4 border-t pt-4">
                 <div>
                   <Label className="text-sm font-semibold">Затемнение баннера</Label>
                   <p className="text-xs text-muted-foreground">Текст поверх баннера будет лучше виден</p>
@@ -409,33 +486,33 @@ export default function BrandingPage() {
             </div>
 
             <div className="flex gap-1.5 px-3 py-2.5">
-              <span className="rounded-full px-3 py-1 text-[10px] font-medium text-white" style={{ backgroundColor: primaryColor }}>Все</span>
-              <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-medium">Категория</span>
-              <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-medium">Другая</span>
+              <span className={`px-3 py-1 text-[10px] font-medium text-white ${btnRadius}`} style={{ backgroundColor: primaryColor }}>Все</span>
+              <span className={`bg-muted px-3 py-1 text-[10px] font-medium ${btnRadius}`}>Категория</span>
+              <span className={`bg-muted px-3 py-1 text-[10px] font-medium ${btnRadius}`}>Другая</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 px-3 pb-3">
               {[
-                { name: "Товар 1", price: "4 500 ₸", discount: "3 200 ₸" },
-                { name: "Товар 2", price: "7 800 ₸", discount: null },
-                { name: "Товар 3", price: "2 900 ₸", discount: null },
-                { name: "Товар 4", price: "5 400 ₸", discount: "4 100 ₸" },
+                { name: "Товар 1", price: "4 500 \u20B8", discount: "3 200 \u20B8" },
+                { name: "Товар 2", price: "7 800 \u20B8", discount: null },
+                { name: "Товар 3", price: "2 900 \u20B8", discount: null },
+                { name: "Товар 4", price: "5 400 \u20B8", discount: "4 100 \u20B8" },
               ].map((p, i) => (
                 <div
                   key={i}
-                  className={`overflow-hidden rounded-xl bg-card ${cardCls}`}
+                  className={`overflow-hidden ${btnRadius === "rounded-full" ? "rounded-xl" : btnRadius} bg-card ${cardCls}`}
                 >
                   <div className="relative aspect-square bg-muted">
                     <ImageIcon className="absolute inset-0 m-auto h-5 w-5 text-muted-foreground/20" />
                     {p.discount && (
                       <span
-                        className="absolute top-1.5 left-1.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold text-white"
+                        className={`absolute top-1.5 left-1.5 ${btnRadius} px-1.5 py-0.5 text-[8px] font-bold text-white`}
                         style={{ backgroundColor: secondaryColor || primaryColor }}
                       >
                         -29%
                       </span>
                     )}
-                    <button className="absolute bottom-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full border bg-white/90 shadow-sm">
+                    <button className={`absolute bottom-1.5 right-1.5 flex h-6 w-6 items-center justify-center ${btnRadius} border bg-white/90 shadow-sm`}>
                       <Plus className="h-3 w-3" />
                     </button>
                   </div>
@@ -457,14 +534,14 @@ export default function BrandingPage() {
             </div>
 
             <div className="px-3 pb-3">
-              <div className="flex items-center justify-between rounded-2xl px-3.5 py-2.5 text-white" style={{ backgroundColor: primaryColor }}>
+              <div className={`flex items-center justify-between ${btnRadius} px-3.5 py-2.5 text-white`} style={{ backgroundColor: primaryColor }}>
                 <div className="flex items-center gap-2">
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white/25 px-1 text-[9px] font-bold">
                     2
                   </span>
                   <span className="text-[11px] font-semibold">Корзина</span>
                 </div>
-                <span className="text-[11px] font-bold">11 000 ₸</span>
+                <span className="text-[11px] font-bold">11 000 {"\u20B8"}</span>
               </div>
             </div>
 
