@@ -8,7 +8,7 @@ import {
   type StoreEvent, type InsertStoreEvent,
   type Order, type InsertOrder,
   type Customer, type InsertCustomer,
-  PLAN_LIMITS,
+  PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS,
 } from "@shared/schema";
 import { users, type User } from "@shared/models/auth";
 import { db } from "./db";
@@ -39,6 +39,7 @@ export interface IStorage {
   countProducts(storeId: number): Promise<number>;
   countOrdersThisMonth(storeId: number): Promise<number>;
   countImages(storeId: number): Promise<number>;
+  getEffectivePlanLimits(plan: string): Promise<{ productLimit: number; orderLimit: number; imageLimit: number }>;
 
   recordEvent(event: InsertStoreEvent): Promise<void>;
   getAnalytics(storeId: number): Promise<{ visits: number; checkouts: number; addToCarts: number }>;
@@ -220,17 +221,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async countOrdersThisMonth(storeId: number): Promise<number> {
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const [result] = await db.select({ count: count() }).from(orders).where(
-      and(eq(orders.storeId, storeId), gte(orders.createdAt, startOfMonth))
+      and(
+        eq(orders.storeId, storeId),
+        gte(orders.createdAt, sql`date_trunc('month', now() AT TIME ZONE 'Asia/Almaty') AT TIME ZONE 'Asia/Almaty'`)
+      )
     );
     return result?.count ?? 0;
   }
 
   async countImages(storeId: number): Promise<number> {
     const allProducts = await db.select({ imageUrls: products.imageUrls }).from(products).where(eq(products.storeId, storeId));
-    return allProducts.reduce((sum, p) => sum + (p.imageUrls?.length || 0), 0);
+    let total = allProducts.reduce((sum, p) => sum + (p.imageUrls?.length || 0), 0);
+    const theme = await db.select({ logoUrl: storeThemes.logoUrl, bannerUrl: storeThemes.bannerUrl }).from(storeThemes).where(eq(storeThemes.storeId, storeId));
+    if (theme[0]) {
+      if (theme[0].logoUrl) total++;
+      if (theme[0].bannerUrl) total++;
+    }
+    return total;
+  }
+
+  async getEffectivePlanLimits(plan: string): Promise<{ productLimit: number; orderLimit: number; imageLimit: number }> {
+    const saved = await this.getPlatformSetting(`plan_${plan}`);
+    return {
+      productLimit: (saved as any)?.limit ?? PLAN_LIMITS[plan] ?? 30,
+      orderLimit: (saved as any)?.orderLimit ?? PLAN_ORDER_LIMITS[plan] ?? 50,
+      imageLimit: (saved as any)?.imageLimit ?? PLAN_IMAGE_LIMITS[plan] ?? 20,
+    };
   }
 
   async recordEvent(data: InsertStoreEvent): Promise<void> {

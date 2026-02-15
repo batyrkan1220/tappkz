@@ -119,12 +119,12 @@ export async function registerRoutes(
       const userId = req.session.userId;
       const store = await storage.getStoreByOwner(userId);
       if (store) {
-        const imageLimit = PLAN_IMAGE_LIMITS[store.plan] ?? 20;
-        if (imageLimit > 0) {
+        const planLimits = await storage.getEffectivePlanLimits(store.plan);
+        if (planLimits.imageLimit > 0) {
           const currentImages = await storage.countImages(store.id);
           const files = req.files as Express.Multer.File[];
-          if (currentImages + files.length > imageLimit) {
-            return res.status(400).json({ message: `Лимит изображений: ${imageLimit}. Обновите тариф.` });
+          if (currentImages + files.length > planLimits.imageLimit) {
+            return res.status(400).json({ message: `Лимит изображений: ${planLimits.imageLimit}. Обновите тариф.` });
           }
         }
       }
@@ -200,9 +200,9 @@ export async function registerRoutes(
       const data = validate(createProductSchema, req.body);
 
       const productCount = await storage.countProducts(store.id);
-      const limit = PLAN_LIMITS[store.plan] || 30;
-      if (productCount >= limit) {
-        return res.status(400).json({ message: `Лимит товаров: ${limit}. Обновите тариф.` });
+      const planLimits = await storage.getEffectivePlanLimits(store.plan);
+      if (planLimits.productLimit > 0 && productCount >= planLimits.productLimit) {
+        return res.status(400).json({ message: `Лимит товаров: ${planLimits.productLimit}. Обновите тариф.` });
       }
 
       const product = await storage.createProduct({
@@ -479,17 +479,15 @@ export async function registerRoutes(
       const products = await storage.getProducts(store.id);
       const monthlyOrders = await storage.countOrdersThisMonth(store.id);
       const totalImages = await storage.countImages(store.id);
-      const productLimit = PLAN_LIMITS[store.plan] ?? 30;
-      const orderLimit = PLAN_ORDER_LIMITS[store.plan] ?? 50;
-      const imageLimit = PLAN_IMAGE_LIMITS[store.plan] ?? 20;
+      const planLimits = await storage.getEffectivePlanLimits(store.plan);
       res.json({
         plan: store.plan,
         products: products.length,
-        productLimit,
+        productLimit: planLimits.productLimit,
         monthlyOrders,
-        orderLimit,
+        orderLimit: planLimits.orderLimit,
         totalImages,
-        imageLimit,
+        imageLimit: planLimits.imageLimit,
       });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -594,11 +592,11 @@ export async function registerRoutes(
       const store = await storage.getStoreBySlug(req.params.slug);
       if (!store) return res.status(404).json({ message: "Not found" });
 
-      const orderLimit = PLAN_ORDER_LIMITS[store.plan] ?? 50;
-      if (orderLimit > 0) {
+      const planLimits = await storage.getEffectivePlanLimits(store.plan);
+      if (planLimits.orderLimit > 0) {
         const monthOrders = await storage.countOrdersThisMonth(store.id);
-        if (monthOrders >= orderLimit) {
-          return res.status(400).json({ message: `Лимит заказов в месяц: ${orderLimit}. Обновите тариф.` });
+        if (monthOrders >= planLimits.orderLimit) {
+          return res.status(400).json({ message: `Лимит заказов в месяц: ${planLimits.orderLimit}. Обновите тариф.` });
         }
       }
 

@@ -414,8 +414,8 @@ export default function LandingPage() {
       {
         key: "free",
         name: free.name || "Базовый",
-        price: "$0",
-        priceSuffix: "USD / мес",
+        price: "0 ₸",
+        priceSuffix: "навсегда",
         includesLabel: "Включает:",
         features: free.features.length > 0 ? free.features : [
           "50 заказов в месяц",
@@ -430,8 +430,8 @@ export default function LandingPage() {
       {
         key: "business",
         name: biz.name || "Бизнес",
-        price: `$${(biz.price / 470).toFixed(1)}`,
-        priceSuffix: "USD / мес",
+        price: `${biz.price.toLocaleString("ru-RU")} ₸`,
+        priceSuffix: "/ мес",
         includesLabel: "Всё из Базового:",
         features: biz.features.length > 0 ? biz.features : [
           "Безлимитные заказы",

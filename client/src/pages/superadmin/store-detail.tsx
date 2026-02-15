@@ -8,7 +8,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Store, Package, ShoppingCart, Users, ExternalLink, Power, PowerOff, ArrowLeft, Settings, Palette, Globe, Phone, MapPin, Mail, TrendingUp, CreditCard, Calendar, Clock } from "lucide-react";
-import { BUSINESS_TYPES, PLAN_PRICES, PLAN_NAMES, PLAN_LIMITS } from "@shared/schema";
+import { BUSINESS_TYPES, PLAN_PRICES, PLAN_NAMES, PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS } from "@shared/schema";
 import { Link, useParams } from "wouter";
 
 interface StoreDetail {
@@ -118,6 +118,9 @@ export default function SuperAdminStoreDetail() {
     enabled: storeId > 0,
   });
 
+  type TariffData = Record<string, { price: number; limit: number; orderLimit: number; imageLimit: number; name: string; features: string[] }>;
+  const { data: tariffs } = useQuery<TariffData>({ queryKey: ["/api/tariffs"] });
+
   const changePlanMutation = useMutation({
     mutationFn: async (plan: string) => {
       await apiRequest("PATCH", `/api/superadmin/stores/${storeId}/plan`, { plan });
@@ -170,9 +173,12 @@ export default function SuperAdminStoreDetail() {
 
   const { store, settings, theme } = data;
   const bt = store.businessType ? BUSINESS_TYPES[store.businessType as keyof typeof BUSINESS_TYPES] : null;
-  const planPrice = PLAN_PRICES[store.plan] || 0;
-  const planLimit = PLAN_LIMITS[store.plan] || 30;
-  const planName = PLAN_NAMES[store.plan] || store.plan;
+  const tariffData = tariffs?.[store.plan];
+  const planPrice = tariffData?.price ?? PLAN_PRICES[store.plan] ?? 0;
+  const planLimit = tariffData?.limit ?? PLAN_LIMITS[store.plan] ?? 30;
+  const planName = tariffData?.name ?? PLAN_NAMES[store.plan] ?? store.plan;
+  const planOrderLimit = tariffData?.orderLimit ?? PLAN_ORDER_LIMITS[store.plan] ?? 50;
+  const planImageLimit = tariffData?.imageLimit ?? PLAN_IMAGE_LIMITS[store.plan] ?? 20;
 
   const isExpired = store.plan !== "free" && store.planExpiresAt && new Date(store.planExpiresAt) < new Date();
   const daysLeft = store.planExpiresAt ? Math.ceil((new Date(store.planExpiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : null;
@@ -294,9 +300,10 @@ export default function SuperAdminStoreDetail() {
           </div>
         </div>
         <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-          <span>Лимит товаров: {planLimit}</span>
-          <span>Использовано: {data.productsCount}/{planLimit} ({planLimit > 0 ? Math.round(data.productsCount / planLimit * 100) : 0}%)</span>
-          {store.createdAt && <span>Магазин создан: {formatDate(store.createdAt)}</span>}
+          <span>Товары: {data.productsCount}/{planLimit}</span>
+          <span>Заказы/мес: {planOrderLimit < 0 ? "Безлимит" : planOrderLimit}</span>
+          <span>Изображения: {planImageLimit < 0 ? "Безлимит" : planImageLimit}</span>
+          {store.createdAt && <span>Создан: {formatDate(store.createdAt)}</span>}
         </div>
       </Card>
 
