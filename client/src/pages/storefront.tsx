@@ -976,9 +976,13 @@ export default function StorefrontPage() {
       </Dialog>
 
       <footer className="mx-auto max-w-lg border-t border-border/30 px-4 py-6 text-center">
-        <a href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground" data-testid="link-footer-tapp">
-          <TappLogo size={20} />
-          <span>Сделано в <span className="font-semibold text-foreground">Tapp</span></span>
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all hover-elevate"
+          data-testid="link-footer-tapp"
+        >
+          <ShoppingBag className="h-4 w-4" />
+          <span>Создайте свой tapp.kz</span>
         </a>
       </footer>
     </div>
