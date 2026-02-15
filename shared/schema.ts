@@ -91,6 +91,15 @@ export const storeSettings = pgTable("store_settings", {
   kaspiRecipientName: text("kaspi_recipient_name"),
   facebookPixelId: varchar("facebook_pixel_id", { length: 50 }),
   tiktokPixelId: varchar("tiktok_pixel_id", { length: 50 }),
+  deliveryEnabled: boolean("delivery_enabled").notNull().default(false),
+  pickupEnabled: boolean("pickup_enabled").notNull().default(true),
+  deliveryFee: integer("delivery_fee"),
+  deliveryFreeThreshold: integer("delivery_free_threshold"),
+  pickupAddress: text("pickup_address"),
+  deliveryZone: text("delivery_zone"),
+  yandexDeliveryEnabled: boolean("yandex_delivery_enabled").notNull().default(false),
+  pickupLat: text("pickup_lat"),
+  pickupLon: text("pickup_lon"),
 });
 
 export const categories = pgTable("categories", {
@@ -138,6 +147,10 @@ export const orders = pgTable("orders", {
   paymentStatus: varchar("payment_status", { length: 30 }).notNull().default("unpaid"),
   fulfillmentStatus: varchar("fulfillment_status", { length: 30 }).notNull().default("unfulfilled"),
   internalNote: text("internal_note"),
+  deliveryMethod: varchar("delivery_method", { length: 30 }),
+  deliveryFee: integer("delivery_fee").notNull().default(0),
+  deliveryStatus: varchar("delivery_status", { length: 30 }),
+  yandexClaimId: text("yandex_claim_id"),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("idx_orders_store").on(table.storeId),

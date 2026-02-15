@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink, ClipboardList, Users, BarChart3, Shield, Crown } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, LogOut, ExternalLink, ClipboardList, Users, BarChart3, Shield, Crown, Truck } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
@@ -43,6 +43,7 @@ export function AppSidebar({ store }: { store?: Store | null }) {
     { title: labels.itemLabelPlural, url: "/admin/products", icon: Package },
     { title: "Категории", url: "/admin/categories", icon: FolderOpen },
     { title: "Брендирование", url: "/admin/branding", icon: Palette },
+    { title: "Доставка", url: "/admin/delivery", icon: Truck },
     { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageCircle },
     { title: "Подписка", url: "/admin/subscription", icon: Crown },
     { title: "Настройки", url: "/admin/settings", icon: Settings },

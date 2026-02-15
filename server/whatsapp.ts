@@ -163,7 +163,9 @@ export async function sendOrderNotification(
   orderNumber: number,
   customerName: string,
   total: number,
-  storeId: number
+  storeId: number,
+  deliveryMethod?: string | null,
+  deliveryFee?: number | null
 ): Promise<WhatsappMessage> {
   const config = await getWabaConfig();
   if (!config) {
@@ -178,8 +180,16 @@ export async function sendOrderNotification(
     return msg;
   }
 
+  const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером", yandex: "Яндекс Доставка" };
   const totalFormatted = new Intl.NumberFormat("ru-RU").format(total) + " ₸";
-  const text = `*Новый заказ #${orderNumber}*\n\nПокупатель: ${customerName}\nСумма: ${totalFormatted}\n\nОткройте панель управления для подробностей.`;
+  let text = `*Новый заказ #${orderNumber}*\n\nПокупатель: ${customerName}\nСумма: ${totalFormatted}`;
+  if (deliveryMethod) {
+    text += `\nПолучение: ${deliveryLabels[deliveryMethod] || deliveryMethod}`;
+  }
+  if (deliveryFee && deliveryFee > 0) {
+    text += `\nДоставка: ${new Intl.NumberFormat("ru-RU").format(deliveryFee)} ₸`;
+  }
+  text += `\n\nОткройте панель управления для подробностей.`;
 
   return sendTextMessage(storePhone, text, storeId);
 }

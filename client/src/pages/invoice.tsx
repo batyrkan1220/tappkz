@@ -139,6 +139,12 @@ export default function InvoicePage() {
               <span className="text-muted-foreground">Товары ({items.reduce((s, i) => s + i.quantity, 0)} шт.)</span>
               <span data-testid="text-subtotal">{formatPrice(order.subtotal)}</span>
             </div>
+            {order.deliveryFee != null && order.deliveryFee > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Доставка</span>
+                <span data-testid="text-delivery-fee">{formatPrice(order.deliveryFee)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t pt-2 text-base font-bold">
               <span>Итого</span>
               <span data-testid="text-total">{formatPrice(order.total)}</span>
@@ -165,6 +171,15 @@ export default function InvoicePage() {
               <div>
                 <p className="text-xs text-muted-foreground">Комментарий</p>
                 <p className="text-sm" data-testid="text-customer-comment">{order.customerComment}</p>
+              </div>
+            )}
+
+            {order.deliveryMethod && (
+              <div>
+                <p className="text-xs text-muted-foreground">Способ получения</p>
+                <p className="text-sm font-semibold" data-testid="text-delivery-method">
+                  {order.deliveryMethod === "pickup" ? "Самовывоз" : order.deliveryMethod === "delivery" ? "Доставка курьером" : order.deliveryMethod === "yandex" ? "Яндекс Доставка" : order.deliveryMethod}
+                </p>
               </div>
             )}
 

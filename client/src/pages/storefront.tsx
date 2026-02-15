@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
@@ -51,6 +51,10 @@ export default function StorefrontPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerComment, setCustomerComment] = useState("");
+  const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | "yandex" | null>(null);
+  const [yandexEstimate, setYandexEstimate] = useState<number | null>(null);
+  const [yandexEstimating, setYandexEstimating] = useState(false);
+  const [yandexError, setYandexError] = useState<string | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
   const { data, isLoading, error } = useQuery<StoreData>({
@@ -139,11 +143,27 @@ export default function StorefrontPage() {
     return filtered;
   }, [products, activeCategory, activeTab, searchQuery]);
 
-  const cartTotal = cart.reduce((sum, item) => {
+  const cartSubtotal = cart.reduce((sum, item) => {
     const price = item.product.discountPrice || item.product.price;
     return sum + price * item.quantity;
   }, 0);
 
+  const hasDeliveryOptions = settings?.deliveryEnabled || settings?.pickupEnabled || settings?.yandexDeliveryEnabled;
+
+  const computedDeliveryFee = useMemo(() => {
+    if (deliveryMethod === "delivery" && settings?.deliveryEnabled) {
+      const fee = settings?.deliveryFee || 0;
+      const threshold = settings?.deliveryFreeThreshold;
+      if (threshold && cartSubtotal >= threshold) return 0;
+      return fee;
+    }
+    if (deliveryMethod === "yandex" && yandexEstimate) {
+      return yandexEstimate;
+    }
+    return 0;
+  }, [deliveryMethod, settings, cartSubtotal, yandexEstimate]);
+
+  const cartTotal = cartSubtotal + computedDeliveryFee;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const addToCart = (product: Product) => {
@@ -194,6 +214,8 @@ export default function StorefrontPage() {
         customerComment: customerComment || null,
         items: orderItems,
         paymentMethod: "whatsapp",
+        deliveryMethod: deliveryMethod || null,
+        deliveryFee: computedDeliveryFee,
       });
 
       const order = await orderRes.json();
@@ -206,11 +228,17 @@ export default function StorefrontPage() {
         })
         .join("\n");
 
+      const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером", yandex: "Яндекс Доставка" };
       const totalFormatted = new Intl.NumberFormat("ru-KZ").format(cartTotal);
 
       let msg = `*#${order.orderNumber}*\n\n`;
       msg += `${itemsText}\n\n`;
+      if (computedDeliveryFee > 0) {
+        msg += `Подытог: *${new Intl.NumberFormat("ru-KZ").format(cartSubtotal)} ₸*\n`;
+        msg += `Доставка: *${formatPrice(computedDeliveryFee)}*\n`;
+      }
       msg += `Итого: *${totalFormatted} ₸*\n\n`;
+      if (deliveryMethod) msg += `Получение: *${deliveryLabels[deliveryMethod] || deliveryMethod}*\n`;
       msg += `Покупатель: *${customerName}* ${customerPhone}\n`;
       if (customerAddress) msg += `Адрес: ${customerAddress}\n`;
       if (customerComment) msg += `Комментарий: ${customerComment}\n`;
@@ -232,6 +260,8 @@ export default function StorefrontPage() {
       setCustomerPhone("");
       setCustomerAddress("");
       setCustomerComment("");
+      setDeliveryMethod(null);
+      setYandexEstimate(null);
     } catch (e: any) {
       let errorMsg = "Не удалось оформить заказ. Попробуйте позже.";
       try {
@@ -246,6 +276,43 @@ export default function StorefrontPage() {
       setIsSubmitting(false);
     }
   };
+
+  const fetchYandexEstimate = useCallback(async (address: string) => {
+    if (!store || !settings?.yandexDeliveryEnabled) return;
+    setYandexEstimating(true);
+    setYandexError(null);
+    try {
+      const res = await apiRequest("POST", "/api/delivery/estimate", {
+        storeSlug: params.slug,
+        customerAddress: address,
+        customerName: customerName || "Клиент",
+        customerPhone: customerPhone || "+77000000000",
+        totalCost: cartSubtotal,
+      });
+      const data = await res.json();
+      if (data.price && data.price > 0) {
+        setYandexEstimate(data.price);
+      } else {
+        setYandexEstimate(null);
+        setYandexError("Не удалось рассчитать стоимость");
+      }
+    } catch {
+      setYandexEstimate(null);
+      setYandexError("Сервис доставки недоступен");
+    } finally {
+      setYandexEstimating(false);
+    }
+  }, [store, settings, customerName, customerPhone, cartSubtotal]);
+
+  useEffect(() => {
+    if (deliveryMethod !== "yandex" || !customerAddress || customerAddress.length < 5) {
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetchYandexEstimate(customerAddress);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [deliveryMethod, customerAddress, fetchYandexEstimate]);
 
   const getCategoryProductCount = (catId: number) => {
     return products.filter((p) => p.isActive && p.categoryId === catId).length;
@@ -951,7 +1018,88 @@ export default function StorefrontPage() {
                     data-testid="input-checkout-phone"
                   />
                 </div>
-                {settings?.checkoutAddressEnabled && (
+
+                {hasDeliveryOptions && (
+                  <div>
+                    <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Способ получения</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {settings?.pickupEnabled && (
+                        <button
+                          className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${deliveryMethod === "pickup" ? "border-current" : "border-border"}`}
+                          style={deliveryMethod === "pickup" ? { borderColor: primaryColor } : undefined}
+                          onClick={() => setDeliveryMethod("pickup")}
+                          data-testid="button-delivery-pickup"
+                        >
+                          <StoreIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm font-medium">Самовывоз</p>
+                            <p className="text-[11px] text-muted-foreground">Бесплатно</p>
+                          </div>
+                        </button>
+                      )}
+                      {settings?.deliveryEnabled && (
+                        <button
+                          className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${deliveryMethod === "delivery" ? "border-current" : "border-border"}`}
+                          style={deliveryMethod === "delivery" ? { borderColor: primaryColor } : undefined}
+                          onClick={() => setDeliveryMethod("delivery")}
+                          data-testid="button-delivery-courier"
+                        >
+                          <Truck className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm font-medium">Доставка</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {(() => {
+                                const fee = settings?.deliveryFee || 0;
+                                const threshold = settings?.deliveryFreeThreshold;
+                                if (fee === 0) return "Бесплатно";
+                                if (threshold && cartSubtotal >= threshold) return "Бесплатно";
+                                return formatPrice(fee);
+                              })()}
+                            </p>
+                          </div>
+                        </button>
+                      )}
+                      {settings?.yandexDeliveryEnabled && (
+                        <button
+                          className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${deliveryMethod === "yandex" ? "border-current" : "border-border"}`}
+                          style={deliveryMethod === "yandex" ? { borderColor: primaryColor } : undefined}
+                          onClick={() => { setDeliveryMethod("yandex"); setYandexEstimate(null); }}
+                          data-testid="button-delivery-yandex"
+                        >
+                          <Truck className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm font-medium">Яндекс Доставка</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {yandexEstimating ? "Расчёт..." : yandexEstimate ? formatPrice(yandexEstimate) : "Экспресс"}
+                            </p>
+                          </div>
+                        </button>
+                      )}
+                    </div>
+                    {deliveryMethod === "pickup" && settings?.pickupAddress && (
+                      <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        {settings.pickupAddress}
+                      </p>
+                    )}
+                    {deliveryMethod === "delivery" && settings?.deliveryZone && (
+                      <p className="text-[11px] text-muted-foreground mt-2">Зона доставки: {settings.deliveryZone}</p>
+                    )}
+                    {deliveryMethod === "delivery" && settings?.deliveryFreeThreshold && computedDeliveryFee > 0 && (
+                      <p className="text-[11px] mt-1" style={{ color: primaryColor }}>
+                        Бесплатная доставка от {formatPrice(settings.deliveryFreeThreshold)}
+                      </p>
+                    )}
+                    {deliveryMethod === "yandex" && yandexEstimating && (
+                      <p className="text-[11px] text-muted-foreground mt-2">Рассчитываем стоимость доставки...</p>
+                    )}
+                    {deliveryMethod === "yandex" && yandexError && (
+                      <p className="text-[11px] text-red-500 mt-2">{yandexError}</p>
+                    )}
+                  </div>
+                )}
+
+                {(settings?.checkoutAddressEnabled || deliveryMethod === "delivery" || deliveryMethod === "yandex") && (
                   <div>
                     <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес доставки</Label>
                     <Input
@@ -1002,6 +1150,12 @@ export default function StorefrontPage() {
                     </div>
                   ))}
                 </div>
+                {computedDeliveryFee > 0 && (
+                  <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
+                    <span>Доставка</span>
+                    <span>{formatPrice(computedDeliveryFee)}</span>
+                  </div>
+                )}
                 <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">
                   <span className="text-sm font-bold">Итого</span>
                   <span className="text-base font-bold" style={{ color: primaryColor }} data-testid="text-checkout-total">{formatPrice(cartTotal)}</span>
@@ -1018,7 +1172,7 @@ export default function StorefrontPage() {
               <button
                 className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#25D366" }}
-                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting}
+                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting || (hasDeliveryOptions && !deliveryMethod) || ((deliveryMethod === "delivery" || deliveryMethod === "yandex") && !customerAddress) || (deliveryMethod === "yandex" && (!yandexEstimate || yandexEstimating))}
                 onClick={() => { setCheckoutError(""); handleCheckout(); }}
                 data-testid="button-send-whatsapp"
               >

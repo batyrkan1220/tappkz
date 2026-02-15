@@ -8,6 +8,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { sendOrderNotification, sendTextMessage, sendTemplateMessage, getWabaConfig, getWabaConfigRaw, saveWabaConfig, getMessageLog, getMessageStats, getOnboardingConfig, saveOnboardingConfig, sendOnboardingStoreCreated } from "./whatsapp";
+import { estimateDelivery, acceptClaim, getClaimInfo, cancelClaim, checkDeliveryAvailability } from "./yandex-delivery";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 import { db } from "./db";
@@ -455,6 +456,151 @@ export async function registerRoutes(
     }
   });
 
+  const deliverySettingsSchema = z.object({
+    deliveryEnabled: z.boolean().optional(),
+    pickupEnabled: z.boolean().optional(),
+    deliveryFee: z.coerce.number().int().min(0).nullable().optional(),
+    deliveryFreeThreshold: z.coerce.number().int().min(0).nullable().optional(),
+    pickupAddress: z.string().max(500).nullable().optional(),
+    deliveryZone: z.string().max(500).nullable().optional(),
+    yandexDeliveryEnabled: z.boolean().optional(),
+    pickupLat: z.string().max(30).nullable().optional(),
+    pickupLon: z.string().max(30).nullable().optional(),
+  });
+
+  app.get("/api/my-store/delivery", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const settings = await storage.getSettings(store.id);
+      const yandexAvailable = await checkDeliveryAvailability();
+      res.json({
+        deliveryEnabled: settings?.deliveryEnabled ?? false,
+        pickupEnabled: settings?.pickupEnabled ?? true,
+        deliveryFee: settings?.deliveryFee ?? null,
+        deliveryFreeThreshold: settings?.deliveryFreeThreshold ?? null,
+        pickupAddress: settings?.pickupAddress ?? null,
+        deliveryZone: settings?.deliveryZone ?? null,
+        yandexDeliveryEnabled: settings?.yandexDeliveryEnabled ?? false,
+        pickupLat: settings?.pickupLat ?? null,
+        pickupLon: settings?.pickupLon ?? null,
+        yandexAvailable,
+      });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/my-store/delivery", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+
+      const data = validate(deliverySettingsSchema, req.body);
+      const existingSettings = await storage.getSettings(store.id);
+
+      const settings = await storage.upsertSettings({
+        storeId: store.id,
+        showPrices: existingSettings?.showPrices ?? true,
+        currency: existingSettings?.currency ?? "KZT",
+        whatsappTemplate: existingSettings?.whatsappTemplate || "",
+        instagramUrl: existingSettings?.instagramUrl || null,
+        phoneNumber: existingSettings?.phoneNumber || null,
+        checkoutAddressEnabled: existingSettings?.checkoutAddressEnabled ?? false,
+        checkoutCommentEnabled: existingSettings?.checkoutCommentEnabled ?? false,
+        facebookPixelId: existingSettings?.facebookPixelId || null,
+        tiktokPixelId: existingSettings?.tiktokPixelId || null,
+        deliveryEnabled: data.deliveryEnabled ?? existingSettings?.deliveryEnabled ?? false,
+        pickupEnabled: data.pickupEnabled ?? existingSettings?.pickupEnabled ?? true,
+        deliveryFee: data.deliveryFee !== undefined ? data.deliveryFee : (existingSettings?.deliveryFee ?? null),
+        deliveryFreeThreshold: data.deliveryFreeThreshold !== undefined ? data.deliveryFreeThreshold : (existingSettings?.deliveryFreeThreshold ?? null),
+        pickupAddress: data.pickupAddress !== undefined ? data.pickupAddress : (existingSettings?.pickupAddress ?? null),
+        deliveryZone: data.deliveryZone !== undefined ? data.deliveryZone : (existingSettings?.deliveryZone ?? null),
+        yandexDeliveryEnabled: data.yandexDeliveryEnabled ?? existingSettings?.yandexDeliveryEnabled ?? false,
+        pickupLat: data.pickupLat !== undefined ? data.pickupLat : (existingSettings?.pickupLat ?? null),
+        pickupLon: data.pickupLon !== undefined ? data.pickupLon : (existingSettings?.pickupLon ?? null),
+      });
+      res.json(settings);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) {
+        return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      }
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/delivery/estimate", async (req, res) => {
+    try {
+      const schema = z.object({
+        storeSlug: z.string(),
+        customerAddress: z.string().min(1),
+        customerName: z.string().min(1),
+        customerPhone: z.string().min(5),
+        totalCost: z.number().min(0),
+      });
+      const data = validate(schema, req.body);
+      const store = await storage.getStoreBySlug(data.storeSlug);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+
+      const settings = await storage.getSettings(store.id);
+      if (!settings?.yandexDeliveryEnabled || !settings?.pickupLat || !settings?.pickupLon) {
+        return res.status(400).json({ message: "Яндекс Доставка не настроена для этого магазина" });
+      }
+
+      const result = await estimateDelivery({
+        pickupAddress: settings.pickupAddress || store.city || "Алматы",
+        pickupCoordinates: [parseFloat(settings.pickupLon), parseFloat(settings.pickupLat)],
+        pickupContact: { name: store.name, phone: `+${store.whatsappPhone}` },
+        dropoffAddress: data.customerAddress,
+        dropoffContact: { name: data.customerName, phone: data.customerPhone },
+        totalCost: data.totalCost,
+      });
+
+      res.json(result);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message || "Ошибка расчёта доставки" });
+    }
+  });
+
+  app.post("/api/delivery/accept", isAuthenticated, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        claimId: z.string(),
+        version: z.number().optional().default(1),
+      });
+      const data = validate(schema, req.body);
+      const result = await acceptClaim(data.claimId, data.version);
+      res.json(result);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/delivery/status/:claimId", isAuthenticated, async (req: any, res) => {
+    try {
+      const result = await getClaimInfo(req.params.claimId);
+      res.json(result);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/delivery/cancel", isAuthenticated, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        claimId: z.string(),
+        version: z.number().optional().default(1),
+      });
+      const data = validate(schema, req.body);
+      const result = await cancelClaim(data.claimId, "free", data.version);
+      res.json(result);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.put("/api/my-store/whatsapp", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;
@@ -642,7 +788,7 @@ export async function registerRoutes(
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, yandexDeliveryEnabled: false },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
       });
@@ -664,6 +810,8 @@ export async function registerRoutes(
       imageUrl: z.string().nullable().optional(),
     })).min(1),
     paymentMethod: z.string().max(30).nullable().optional(),
+    deliveryMethod: z.enum(["pickup", "delivery", "yandex"]).nullable().optional(),
+    deliveryFee: z.number().int().min(0).optional().default(0),
   });
 
   app.post("/api/storefront/:slug/order", async (req, res) => {
@@ -681,6 +829,8 @@ export async function registerRoutes(
       }
 
       const subtotal = data.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const deliveryFee = data.deliveryFee || 0;
+      const total = subtotal + deliveryFee;
       const orderNumber = await storage.getNextOrderNumber(store.id);
 
       const order = await storage.createOrder({
@@ -692,16 +842,18 @@ export async function registerRoutes(
         customerComment: data.customerComment || null,
         items: data.items,
         subtotal,
-        total: subtotal,
+        total,
         paymentMethod: data.paymentMethod || null,
         status: "pending",
+        deliveryMethod: data.deliveryMethod || null,
+        deliveryFee,
       });
 
       await storage.upsertCustomerFromOrder(store.id, data.customerName, data.customerPhone, subtotal).catch((err) => {
         console.error("Failed to upsert customer from order:", err);
       });
 
-      sendOrderNotification(store.name, store.whatsappPhone, orderNumber, data.customerName, subtotal, store.id).catch((err) => {
+      sendOrderNotification(store.name, store.whatsappPhone, orderNumber, data.customerName, total, store.id, data.deliveryMethod, deliveryFee).catch((err) => {
         console.error("Failed to send WhatsApp order notification:", err);
       });
 
