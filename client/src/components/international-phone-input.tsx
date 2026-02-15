@@ -3,52 +3,52 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Search } from "lucide-react";
 
 const COUNTRIES = [
-  { code: "KZ", dial: "+7", name: "Казахстан" },
-  { code: "RU", dial: "+7", name: "Россия" },
-  { code: "UZ", dial: "+998", name: "Узбекистан" },
-  { code: "KG", dial: "+996", name: "Кыргызстан" },
-  { code: "TJ", dial: "+992", name: "Таджикистан" },
-  { code: "TM", dial: "+993", name: "Туркменистан" },
-  { code: "AZ", dial: "+994", name: "Азербайджан" },
-  { code: "GE", dial: "+995", name: "Грузия" },
-  { code: "AM", dial: "+374", name: "Армения" },
-  { code: "BY", dial: "+375", name: "Беларусь" },
-  { code: "UA", dial: "+380", name: "Украина" },
-  { code: "MD", dial: "+373", name: "Молдова" },
-  { code: "TR", dial: "+90", name: "Турция" },
-  { code: "AE", dial: "+971", name: "ОАЭ" },
-  { code: "SA", dial: "+966", name: "Саудовская Аравия" },
-  { code: "US", dial: "+1", name: "США" },
-  { code: "GB", dial: "+44", name: "Великобритания" },
-  { code: "DE", dial: "+49", name: "Германия" },
-  { code: "FR", dial: "+33", name: "Франция" },
-  { code: "IT", dial: "+39", name: "Италия" },
-  { code: "ES", dial: "+34", name: "Испания" },
-  { code: "PL", dial: "+48", name: "Польша" },
-  { code: "CN", dial: "+86", name: "Китай" },
-  { code: "JP", dial: "+81", name: "Япония" },
-  { code: "KR", dial: "+82", name: "Южная Корея" },
-  { code: "IN", dial: "+91", name: "Индия" },
-  { code: "BR", dial: "+55", name: "Бразилия" },
-  { code: "MX", dial: "+52", name: "Мексика" },
-  { code: "CA", dial: "+1", name: "Канада" },
-  { code: "AU", dial: "+61", name: "Австралия" },
-  { code: "IL", dial: "+972", name: "Израиль" },
-  { code: "EG", dial: "+20", name: "Египет" },
-  { code: "NG", dial: "+234", name: "Нигерия" },
-  { code: "ZA", dial: "+27", name: "ЮАР" },
-  { code: "TH", dial: "+66", name: "Таиланд" },
-  { code: "ID", dial: "+62", name: "Индонезия" },
-  { code: "MY", dial: "+60", name: "Малайзия" },
-  { code: "SG", dial: "+65", name: "Сингапур" },
-  { code: "PH", dial: "+63", name: "Филиппины" },
-  { code: "VN", dial: "+84", name: "Вьетнам" },
-  { code: "PK", dial: "+92", name: "Пакистан" },
-  { code: "BD", dial: "+880", name: "Бангладеш" },
-  { code: "AR", dial: "+54", name: "Аргентина" },
-  { code: "CL", dial: "+56", name: "Чили" },
-  { code: "CO", dial: "+57", name: "Колумбия" },
-  { code: "PE", dial: "+51", name: "Перу" },
+  { code: "KZ", dial: "+7", name: "Казахстан", maxDigits: 10 },
+  { code: "RU", dial: "+7", name: "Россия", maxDigits: 10 },
+  { code: "UZ", dial: "+998", name: "Узбекистан", maxDigits: 9 },
+  { code: "KG", dial: "+996", name: "Кыргызстан", maxDigits: 9 },
+  { code: "TJ", dial: "+992", name: "Таджикистан", maxDigits: 9 },
+  { code: "TM", dial: "+993", name: "Туркменистан", maxDigits: 8 },
+  { code: "AZ", dial: "+994", name: "Азербайджан", maxDigits: 9 },
+  { code: "GE", dial: "+995", name: "Грузия", maxDigits: 9 },
+  { code: "AM", dial: "+374", name: "Армения", maxDigits: 8 },
+  { code: "BY", dial: "+375", name: "Беларусь", maxDigits: 9 },
+  { code: "UA", dial: "+380", name: "Украина", maxDigits: 9 },
+  { code: "MD", dial: "+373", name: "Молдова", maxDigits: 8 },
+  { code: "TR", dial: "+90", name: "Турция", maxDigits: 10 },
+  { code: "AE", dial: "+971", name: "ОАЭ", maxDigits: 9 },
+  { code: "SA", dial: "+966", name: "Саудовская Аравия", maxDigits: 9 },
+  { code: "US", dial: "+1", name: "США", maxDigits: 10 },
+  { code: "GB", dial: "+44", name: "Великобритания", maxDigits: 10 },
+  { code: "DE", dial: "+49", name: "Германия", maxDigits: 11 },
+  { code: "FR", dial: "+33", name: "Франция", maxDigits: 9 },
+  { code: "IT", dial: "+39", name: "Италия", maxDigits: 10 },
+  { code: "ES", dial: "+34", name: "Испания", maxDigits: 9 },
+  { code: "PL", dial: "+48", name: "Польша", maxDigits: 9 },
+  { code: "CN", dial: "+86", name: "Китай", maxDigits: 11 },
+  { code: "JP", dial: "+81", name: "Япония", maxDigits: 10 },
+  { code: "KR", dial: "+82", name: "Южная Корея", maxDigits: 10 },
+  { code: "IN", dial: "+91", name: "Индия", maxDigits: 10 },
+  { code: "BR", dial: "+55", name: "Бразилия", maxDigits: 11 },
+  { code: "MX", dial: "+52", name: "Мексика", maxDigits: 10 },
+  { code: "CA", dial: "+1", name: "Канада", maxDigits: 10 },
+  { code: "AU", dial: "+61", name: "Австралия", maxDigits: 9 },
+  { code: "IL", dial: "+972", name: "Израиль", maxDigits: 9 },
+  { code: "EG", dial: "+20", name: "Египет", maxDigits: 10 },
+  { code: "NG", dial: "+234", name: "Нигерия", maxDigits: 10 },
+  { code: "ZA", dial: "+27", name: "ЮАР", maxDigits: 9 },
+  { code: "TH", dial: "+66", name: "Таиланд", maxDigits: 9 },
+  { code: "ID", dial: "+62", name: "Индонезия", maxDigits: 11 },
+  { code: "MY", dial: "+60", name: "Малайзия", maxDigits: 10 },
+  { code: "SG", dial: "+65", name: "Сингапур", maxDigits: 8 },
+  { code: "PH", dial: "+63", name: "Филиппины", maxDigits: 10 },
+  { code: "VN", dial: "+84", name: "Вьетнам", maxDigits: 9 },
+  { code: "PK", dial: "+92", name: "Пакистан", maxDigits: 10 },
+  { code: "BD", dial: "+880", name: "Бангладеш", maxDigits: 10 },
+  { code: "AR", dial: "+54", name: "Аргентина", maxDigits: 10 },
+  { code: "CL", dial: "+56", name: "Чили", maxDigits: 9 },
+  { code: "CO", dial: "+57", name: "Колумбия", maxDigits: 10 },
+  { code: "PE", dial: "+51", name: "Перу", maxDigits: 9 },
 ];
 
 interface InternationalPhoneInputProps {
@@ -72,8 +72,9 @@ export function InternationalPhoneInput({
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const selected = COUNTRIES.find((c) => c.code === countryCode) || COUNTRIES[0];
+  const maxLen = selected.maxDigits;
 
-  const phoneDigits = value.replace(/\D/g, "");
+  const phoneDigits = value.replace(/\D/g, "").slice(0, maxLen);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -116,8 +117,9 @@ export function InternationalPhoneInput({
           type="tel"
           inputMode="tel"
           value={phoneDigits}
+          maxLength={maxLen}
           onChange={(e) => {
-            const digits = e.target.value.replace(/\D/g, "");
+            const digits = e.target.value.replace(/\D/g, "").slice(0, maxLen);
             onValueChange(digits, countryCode);
           }}
           placeholder="Номер телефона"
@@ -157,7 +159,8 @@ export function InternationalPhoneInput({
                   c.code === countryCode ? "bg-accent" : ""
                 }`}
                 onClick={() => {
-                  onValueChange(phoneDigits, c.code);
+                  const trimmed = phoneDigits.slice(0, c.maxDigits);
+                  onValueChange(trimmed, c.code);
                   setOpen(false);
                   setSearch("");
                 }}
