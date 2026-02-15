@@ -36,10 +36,12 @@ export default function RegisterPage() {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [phone, setPhone] = useState("");
   const [phoneTouched, setPhoneTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneError = phoneTouched ? validateKzPhone(phoneDigits) : null;
@@ -69,8 +71,14 @@ export default function RegisterPage() {
     },
   });
 
+  const passwordsMatch = password === confirmPassword;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!passwordsMatch) {
+      toast({ title: "Пароли не совпадают", variant: "destructive" });
+      return;
+    }
     if (phoneDigits && validateKzPhone(phoneDigits)) {
       setPhoneTouched(true);
       toast({ title: "Проверьте номер телефона", variant: "destructive" });
@@ -181,11 +189,40 @@ export default function RegisterPage() {
                 </div>
               )}
             </div>
+            <div>
+              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Повторите пароль *</Label>
+              <div className="relative mt-1.5">
+                <Input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Ещё раз пароль"
+                  required
+                  autoComplete="new-password"
+                  className={confirmPassword && !passwordsMatch ? "border-red-400 focus-visible:ring-red-400" : ""}
+                  data-testid="input-register-confirm-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  data-testid="button-toggle-confirm-password"
+                >
+                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              {confirmPassword && !passwordsMatch && (
+                <p className="text-[11px] text-red-500 mt-1" data-testid="text-password-mismatch">Пароли не совпадают</p>
+              )}
+              {confirmPassword && passwordsMatch && password.length >= 6 && (
+                <p className="text-[11px] text-green-600 mt-1" data-testid="text-password-match">Пароли совпадают</p>
+              )}
+            </div>
 
             <Button
               type="submit"
               className="w-full rounded-full font-semibold"
-              disabled={!email || !password || password.length < 6 || (!!phoneDigits && !!phoneError) || registerMutation.isPending}
+              disabled={!email || !password || password.length < 6 || !confirmPassword || !passwordsMatch || (!!phoneDigits && !!phoneError) || registerMutation.isPending}
               data-testid="button-register-submit"
             >
               {registerMutation.isPending ? "Создание..." : (
