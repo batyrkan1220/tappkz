@@ -4,18 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag, ArrowLeft, Eye, EyeOff, KeyRound, ShieldCheck, Smartphone } from "lucide-react";
+import { ShoppingBag, ArrowLeft, Eye, EyeOff, KeyRound, ShieldCheck, Mail } from "lucide-react";
 import { Link } from "wouter";
-import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-type Step = "phone" | "code" | "password";
+type Step = "email" | "code" | "password";
 
 export default function ForgotPasswordPage() {
   const { toast } = useToast();
-  const [step, setStep] = useState<Step>("phone");
-  const [phone, setPhone] = useState("");
-  const [maskedPhone, setMaskedPhone] = useState("");
+  const [step, setStep] = useState<Step>("email");
+  const [email, setEmail] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
   const [code, setCode] = useState("");
   const [resetToken, setResetToken] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +24,7 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
-  const phoneDigits = phone.replace(/\D/g, "");
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const startCooldown = () => {
     setCooldown(60);
@@ -38,23 +37,21 @@ export default function ForgotPasswordPage() {
   };
 
   const handleSendCode = async () => {
-    if (phoneDigits.length < 11) {
-      toast({ title: "Введите полный номер телефона", variant: "destructive" });
+    if (!isValidEmail) {
+      toast({ title: "Введите корректный email", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      const res = await apiRequest("POST", "/api/auth/forgot-password", { phone: phoneDigits });
+      const res = await apiRequest("POST", "/api/auth/forgot-password", { email });
       const data = await res.json();
-      setMaskedPhone(data.phone);
+      setMaskedEmail(data.email);
       setStep("code");
       startCooldown();
-      toast({ title: "Код отправлен в WhatsApp" });
+      toast({ title: "Код отправлен на email" });
     } catch (e: any) {
-      const msg = e.message.includes("404")
-        ? "Пользователь с таким номером не найден"
-        : e.message.includes("500")
-        ? "Не удалось отправить код. Попробуйте позже."
+      const msg = e.message.includes("429")
+        ? "Слишком много попыток. Подождите 15 минут."
         : "Ошибка отправки кода";
       toast({ title: msg, variant: "destructive" });
     } finally {
@@ -69,7 +66,7 @@ export default function ForgotPasswordPage() {
     }
     setLoading(true);
     try {
-      const res = await apiRequest("POST", "/api/auth/verify-code", { phone: phoneDigits, code });
+      const res = await apiRequest("POST", "/api/auth/verify-code", { email, code });
       const data = await res.json();
       setResetToken(data.resetToken);
       setStep("password");
@@ -107,7 +104,7 @@ export default function ForgotPasswordPage() {
     if (cooldown > 0) return;
     setLoading(true);
     try {
-      await apiRequest("POST", "/api/auth/forgot-password", { phone: phoneDigits });
+      await apiRequest("POST", "/api/auth/forgot-password", { email });
       startCooldown();
       toast({ title: "Код отправлен повторно" });
     } catch {
@@ -134,37 +131,39 @@ export default function ForgotPasswordPage() {
             </div>
           </Link>
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-forgot-title">
-            {step === "phone" && "Восстановление пароля"}
+            {step === "email" && "Восстановление пароля"}
             {step === "code" && "Введите код"}
             {step === "password" && "Новый пароль"}
           </h1>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {step === "phone" && "Введите номер WhatsApp, привязанный к аккаунту"}
-            {step === "code" && `Код отправлен на ${maskedPhone}`}
+            {step === "email" && "Введите email, указанный при регистрации"}
+            {step === "code" && `Код отправлен на ${maskedEmail}`}
             {step === "password" && "Придумайте новый пароль"}
           </p>
         </div>
 
         <Card className="p-6">
-          {step === "phone" && (
+          {step === "email" && (
             <div className="space-y-4">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-2">
-                <Smartphone className="h-6 w-6 text-primary" />
+                <Mail className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">WhatsApp номер</Label>
-                <div className="mt-1.5">
-                  <PhoneInput
-                    value={phone}
-                    onValueChange={setPhone}
-                    data-testid="input-forgot-phone"
-                  />
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-1">Номер, указанный при регистрации</p>
+                <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Email</Label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className="mt-1.5"
+                  data-testid="input-forgot-email"
+                />
+                <p className="text-[11px] text-muted-foreground mt-1">На этот адрес придёт код восстановления</p>
               </div>
               <Button
                 className="w-full rounded-full font-semibold"
-                disabled={phoneDigits.length < 11 || loading}
+                disabled={!isValidEmail || loading}
                 onClick={handleSendCode}
                 data-testid="button-send-code"
               >
@@ -179,7 +178,7 @@ export default function ForgotPasswordPage() {
                 <ShieldCheck className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Код из WhatsApp</Label>
+                <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Код из письма</Label>
                 <Input
                   type="text"
                   inputMode="numeric"
@@ -214,10 +213,10 @@ export default function ForgotPasswordPage() {
               <button
                 type="button"
                 className="flex items-center gap-1 text-xs text-muted-foreground mx-auto"
-                onClick={() => { setStep("phone"); setCode(""); }}
-                data-testid="button-back-to-phone"
+                onClick={() => { setStep("email"); setCode(""); }}
+                data-testid="button-back-to-email"
               >
-                <ArrowLeft className="h-3 w-3" /> Изменить номер
+                <ArrowLeft className="h-3 w-3" /> Изменить email
               </button>
             </div>
           )}

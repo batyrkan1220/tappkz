@@ -26,7 +26,7 @@ export const users = pgTable("users", {
 
 export const passwordResetCodes = pgTable("password_reset_codes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  phone: varchar("phone", { length: 20 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
   code: varchar("code", { length: 6 }).notNull(),
   userId: varchar("user_id").notNull(),
   used: boolean("used").notNull().default(false),

@@ -8,7 +8,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ShoppingBag, UserPlus, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Link } from "wouter";
-import { PhoneInput } from "@/components/phone-input";
+import { InternationalPhoneInput, COUNTRIES } from "@/components/international-phone-input";
 
 const benefits = [
   "Бесплатный магазин за 5 минут",
@@ -17,35 +17,19 @@ const benefits = [
   "Обучающие советы в WhatsApp",
 ];
 
-const VALID_KZ_PREFIXES = [
-  "700","701","702","703","704","705","706","707","708","709",
-  "747","750","751","760","761","762","763","764","771","775","776","777","778",
-];
-
-function validateKzPhone(digits: string): string | null {
-  if (!digits || digits.length === 0) return null;
-  if (!digits.startsWith("7")) return "Номер должен начинаться с 7";
-  if (digits.length < 11) return "Введите номер полностью";
-  if (digits.length > 11) return "Номер слишком длинный";
-  const prefix = digits.slice(1, 4);
-  if (!VALID_KZ_PREFIXES.includes(prefix)) return "Неверный код оператора (" + prefix + ")";
-  return null;
-}
-
 export default function RegisterPage() {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [phoneTouched, setPhoneTouched] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [countryCode, setCountryCode] = useState("KZ");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const phoneDigits = phone.replace(/\D/g, "");
-  const phoneError = phoneTouched ? validateKzPhone(phoneDigits) : null;
-  const phoneValid = phoneDigits.length === 11 && !validateKzPhone(phoneDigits);
+  const selectedCountry = COUNTRIES.find((c) => c.code === countryCode) || COUNTRIES[0];
+  const fullPhone = phoneNumber ? selectedCountry.dial.replace("+", "") + phoneNumber : "";
 
   const registerMutation = useMutation({
     mutationFn: async () => {
@@ -53,7 +37,7 @@ export default function RegisterPage() {
         email,
         password,
         firstName: firstName || undefined,
-        phone: phoneDigits || undefined,
+        phone: fullPhone || undefined,
       });
       return res.json();
     },
@@ -77,11 +61,6 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!passwordsMatch) {
       toast({ title: "Пароли не совпадают", variant: "destructive" });
-      return;
-    }
-    if (phoneDigits && validateKzPhone(phoneDigits)) {
-      setPhoneTouched(true);
-      toast({ title: "Проверьте номер телефона", variant: "destructive" });
       return;
     }
     registerMutation.mutate();
@@ -113,7 +92,7 @@ export default function RegisterPage() {
               <Input
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Айгерим"
+                placeholder="John"
                 autoComplete="given-name"
                 className="mt-1.5"
                 data-testid="input-register-name"
@@ -122,24 +101,17 @@ export default function RegisterPage() {
             <div>
               <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">WhatsApp номер</Label>
               <div className="mt-1.5">
-                <PhoneInput
-                  value={phone}
-                  onValueChange={(val) => {
-                    setPhone(val);
-                    if (phoneTouched && !val) setPhoneTouched(false);
+                <InternationalPhoneInput
+                  value={phoneNumber}
+                  countryCode={countryCode}
+                  onValueChange={(digits, code) => {
+                    setPhoneNumber(digits);
+                    setCountryCode(code);
                   }}
-                  onBlur={() => { if (phone) setPhoneTouched(true); }}
-                  className={phoneError ? "border-red-400 focus-visible:ring-red-400" : ""}
                   data-testid="input-register-phone"
                 />
               </div>
-              {phoneError ? (
-                <p className="text-[11px] text-red-500 mt-1" data-testid="text-phone-error">{phoneError}</p>
-              ) : phoneValid ? (
-                <p className="text-[11px] text-green-600 mt-1" data-testid="text-phone-valid">Номер корректный</p>
-              ) : (
-                <p className="text-[11px] text-muted-foreground mt-1">Получите обучение и советы в WhatsApp</p>
-              )}
+              <p className="text-[11px] text-muted-foreground mt-1">Для уведомлений о заказах и рассылок</p>
             </div>
             <div>
               <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Email *</Label>
@@ -222,7 +194,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               className="w-full rounded-full font-semibold"
-              disabled={!email || !password || password.length < 6 || !confirmPassword || !passwordsMatch || (!!phoneDigits && !!phoneError) || registerMutation.isPending}
+              disabled={!email || !password || password.length < 6 || !confirmPassword || !passwordsMatch || registerMutation.isPending}
               data-testid="button-register-submit"
             >
               {registerMutation.isPending ? "Создание..." : (
