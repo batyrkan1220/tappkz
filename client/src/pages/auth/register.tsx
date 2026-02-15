@@ -6,13 +6,14 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag, UserPlus, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ShoppingBag, UserPlus, Eye, EyeOff, ArrowRight, CheckCircle2, Phone } from "lucide-react";
 import { Link } from "wouter";
 
 const benefits = [
   "Бесплатный магазин за 5 минут",
   "WhatsApp-чекаут для заказов",
   "Аналитика и база клиентов",
+  "Обучающие советы в WhatsApp",
 ];
 
 export default function RegisterPage() {
@@ -20,6 +21,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const registerMutation = useMutation({
@@ -28,6 +30,7 @@ export default function RegisterPage() {
         email,
         password,
         firstName: firstName || undefined,
+        phone: phone || undefined,
       });
       return res.json();
     },
@@ -81,6 +84,22 @@ export default function RegisterPage() {
                 className="mt-1.5"
                 data-testid="input-register-name"
               />
+            </div>
+            <div>
+              <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">WhatsApp номер</Label>
+              <div className="relative mt-1.5">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="77001234567"
+                  autoComplete="tel"
+                  className="pl-9"
+                  data-testid="input-register-phone"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">Получите обучение и советы в WhatsApp</p>
             </div>
             <div>
               <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Email *</Label>

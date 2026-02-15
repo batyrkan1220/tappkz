@@ -6,6 +6,7 @@ import { db } from "./db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { sendOnboardingWelcome } from "./whatsapp";
 
 declare module "express-session" {
   interface SessionData {
@@ -45,6 +46,7 @@ const registerSchema = z.object({
   password: z.string().min(6).max(128),
   firstName: z.string().max(100).optional(),
   lastName: z.string().max(100).optional(),
+  phone: z.string().max(20).optional(),
 });
 
 const loginSchema = z.object({
@@ -68,6 +70,7 @@ export function registerAuthRoutes(app: Express) {
       }
 
       const passwordHash = await bcrypt.hash(data.password, 10);
+      const phone = data.phone ? data.phone.replace(/[^0-9]/g, "") : null;
       const [user] = await db
         .insert(users)
         .values({
@@ -75,8 +78,15 @@ export function registerAuthRoutes(app: Express) {
           passwordHash,
           firstName: data.firstName || null,
           lastName: data.lastName || null,
+          phone,
         })
         .returning();
+
+      if (phone) {
+        sendOnboardingWelcome(phone, user.firstName || "").catch((err) => {
+          console.error("Onboarding welcome error:", err);
+        });
+      }
 
       req.session.userId = user.id;
       res.json({
@@ -84,6 +94,7 @@ export function registerAuthRoutes(app: Express) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        phone: user.phone,
         profileImageUrl: user.profileImageUrl,
         isSuperAdmin: user.isSuperAdmin,
         createdAt: user.createdAt,
@@ -127,6 +138,7 @@ export function registerAuthRoutes(app: Express) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        phone: user.phone,
         profileImageUrl: user.profileImageUrl,
         isSuperAdmin: user.isSuperAdmin,
         createdAt: user.createdAt,
@@ -167,6 +179,7 @@ export function registerAuthRoutes(app: Express) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        phone: user.phone,
         profileImageUrl: user.profileImageUrl,
         isSuperAdmin: user.isSuperAdmin,
         createdAt: user.createdAt,

@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { MessageCircle, Settings, Send, History, TestTube, Users, Store, CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
+import { MessageCircle, Settings, Send, History, TestTube, Users, Store, CheckCircle, XCircle, Clock, AlertTriangle, GraduationCap, Plus, Trash2 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import type { Store as StoreType } from "@shared/schema";
 
@@ -404,6 +404,222 @@ function HistoryTab() {
   );
 }
 
+interface OnboardingConfig {
+  welcomeEnabled: boolean;
+  welcomeMessage: string;
+  storeCreatedEnabled: boolean;
+  storeCreatedMessage: string;
+  tipsEnabled: boolean;
+  tipsMessages: string[];
+  tipsDelayMinutes: number;
+}
+
+function OnboardingTab() {
+  const { toast } = useToast();
+  const { data: config, isLoading } = useQuery<OnboardingConfig>({ queryKey: ["/api/superadmin/waba/onboarding"] });
+
+  const [welcomeEnabled, setWelcomeEnabled] = useState(true);
+  const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [storeCreatedEnabled, setStoreCreatedEnabled] = useState(true);
+  const [storeCreatedMessage, setStoreCreatedMessage] = useState("");
+  const [tipsEnabled, setTipsEnabled] = useState(true);
+  const [tipsMessages, setTipsMessages] = useState<string[]>([]);
+  const [tipsDelayMinutes, setTipsDelayMinutes] = useState(60);
+  const [initialized, setInitialized] = useState(false);
+
+  if (!initialized && config) {
+    setWelcomeEnabled(config.welcomeEnabled);
+    setWelcomeMessage(config.welcomeMessage);
+    setStoreCreatedEnabled(config.storeCreatedEnabled);
+    setStoreCreatedMessage(config.storeCreatedMessage);
+    setTipsEnabled(config.tipsEnabled);
+    setTipsMessages(config.tipsMessages || []);
+    setTipsDelayMinutes(config.tipsDelayMinutes || 60);
+    setInitialized(true);
+  }
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: Partial<OnboardingConfig>) => {
+      await apiRequest("PUT", "/api/superadmin/waba/onboarding", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/superadmin/waba/onboarding"] });
+      toast({ title: "Настройки онбординга сохранены" });
+    },
+    onError: () => {
+      toast({ title: "Ошибка сохранения", variant: "destructive" });
+    },
+  });
+
+  const handleSave = () => {
+    saveMutation.mutate({
+      welcomeEnabled,
+      welcomeMessage,
+      storeCreatedEnabled,
+      storeCreatedMessage,
+      tipsEnabled,
+      tipsMessages,
+      tipsDelayMinutes,
+    });
+  };
+
+  const updateTip = (index: number, value: string) => {
+    const updated = [...tipsMessages];
+    updated[index] = value;
+    setTipsMessages(updated);
+  };
+
+  const removeTip = (index: number) => {
+    setTipsMessages(tipsMessages.filter((_, i) => i !== index));
+  };
+
+  const addTip = () => {
+    if (tipsMessages.length < 10) {
+      setTipsMessages([...tipsMessages, ""]);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-40" />
+        <Skeleton className="h-40" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-5">
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <MessageCircle className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-bold">Приветственное сообщение</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Отправляется при регистрации, если пользователь указал WhatsApp номер</p>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <Label className="text-sm font-semibold">Отправлять приветствие</Label>
+            <Switch checked={welcomeEnabled} onCheckedChange={setWelcomeEnabled} data-testid="switch-welcome-enabled" />
+          </div>
+
+          {welcomeEnabled && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Текст приветствия</Label>
+              <Textarea
+                value={welcomeMessage}
+                onChange={(e) => setWelcomeMessage(e.target.value)}
+                className="min-h-[120px] text-sm"
+                data-testid="textarea-welcome-message"
+              />
+              <p className="text-[11px] text-muted-foreground">Переменная: {"{name}"} — имя пользователя</p>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <Store className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-bold">Создание магазина</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Отправляется когда пользователь создал магазин</p>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <Label className="text-sm font-semibold">Отправлять уведомление</Label>
+            <Switch checked={storeCreatedEnabled} onCheckedChange={setStoreCreatedEnabled} data-testid="switch-store-created-enabled" />
+          </div>
+
+          {storeCreatedEnabled && (
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">Текст сообщения</Label>
+              <Textarea
+                value={storeCreatedMessage}
+                onChange={(e) => setStoreCreatedMessage(e.target.value)}
+                className="min-h-[120px] text-sm"
+                data-testid="textarea-store-created-message"
+              />
+              <p className="text-[11px] text-muted-foreground">Переменные: {"{store_name}"} — название, {"{slug}"} — URL магазина</p>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-bold">Обучающие советы</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Серия советов, отправляемых после регистрации с интервалом</p>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <Label className="text-sm font-semibold">Отправлять советы</Label>
+            <Switch checked={tipsEnabled} onCheckedChange={setTipsEnabled} data-testid="switch-tips-enabled" />
+          </div>
+
+          {tipsEnabled && (
+            <>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Интервал между советами (минуты)</Label>
+                <Input
+                  type="number"
+                  value={tipsDelayMinutes}
+                  onChange={(e) => setTipsDelayMinutes(parseInt(e.target.value) || 60)}
+                  min={1}
+                  max={10080}
+                  data-testid="input-tips-delay"
+                />
+                <p className="text-[11px] text-muted-foreground">Рекомендуем 60 минут (1 час) между сообщениями</p>
+              </div>
+
+              <div className="space-y-3">
+                {tipsMessages.map((tip, i) => (
+                  <div key={i} className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <Label className="text-xs font-semibold">Совет #{i + 1}</Label>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeTip(i)}
+                        data-testid={`button-remove-tip-${i}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={tip}
+                      onChange={(e) => updateTip(i, e.target.value)}
+                      className="min-h-[80px] text-sm"
+                      data-testid={`textarea-tip-${i}`}
+                    />
+                  </div>
+                ))}
+
+                {tipsMessages.length < 10 && (
+                  <Button variant="outline" onClick={addTip} data-testid="button-add-tip">
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    Добавить совет
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
+
+      <Button
+        onClick={handleSave}
+        disabled={saveMutation.isPending}
+        data-testid="button-save-onboarding"
+      >
+        {saveMutation.isPending ? "Сохранение..." : "Сохранить настройки онбординга"}
+      </Button>
+    </div>
+  );
+}
+
 export default function SuperAdminWhatsApp() {
   return (
     <div className="space-y-6 p-6">
@@ -423,6 +639,10 @@ export default function SuperAdminWhatsApp() {
             <Settings className="mr-1.5 h-3.5 w-3.5" />
             Настройки
           </TabsTrigger>
+          <TabsTrigger value="onboarding" data-testid="tab-onboarding">
+            <GraduationCap className="mr-1.5 h-3.5 w-3.5" />
+            Онбординг
+          </TabsTrigger>
           <TabsTrigger value="broadcast" data-testid="tab-broadcast">
             <Send className="mr-1.5 h-3.5 w-3.5" />
             Рассылка
@@ -435,6 +655,9 @@ export default function SuperAdminWhatsApp() {
 
         <TabsContent value="settings" className="mt-4">
           <SettingsTab />
+        </TabsContent>
+        <TabsContent value="onboarding" className="mt-4">
+          <OnboardingTab />
         </TabsContent>
         <TabsContent value="broadcast" className="mt-4">
           <BroadcastTab />

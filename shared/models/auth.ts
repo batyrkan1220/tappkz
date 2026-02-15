@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   passwordHash: varchar("password_hash"),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
+  phone: varchar("phone", { length: 20 }),
   profileImageUrl: varchar("profile_image_url"),
   isSuperAdmin: boolean("is_super_admin").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow(),

@@ -4,6 +4,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import { seedDatabase } from "./seed";
 import { ensureSuperAdmin } from "./auth";
+import { startScheduledMessagesWorker } from "./whatsapp";
 
 const app = express();
 const httpServer = createServer(app);
@@ -65,6 +66,7 @@ app.use((req, res, next) => {
   await seedDatabase().catch((e) => console.error("Seed error:", e));
   await ensureSuperAdmin().catch((e) => console.error("SuperAdmin init error:", e));
   await registerRoutes(httpServer, app);
+  startScheduledMessagesWorker();
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

@@ -139,3 +139,9 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - API routes: GET/PUT /api/superadmin/waba/config, GET /api/superadmin/waba/messages, POST /api/superadmin/waba/broadcast, POST /api/superadmin/waba/test
 - WABA config stored in platform_settings (key: waba_config), API key redacted in responses
 - Order creation auto-triggers WhatsApp notification to store owner (non-blocking)
+- WhatsApp onboarding system: welcome message on registration (if phone provided), store-created tips, delayed educational tips series
+- Users table: phone field for WhatsApp contact
+- Registration form: optional WhatsApp phone field with description
+- Onboarding config stored in platform_settings (key: onboarding_messages), editable via SuperAdmin
+- API routes: GET/PUT /api/superadmin/waba/onboarding
+- SuperAdmin WhatsApp page: new "Онбординг" tab with welcome/store-created/tips message editors

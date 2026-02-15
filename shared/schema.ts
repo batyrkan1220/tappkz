@@ -185,6 +185,18 @@ export const whatsappMessagesRelations = relations(whatsappMessages, ({ one }) =
   store: one(stores, { fields: [whatsappMessages.storeId], references: [stores.id] }),
 }));
 
+export const scheduledMessages = pgTable("scheduled_messages", {
+  id: serial("id").primaryKey(),
+  recipientPhone: varchar("recipient_phone", { length: 30 }).notNull(),
+  content: text("content").notNull(),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  sent: boolean("sent").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertScheduledMessageSchema = createInsertSchema(scheduledMessages).omit({ id: true, createdAt: true });
+export type ScheduledMessage = typeof scheduledMessages.$inferSelect;
+
 export const PLAN_FEATURES: Record<string, string[]> = {
   free: [
     "50 заказов в месяц",

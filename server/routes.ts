@@ -7,7 +7,10 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { sendOrderNotification, sendTextMessage, sendTemplateMessage, getWabaConfig, getWabaConfigRaw, saveWabaConfig, getMessageLog, getMessageStats } from "./whatsapp";
+import { sendOrderNotification, sendTextMessage, sendTemplateMessage, getWabaConfig, getWabaConfigRaw, saveWabaConfig, getMessageLog, getMessageStats, getOnboardingConfig, saveOnboardingConfig, sendOnboardingStoreCreated } from "./whatsapp";
+import { users } from "@shared/models/auth";
+import { eq } from "drizzle-orm";
+import { db } from "./db";
 
 const uploadDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -160,6 +163,15 @@ export async function registerRoutes(
         plan: "free",
         isActive: true,
       });
+
+      const [owner] = await db.select().from(users).where(eq(users.id, userId));
+      const ownerPhone = owner?.phone || data.whatsappPhone;
+      if (ownerPhone) {
+        sendOnboardingStoreCreated(ownerPhone, data.name, data.slug).catch((err) => {
+          console.error("Onboarding store-created error:", err);
+        });
+      }
+
       res.json(store);
     } catch (e: any) {
       if (e instanceof z.ZodError) {
@@ -1031,6 +1043,35 @@ export async function registerRoutes(
       const data = validate(schema, req.body);
       const msg = await sendTextMessage(data.phone, data.message);
       res.json(msg);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/waba/onboarding", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const config = await getOnboardingConfig();
+      res.json(config);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/superadmin/waba/onboarding", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({
+        welcomeEnabled: z.boolean().optional(),
+        welcomeMessage: z.string().max(4096).optional(),
+        storeCreatedEnabled: z.boolean().optional(),
+        storeCreatedMessage: z.string().max(4096).optional(),
+        tipsEnabled: z.boolean().optional(),
+        tipsMessages: z.array(z.string().max(4096)).max(10).optional(),
+        tipsDelayMinutes: z.number().int().min(1).max(10080).optional(),
+      });
+      const data = validate(schema, req.body);
+      await saveOnboardingConfig(data);
+      res.json({ ok: true });
     } catch (e: any) {
       if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
       res.status(500).json({ message: e.message });
