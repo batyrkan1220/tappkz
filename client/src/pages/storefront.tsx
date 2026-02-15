@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, CreditCard } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
@@ -50,7 +50,6 @@ export default function StorefrontPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerComment, setCustomerComment] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "kaspi">("whatsapp");
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
   const { data, isLoading, error } = useQuery<StoreData>({
@@ -140,39 +139,34 @@ export default function StorefrontPage() {
         customerAddress: customerAddress || null,
         customerComment: customerComment || null,
         items: orderItems,
-        paymentMethod: paymentMethod,
+        paymentMethod: "whatsapp",
       });
 
       const order = await orderRes.json();
       const invoiceUrl = `${window.location.origin}/invoice/${order.id}`;
 
-      if (paymentMethod === "kaspi") {
-        apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "checkout_click" }).catch(() => {});
-        window.location.href = `/invoice/${order.id}`;
-      } else {
-        const itemsText = cart
-          .map((i) => {
-            const price = i.product.discountPrice || i.product.price;
-            return `*${i.quantity}x* ${i.product.name} - ${formatPrice(price * i.quantity)}`;
-          })
-          .join("\n");
+      const itemsText = cart
+        .map((i) => {
+          const price = i.product.discountPrice || i.product.price;
+          return `*${i.quantity}x* ${i.product.name} - ${formatPrice(price * i.quantity)}`;
+        })
+        .join("\n");
 
-        const totalFormatted = new Intl.NumberFormat("ru-KZ").format(cartTotal);
+      const totalFormatted = new Intl.NumberFormat("ru-KZ").format(cartTotal);
 
-        let msg = `*#${order.orderNumber}*\n\n`;
-        msg += `${itemsText}\n\n`;
-        msg += `Итого: *${totalFormatted} ₸*\n\n`;
-        msg += `Покупатель: *${customerName}* ${customerPhone}\n`;
-        if (customerAddress) msg += `Адрес: ${customerAddress}\n`;
-        if (customerComment) msg += `Комментарий: ${customerComment}\n`;
-        msg += `\nСмотреть счёт:\n${invoiceUrl}`;
+      let msg = `*#${order.orderNumber}*\n\n`;
+      msg += `${itemsText}\n\n`;
+      msg += `Итого: *${totalFormatted} ₸*\n\n`;
+      msg += `Покупатель: *${customerName}* ${customerPhone}\n`;
+      if (customerAddress) msg += `Адрес: ${customerAddress}\n`;
+      if (customerComment) msg += `Комментарий: ${customerComment}\n`;
+      msg += `\nСмотреть счёт:\n${invoiceUrl}`;
 
-        const encoded = encodeURIComponent(msg);
-        const phone = store.whatsappPhone.replace(/[^0-9]/g, "");
-        window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+      const encoded = encodeURIComponent(msg);
+      const phone = store.whatsappPhone.replace(/[^0-9]/g, "");
+      window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
 
-        apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "checkout_click" }).catch(() => {});
-      }
+      apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "checkout_click" }).catch(() => {});
 
       setCheckoutOpen(false);
       setCart([]);
@@ -180,7 +174,6 @@ export default function StorefrontPage() {
       setCustomerPhone("");
       setCustomerAddress("");
       setCustomerComment("");
-      setPaymentMethod("whatsapp");
     } catch (e: any) {
       let errorMsg = "Не удалось оформить заказ. Попробуйте позже.";
       try {
@@ -927,32 +920,6 @@ export default function StorefrontPage() {
                 )}
               </div>
 
-              {settings?.kaspiEnabled && settings?.kaspiPayUrl && (
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Способ оплаты</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 text-sm font-medium transition-colors ${paymentMethod === "whatsapp" ? "border-[#25D366] bg-[#25D366]/10" : "border-border"}`}
-                      onClick={() => setPaymentMethod("whatsapp")}
-                      data-testid="button-payment-whatsapp"
-                    >
-                      <SiWhatsapp className="h-4 w-4 text-[#25D366]" />
-                      WhatsApp
-                    </button>
-                    <button
-                      type="button"
-                      className={`flex items-center justify-center gap-2 rounded-xl border-2 px-3 py-3 text-sm font-medium transition-colors ${paymentMethod === "kaspi" ? "border-[#F14635] bg-[#F14635]/10" : "border-border"}`}
-                      onClick={() => setPaymentMethod("kaspi")}
-                      data-testid="button-payment-kaspi"
-                    >
-                      <CreditCard className="h-4 w-4 text-[#F14635]" />
-                      Kaspi
-                    </button>
-                  </div>
-                </div>
-              )}
-
               <div className="rounded-xl bg-muted/50 p-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Ваш заказ</p>
                 <div className="space-y-2">
@@ -992,21 +959,15 @@ export default function StorefrontPage() {
               )}
               <button
                 className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: paymentMethod === "kaspi" ? "#F14635" : "#25D366" }}
+                style={{ backgroundColor: "#25D366" }}
                 disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting}
                 onClick={() => { setCheckoutError(""); handleCheckout(); }}
                 data-testid="button-send-whatsapp"
               >
-                {paymentMethod === "kaspi" ? (
-                  <CreditCard className="h-5 w-5" />
-                ) : (
-                  <SiWhatsapp className="h-5 w-5" />
-                )}
-                {isSubmitting ? "Отправка..." : paymentMethod === "kaspi" ? "Оформить и оплатить через Kaspi" : "Отправить в WhatsApp"}
+                <SiWhatsapp className="h-5 w-5" />
+                {isSubmitting ? "Отправка..." : "Отправить в WhatsApp"}
               </button>
-              <p className="text-[10px] text-muted-foreground text-center mt-2">
-                {paymentMethod === "kaspi" ? "Заказ будет оформлен, инструкции оплаты на странице счёта" : "Заказ будет отправлен продавцу через WhatsApp"}
-              </p>
+              <p className="text-[10px] text-muted-foreground text-center mt-2">Заказ будет отправлен продавцу через WhatsApp</p>
             </div>
           </div>
         </DialogContent>

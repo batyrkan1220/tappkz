@@ -86,9 +86,6 @@ const settingsSchema = z.object({
   checkoutCommentEnabled: z.boolean().optional(),
   instagramUrl: z.string().max(200).nullable().optional(),
   phoneNumber: z.string().max(30).nullable().optional(),
-  kaspiEnabled: z.boolean().optional(),
-  kaspiPayUrl: z.string().max(30).nullable().optional(),
-  kaspiRecipientName: z.string().max(100).nullable().optional(),
 });
 
 const whatsappSchema = z.object({
@@ -377,7 +374,7 @@ export async function registerRoutes(
       const store = await storage.getStoreByOwner(userId);
       if (!store) return res.status(404).json({ message: "Магазин не найден" });
       const settings = await storage.getSettings(store.id);
-      res.json(settings || { storeId: store.id, showPrices: true, currency: "KZT", whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null });
+      res.json(settings || { storeId: store.id, showPrices: true, currency: "KZT", whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
@@ -416,9 +413,6 @@ export async function registerRoutes(
         checkoutCommentEnabled: data.checkoutCommentEnabled ?? existingSettings?.checkoutCommentEnabled ?? false,
         currency: "KZT",
         whatsappTemplate: existingSettings?.whatsappTemplate || "",
-        kaspiEnabled: data.kaspiEnabled !== undefined ? data.kaspiEnabled : (existingSettings?.kaspiEnabled ?? false),
-        kaspiPayUrl: data.kaspiPayUrl !== undefined ? (data.kaspiPayUrl || null) : (existingSettings?.kaspiPayUrl || null),
-        kaspiRecipientName: data.kaspiRecipientName !== undefined ? (data.kaspiRecipientName || null) : (existingSettings?.kaspiRecipientName || null),
       });
       res.json(settings);
     } catch (e: any) {
@@ -448,9 +442,6 @@ export async function registerRoutes(
         phoneNumber: existingSettings?.phoneNumber || null,
         checkoutAddressEnabled: existingSettings?.checkoutAddressEnabled ?? false,
         checkoutCommentEnabled: existingSettings?.checkoutCommentEnabled ?? false,
-        kaspiEnabled: existingSettings?.kaspiEnabled ?? false,
-        kaspiPayUrl: existingSettings?.kaspiPayUrl || null,
-        kaspiRecipientName: existingSettings?.kaspiRecipientName || null,
       });
       res.json(settings);
     } catch (e: any) {
@@ -602,7 +593,7 @@ export async function registerRoutes(
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, kaspiEnabled: false, kaspiPayUrl: null, kaspiRecipientName: null },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
       });
@@ -685,18 +676,7 @@ export async function registerRoutes(
       const allStores = await storage.getAllStores();
       const store = allStores.find(s => s.id === order.storeId);
 
-      let kaspiInfo = null;
-      if (store) {
-        const settings = await storage.getSettings(store.id);
-        if (settings?.kaspiEnabled && settings.kaspiPayUrl) {
-          kaspiInfo = {
-            phone: settings.kaspiPayUrl,
-            recipientName: settings.kaspiRecipientName || store.name,
-          };
-        }
-      }
-
-      res.json({ order, storeName: store?.name, storeSlug: store?.slug, kaspiInfo });
+      res.json({ order, storeName: store?.name, storeSlug: store?.slug });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }

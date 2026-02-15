@@ -12,7 +12,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown, CheckCircle2, XCircle, Loader2, Banknote } from "lucide-react";
+import { Settings, Crown, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import type { Store, StoreSettings } from "@shared/schema";
 
 export default function StoreSettingsPage() {
@@ -29,9 +29,6 @@ export default function StoreSettingsPage() {
   const [checkoutCommentEnabled, setCheckoutCommentEnabled] = useState(false);
   const [instagramUrl, setInstagramUrl] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [kaspiEnabled, setKaspiEnabled] = useState(false);
-  const [kaspiPayUrl, setKaspiPayUrl] = useState("");
-  const [kaspiRecipientName, setKaspiRecipientName] = useState("");
   const [slugStatus, setSlugStatus] = useState<{ available: boolean; reason: string | null } | null>(null);
   const [slugChecking, setSlugChecking] = useState(false);
   const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,9 +75,6 @@ export default function StoreSettingsPage() {
       setCheckoutCommentEnabled(settings.checkoutCommentEnabled ?? false);
       setInstagramUrl(settings.instagramUrl || "");
       setPhoneNumber(settings.phoneNumber || "");
-      setKaspiEnabled(settings.kaspiEnabled ?? false);
-      setKaspiPayUrl(settings.kaspiPayUrl || "");
-      setKaspiRecipientName(settings.kaspiRecipientName || "");
     }
   }, [store, settings]);
 
@@ -96,9 +90,6 @@ export default function StoreSettingsPage() {
         checkoutCommentEnabled,
         instagramUrl: instagramUrl || null,
         phoneNumber: phoneNumber || null,
-        kaspiEnabled,
-        kaspiPayUrl: kaspiPayUrl || null,
-        kaspiRecipientName: kaspiRecipientName || null,
       });
     },
     onSuccess: () => {
@@ -207,60 +198,6 @@ export default function StoreSettingsPage() {
           disabled={!name || !slug || saveMutation.isPending || slugChecking || (slugStatus !== null && !slugStatus.available)}
           className="rounded-full font-semibold"
           data-testid="button-save-settings"
-        >
-          {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
-        </Button>
-      </Card>
-
-      <Card className="p-5 space-y-4" data-testid="card-kaspi-settings">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 dark:bg-red-950/30">
-            <Banknote className="h-5 w-5 text-red-600" />
-          </div>
-          <div>
-            <h3 className="font-extrabold tracking-tight">Оплата через Kaspi</h3>
-            <p className="text-xs text-muted-foreground">Покупатели смогут переводить оплату на ваш Kaspi номер</p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-2">
-          <div>
-            <p className="font-semibold">Включить оплату через Kaspi</p>
-            <p className="text-sm text-muted-foreground">На странице заказа появится кнопка для перевода</p>
-          </div>
-          <Switch checked={kaspiEnabled} onCheckedChange={setKaspiEnabled} data-testid="switch-kaspi-enabled" />
-        </div>
-
-        {kaspiEnabled && (
-          <div className="space-y-3 pt-2 border-t">
-            <div>
-              <Label className="font-semibold">Номер телефона для оплаты *</Label>
-              <Input
-                value={kaspiPayUrl}
-                onChange={(e) => setKaspiPayUrl(e.target.value.replace(/[^0-9+]/g, ""))}
-                placeholder="87001234567"
-                data-testid="input-kaspi-phone"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">Номер, привязанный к вашему Kaspi Gold</p>
-            </div>
-            <div>
-              <Label className="font-semibold">Имя получателя</Label>
-              <Input
-                value={kaspiRecipientName}
-                onChange={(e) => setKaspiRecipientName(e.target.value)}
-                placeholder="Иванов Иван"
-                data-testid="input-kaspi-recipient"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">Имя, которое покупатель увидит при переводе</p>
-            </div>
-          </div>
-        )}
-
-        <Button
-          onClick={() => saveMutation.mutate()}
-          disabled={!name || !slug || saveMutation.isPending || slugChecking || (slugStatus !== null && !slugStatus.available) || (kaspiEnabled && !kaspiPayUrl)}
-          className="rounded-full font-semibold"
-          data-testid="button-save-kaspi"
         >
           {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>

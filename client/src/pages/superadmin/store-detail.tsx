@@ -33,9 +33,6 @@ interface StoreDetail {
     currency: string;
     instagramUrl: string | null;
     phoneNumber: string | null;
-    kaspiEnabled: boolean;
-    kaspiPayUrl: string | null;
-    kaspiRecipientName: string | null;
   } | null;
   theme: {
     primaryColor: string;

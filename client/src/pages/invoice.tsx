@@ -1,10 +1,9 @@
-import { useState } from "react";
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, ArrowLeft, Copy, Check, Banknote } from "lucide-react";
+import { FileText, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Order } from "@shared/schema";
 
@@ -17,7 +16,7 @@ interface OrderItem {
 }
 
 function formatPrice(price: number) {
-  return new Intl.NumberFormat("ru-KZ").format(price) + " ₸";
+  return new Intl.NumberFormat("ru-KZ").format(price) + " \u20B8";
 }
 
 function formatDate(dateStr: string) {
@@ -32,28 +31,10 @@ function formatDate(dateStr: string) {
   });
 }
 
-function formatKaspiPhone(phone: string) {
-  const clean = phone.replace(/\D/g, "");
-  if (clean.length === 11 && clean.startsWith("8")) {
-    return `+7 ${clean.slice(1, 4)} ${clean.slice(4, 7)} ${clean.slice(7, 9)} ${clean.slice(9)}`;
-  }
-  if (clean.length === 11 && clean.startsWith("7")) {
-    return `+7 ${clean.slice(1, 4)} ${clean.slice(4, 7)} ${clean.slice(7, 9)} ${clean.slice(9)}`;
-  }
-  return phone;
-}
-
 export default function InvoicePage() {
   const params = useParams<{ id: string }>();
-  const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const copyToClipboard = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
-
-  const { data, isLoading, error } = useQuery<{ order: Order; storeName: string; storeSlug: string; kaspiInfo: { phone: string; recipientName: string } | null }>({
+  const { data, isLoading, error } = useQuery<{ order: Order; storeName: string; storeSlug: string }>({
     queryKey: ["/api/orders", params.id],
   });
 
@@ -80,7 +61,7 @@ export default function InvoicePage() {
     );
   }
 
-  const { order, storeName, storeSlug, kaspiInfo } = data;
+  const { order, storeName, storeSlug } = data;
   const items = order.items as OrderItem[];
 
   const statusLabel: Record<string, string> = {
@@ -187,83 +168,13 @@ export default function InvoicePage() {
 
             {order.paymentMethod && (
               <div>
-                <p className="text-xs text-muted-foreground">Способ оплаты</p>
+                <p className="text-xs text-muted-foreground">Способ заказа</p>
                 <p className="text-sm font-semibold" data-testid="text-payment-method">
-                  {order.paymentMethod === "whatsapp" ? "WhatsApp" : order.paymentMethod === "kaspi" ? "Kaspi" : order.paymentMethod}
+                  {order.paymentMethod === "whatsapp" ? "WhatsApp" : order.paymentMethod}
                 </p>
               </div>
             )}
           </div>
-
-          {kaspiInfo && order.paymentStatus !== "paid" && (
-            <div className="border-t p-4 space-y-3" data-testid="kaspi-payment-section">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-50 dark:bg-red-950/30">
-                  <Banknote className="h-4 w-4 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold">Оплатить через Kaspi</p>
-                  <p className="text-[11px] text-muted-foreground">Откройте Kaspi и переведите по номеру</p>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-red-50 dark:bg-red-950/20 p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] text-muted-foreground font-medium">Номер получателя</p>
-                    <p className="text-lg font-bold text-red-700 dark:text-red-400 tracking-wide" data-testid="text-kaspi-phone">
-                      {formatKaspiPhone(kaspiInfo.phone)}
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(kaspiInfo.phone.replace(/\D/g, ""), "phone")}
-                    className="shrink-0 gap-1.5"
-                    data-testid="button-copy-kaspi-phone"
-                  >
-                    {copiedField === "phone" ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copiedField === "phone" ? "Скопировано" : "Копировать"}
-                  </Button>
-                </div>
-
-                {kaspiInfo.recipientName && (
-                  <div>
-                    <p className="text-[11px] text-muted-foreground font-medium">Получатель</p>
-                    <p className="text-sm font-semibold" data-testid="text-kaspi-recipient">{kaspiInfo.recipientName}</p>
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] text-muted-foreground font-medium">Сумма к оплате</p>
-                    <p className="text-lg font-bold text-red-700 dark:text-red-400" data-testid="text-kaspi-amount">{formatPrice(order.total)}</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => copyToClipboard(String(order.total), "amount")}
-                    className="shrink-0 gap-1.5"
-                    data-testid="button-copy-kaspi-amount"
-                  >
-                    {copiedField === "amount" ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copiedField === "amount" ? "Скопировано" : "Копировать"}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-muted/50 p-3 space-y-1.5">
-                <p className="text-xs font-semibold">Как оплатить:</p>
-                <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Скопируйте номер получателя</li>
-                  <li>Откройте приложение Kaspi</li>
-                  <li>Переводы &rarr; По номеру телефона</li>
-                  <li>Вставьте номер и укажите сумму <span className="font-semibold text-foreground">{formatPrice(order.total)}</span></li>
-                  <li>Подтвердите перевод</li>
-                </ol>
-              </div>
-            </div>
-          )}
         </Card>
       </div>
     </div>
