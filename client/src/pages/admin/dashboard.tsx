@@ -48,7 +48,7 @@ export default function Dashboard() {
     { label: "Заказы WhatsApp", value: analytics?.checkouts ?? 0, icon: MousePointerClick, color: "text-primary", bg: "bg-primary/10 dark:bg-primary/5" },
   ];
 
-  const productLimit = store.plan === "free" ? 30 : store.plan === "pro" ? 300 : 2000;
+  const productLimit = store.plan === "free" ? 30 : store.plan === "business" ? 500 : 5000;
 
   return (
     <div className="space-y-6 p-6">

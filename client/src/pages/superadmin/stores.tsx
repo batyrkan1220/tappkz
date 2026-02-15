@@ -33,14 +33,14 @@ interface StoreWithStats {
 
 const planColors: Record<string, string> = {
   free: "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700",
-  pro: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
-  business: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800",
+  business: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+  enterprise: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800",
 };
 
 const planDotColors: Record<string, string> = {
   free: "text-zinc-400",
-  pro: "text-blue-500",
-  business: "text-purple-500",
+  business: "text-blue-500",
+  enterprise: "text-purple-500",
 };
 
 function formatDate(d: string | null) {
@@ -80,8 +80,8 @@ function StoreRow({ store, onChangePlan, onToggleActive, isPlanPending, isActive
       data-testid={`card-store-${store.id}`}
     >
       <div className={`h-1 rounded-t-md ${
-        store.plan === "business" ? "bg-purple-500" :
-        store.plan === "pro" ? "bg-blue-500" : "bg-zinc-300 dark:bg-zinc-600"
+        store.plan === "enterprise" ? "bg-purple-500" :
+        store.plan === "business" ? "bg-blue-500" : "bg-zinc-300 dark:bg-zinc-600"
       }`} />
 
       <div className="p-5">
@@ -165,8 +165,8 @@ function StoreRow({ store, onChangePlan, onToggleActive, isPlanPending, isActive
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="pro">Pro</SelectItem>
                 <SelectItem value="business">Business</SelectItem>
+                <SelectItem value="enterprise">Enterprise</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -281,8 +281,8 @@ export default function SuperAdminStores() {
 
   const planSummary = {
     free: stores?.filter(s => s.plan === "free").length || 0,
-    pro: stores?.filter(s => s.plan === "pro").length || 0,
     business: stores?.filter(s => s.plan === "business").length || 0,
+    enterprise: stores?.filter(s => s.plan === "enterprise").length || 0,
   };
 
   return (
@@ -315,8 +315,8 @@ export default function SuperAdminStores() {
               <SelectItem value="inactive">Отключённые</SelectItem>
               <SelectItem value="expired">Просроченные</SelectItem>
               <SelectItem value="free">Free</SelectItem>
-              <SelectItem value="pro">Pro</SelectItem>
               <SelectItem value="business">Business</SelectItem>
+              <SelectItem value="enterprise">Enterprise</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -337,21 +337,21 @@ export default function SuperAdminStores() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-              <span className="text-xs font-medium text-muted-foreground">Pro</span>
-            </div>
-            <Badge variant="secondary" className={planColors.pro}>{planSummary.pro}</Badge>
-          </div>
-          <p className="mt-1.5 text-lg font-bold">{(planSummary.pro * PLAN_PRICES.pro).toLocaleString("ru-RU")} ₸<span className="text-xs font-normal text-muted-foreground">/мес</span></p>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-purple-500" />
               <span className="text-xs font-medium text-muted-foreground">Business</span>
             </div>
             <Badge variant="secondary" className={planColors.business}>{planSummary.business}</Badge>
           </div>
           <p className="mt-1.5 text-lg font-bold">{(planSummary.business * PLAN_PRICES.business).toLocaleString("ru-RU")} ₸<span className="text-xs font-normal text-muted-foreground">/мес</span></p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-purple-500" />
+              <span className="text-xs font-medium text-muted-foreground">Enterprise</span>
+            </div>
+            <Badge variant="secondary" className={planColors.enterprise}>{planSummary.enterprise}</Badge>
+          </div>
+          <p className="mt-1.5 text-lg font-bold">{(planSummary.enterprise * PLAN_PRICES.enterprise).toLocaleString("ru-RU")} ₸<span className="text-xs font-normal text-muted-foreground">/мес</span></p>
         </Card>
         <Card className="p-4">
           <div className="flex items-center justify-between gap-2">

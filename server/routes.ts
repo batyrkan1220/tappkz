@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupSession, registerAuthRoutes, isAuthenticated, isSuperAdminMiddleware } from "./auth";
-import { PLAN_LIMITS, PLAN_PRICES, PLAN_NAMES, PLAN_FEATURES, BUSINESS_TYPES } from "@shared/schema";
+import { PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS, PLAN_PRICES, PLAN_NAMES, PLAN_FEATURES, BUSINESS_TYPES } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -114,11 +114,26 @@ export async function registerRoutes(
     }
   });
 
-  app.post("/api/upload", isAuthenticated, upload.array("images", 5), (req: any, res) => {
-    const userId = req.session.userId;
-    const files = req.files as Express.Multer.File[];
-    const urls = files.map((f) => `/uploads/${f.filename}`);
-    res.json({ urls });
+  app.post("/api/upload", isAuthenticated, upload.array("images", 5), async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const store = await storage.getStoreByOwner(userId);
+      if (store) {
+        const imageLimit = PLAN_IMAGE_LIMITS[store.plan] ?? 20;
+        if (imageLimit > 0) {
+          const currentImages = await storage.countImages(store.id);
+          const files = req.files as Express.Multer.File[];
+          if (currentImages + files.length > imageLimit) {
+            return res.status(400).json({ message: `Лимит изображений: ${imageLimit}. Обновите тариф.` });
+          }
+        }
+      }
+      const files = req.files as Express.Multer.File[];
+      const urls = files.map((f) => `/uploads/${f.filename}`);
+      res.json({ urls });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
   });
 
   app.post("/api/stores", isAuthenticated, async (req: any, res) => {
@@ -476,8 +491,8 @@ export async function registerRoutes(
   app.get("/api/tariffs", async (_req, res) => {
     try {
       const settings = await storage.getAllPlatformSettings();
-      const plans = ["free", "pro", "business"];
-      const result: Record<string, { price: number; limit: number; name: string; features: string[] }> = {};
+      const plans = ["free", "business", "enterprise"];
+      const result: Record<string, { price: number; limit: number; orderLimit: number; imageLimit: number; name: string; features: string[] }> = {};
       for (const plan of plans) {
         const saved = settings.find((s) => s.key === `plan_${plan}`);
         if (saved && saved.value) {
@@ -485,6 +500,8 @@ export async function registerRoutes(
           result[plan] = {
             price: v.price ?? PLAN_PRICES[plan],
             limit: v.limit ?? PLAN_LIMITS[plan],
+            orderLimit: v.orderLimit ?? PLAN_ORDER_LIMITS[plan],
+            imageLimit: v.imageLimit ?? PLAN_IMAGE_LIMITS[plan],
             name: v.name ?? PLAN_NAMES[plan],
             features: v.features ?? PLAN_FEATURES[plan],
           };
@@ -492,6 +509,8 @@ export async function registerRoutes(
           result[plan] = {
             price: PLAN_PRICES[plan],
             limit: PLAN_LIMITS[plan],
+            orderLimit: PLAN_ORDER_LIMITS[plan],
+            imageLimit: PLAN_IMAGE_LIMITS[plan],
             name: PLAN_NAMES[plan],
             features: PLAN_FEATURES[plan],
           };
@@ -549,6 +568,14 @@ export async function registerRoutes(
       const data = validate(orderSchema, req.body);
       const store = await storage.getStoreBySlug(req.params.slug);
       if (!store) return res.status(404).json({ message: "Not found" });
+
+      const orderLimit = PLAN_ORDER_LIMITS[store.plan] ?? 50;
+      if (orderLimit > 0) {
+        const monthOrders = await storage.countOrdersThisMonth(store.id);
+        if (monthOrders >= orderLimit) {
+          return res.status(400).json({ message: `Лимит заказов в месяц: ${orderLimit}. Обновите тариф.` });
+        }
+      }
 
       const subtotal = data.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const orderNumber = await storage.getNextOrderNumber(store.id);
@@ -739,7 +766,7 @@ export async function registerRoutes(
   app.patch("/api/superadmin/stores/:id/plan", isSuperAdminMiddleware, async (req, res) => {
     try {
       const planSchema = z.object({
-        plan: z.enum(["free", "pro", "business"]),
+        plan: z.enum(["free", "business", "enterprise"]),
         planStartedAt: z.string().optional(),
         planExpiresAt: z.string().nullable().optional(),
       });
@@ -856,12 +883,14 @@ export async function registerRoutes(
   app.put("/api/superadmin/tariffs/:plan", isSuperAdminMiddleware, async (req, res) => {
     try {
       const planKey = req.params.plan;
-      if (!["free", "pro", "business"].includes(planKey)) {
+      if (!["free", "business", "enterprise"].includes(planKey)) {
         return res.status(400).json({ message: "Неизвестный тариф" });
       }
       const schema = z.object({
         price: z.number().min(0),
         limit: z.number().min(1),
+        orderLimit: z.number().optional(),
+        imageLimit: z.number().optional(),
         name: z.string().min(1),
         features: z.array(z.string()),
       });

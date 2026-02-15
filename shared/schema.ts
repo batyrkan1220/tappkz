@@ -166,27 +166,24 @@ export type PlatformSetting = typeof platformSettings.$inferSelect;
 
 export const PLAN_FEATURES: Record<string, string[]> = {
   free: [
-    "До 30 товаров",
-    "1 магазин",
+    "50 заказов в месяц",
+    "20 изображений",
+    "Без комиссий",
     "WhatsApp заказы",
     "Базовая аналитика",
-  ],
-  pro: [
-    "До 300 товаров",
-    "1 магазин",
-    "WhatsApp заказы",
-    "Подробная аналитика",
-    "Кастомный домен",
-    "Приоритетная поддержка",
+    "Управление заказами",
   ],
   business: [
-    "До 2000 товаров",
-    "1 магазин",
-    "WhatsApp заказы",
-    "Расширенная аналитика",
+    "Безлимитные заказы",
+    "Безлимитные изображения",
     "Кастомный домен",
-    "API доступ",
+    "Убрать логотип TakeSale",
+    "Расширенная аналитика",
+    "Приоритетная поддержка",
+  ],
+  enterprise: [
     "Персональный менеджер",
+    "Индивидуальные условия",
   ],
 };
 
@@ -258,18 +255,30 @@ export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 
 export const PLAN_LIMITS: Record<string, number> = {
   free: 30,
-  pro: 300,
-  business: 2000,
+  business: 500,
+  enterprise: 5000,
+};
+
+export const PLAN_ORDER_LIMITS: Record<string, number> = {
+  free: 50,
+  business: -1,
+  enterprise: -1,
+};
+
+export const PLAN_IMAGE_LIMITS: Record<string, number> = {
+  free: 20,
+  business: -1,
+  enterprise: -1,
 };
 
 export const PLAN_PRICES: Record<string, number> = {
   free: 0,
-  pro: 4990,
-  business: 14990,
+  business: 17500,
+  enterprise: 0,
 };
 
 export const PLAN_NAMES: Record<string, string> = {
-  free: "Бесплатный",
-  pro: "Профессиональный",
+  free: "Базовый",
   business: "Бизнес",
+  enterprise: "Корпоративный",
 };

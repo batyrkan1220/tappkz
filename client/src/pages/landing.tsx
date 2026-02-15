@@ -399,7 +399,7 @@ function AnimatedPhoneMockup() {
   );
 }
 
-type TariffData = Record<string, { price: number; limit: number; name: string; features: string[] }>;
+type TariffData = Record<string, { price: number; limit: number; orderLimit: number; imageLimit: number; name: string; features: string[] }>;
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -407,38 +407,56 @@ export default function LandingPage() {
 
   const pricingPlans = useMemo(() => {
     const t = tariffs || {};
-    const free = t.free || { price: 0, limit: 30, name: "Бесплатный", features: [] };
-    const pro = t.pro || { price: 4990, limit: 300, name: "Профессиональный", features: [] };
-    const business = t.business || { price: 14990, limit: 2000, name: "Бизнес", features: [] };
+    const free = t.free || { price: 0, limit: 30, orderLimit: 50, imageLimit: 20, name: "Базовый", features: [] };
+    const biz = t.business || { price: 17500, limit: 500, orderLimit: -1, imageLimit: -1, name: "Бизнес", features: [] };
+    const ent = t.enterprise || { price: 0, limit: 5000, orderLimit: -1, imageLimit: -1, name: "Корпоративный", features: [] };
     return [
       {
-        name: "Старт",
-        price: free.price === 0 ? "0 ₸" : `${free.price.toLocaleString("ru-RU")} ₸`,
-        period: free.price === 0 ? "навсегда" : "/мес",
-        products: `до ${free.limit} товаров`,
-        features: free.features.length > 0 ? free.features : ["Мобильный магазин", "WhatsApp заказы", "Базовая аналитика", "Брендирование", "Управление заказами", "База клиентов"],
+        key: "free",
+        name: free.name || "Базовый",
+        price: "$0",
+        priceSuffix: "USD / мес",
+        includesLabel: "Включает:",
+        features: free.features.length > 0 ? free.features : [
+          "50 заказов в месяц",
+          "20 изображений",
+          "Без комиссий",
+          "WhatsApp заказы",
+        ],
         highlight: false,
         cta: "Начать бесплатно",
         enabled: true,
       },
       {
-        name: pro.name || "Профессиональный",
-        price: `${pro.price.toLocaleString("ru-RU")} ₸`,
-        period: "/мес",
-        products: `до ${pro.limit} товаров`,
-        features: pro.features.length > 0 ? pro.features : ["Всё из Старт", "Расширенная аналитика", "Приоритетная поддержка", "Свой домен", "Экспорт данных"],
+        key: "business",
+        name: biz.name || "Бизнес",
+        price: `$${(biz.price / 470).toFixed(1)}`,
+        priceSuffix: "USD / мес",
+        includesLabel: "Всё из Базового:",
+        features: biz.features.length > 0 ? biz.features : [
+          "Безлимитные заказы",
+          "Безлимитные изображения",
+          "Кастомный домен",
+          "Убрать логотип TakeSale",
+          "Расширенная аналитика",
+          "Приоритетная поддержка",
+        ],
         highlight: true,
-        cta: "Скоро",
-        enabled: false,
+        cta: "Подключить",
+        enabled: true,
       },
       {
-        name: business.name || "Бизнес",
-        price: `${business.price.toLocaleString("ru-RU")} ₸`,
-        period: "/мес",
-        products: `до ${business.limit} товаров`,
-        features: business.features.length > 0 ? business.features : ["Всё из Профессиональный", "Несколько магазинов", "API доступ", "Менеджер аккаунта", "Интеграции"],
+        key: "enterprise",
+        name: ent.name || "Корпоративный",
+        price: "Договор",
+        priceSuffix: "",
+        includesLabel: "Всё из Бизнеса:",
+        features: ent.features.length > 0 ? ent.features : [
+          "Персональный менеджер",
+          "Индивидуальные условия",
+        ],
         highlight: false,
-        cta: "Скоро",
+        cta: "Связаться",
         enabled: false,
       },
     ];
@@ -842,44 +860,48 @@ export default function LandingPage() {
           <div className="mx-auto mt-12 grid max-w-4xl gap-5 sm:grid-cols-3">
             {pricingPlans.map((plan, planIdx) => (
               <Card
-                key={plan.name}
-                className={`relative p-6 text-left ${plan.highlight ? "border-primary border-2 shadow-lg shadow-primary/10" : ""}`}
+                key={plan.key}
+                className={`relative p-6 text-left ${plan.highlight ? "border-foreground border-2" : ""}`}
                 data-testid={`card-pricing-${planIdx}`}
               >
-                {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="rounded-full font-semibold no-default-hover-elevate no-default-active-elevate shadow-md" data-testid="badge-popular">
-                      Популярный
-                    </Badge>
-                  </div>
-                )}
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{plan.name}</h3>
-                <div className="mt-3 flex items-baseline gap-1">
+                <h3 className="text-base font-semibold" data-testid={`text-plan-name-${planIdx}`}>{plan.name}</h3>
+                <div className="mt-3 flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold tracking-tight">{plan.price}</span>
-                  <span className="text-sm text-muted-foreground">{plan.period}</span>
+                  {plan.priceSuffix && (
+                    <span className="text-sm text-muted-foreground">{plan.priceSuffix}</span>
+                  )}
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground">{plan.products}</p>
 
-                <ul className="mt-5 space-y-2.5">
-                  {plan.features.map((f, fIdx) => (
-                    <li key={f} className="flex items-start gap-2 text-sm" data-testid={`text-pricing-feature-${planIdx}-${fIdx}`}>
-                      <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-6">
+                <div className="mt-5">
                   {plan.enabled ? (
                     <a href="/register" className="block">
-                      <Button className="w-full rounded-full font-semibold" data-testid="button-pricing-start">
+                      <Button
+                        className={`w-full rounded-md font-semibold ${plan.highlight ? "bg-foreground text-background" : ""}`}
+                        variant={plan.highlight ? "default" : "outline"}
+                        data-testid={`button-pricing-${planIdx}`}
+                      >
                         {plan.cta}
                       </Button>
                     </a>
                   ) : (
-                    <Button variant="outline" className="w-full rounded-full font-semibold" disabled data-testid={`button-pricing-${planIdx}`}>
+                    <Button variant="outline" className="w-full rounded-md font-semibold" data-testid={`button-pricing-${planIdx}`}>
                       {plan.cta}
                     </Button>
+                  )}
+                </div>
+
+                <div className="mt-6">
+                  <p className="text-sm text-muted-foreground font-medium mb-3">{plan.includesLabel}</p>
+                  <ul className="space-y-2.5">
+                    {plan.features.map((f, fIdx) => (
+                      <li key={f} className="flex items-start gap-2 text-sm" data-testid={`text-pricing-feature-${planIdx}-${fIdx}`}>
+                        <Check className="h-4 w-4 mt-0.5 shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {plan.key === "business" && (
+                    <p className="mt-3 text-xs text-muted-foreground">И многое другое...</p>
                   )}
                 </div>
               </Card>

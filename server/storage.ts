@@ -37,6 +37,8 @@ export interface IStorage {
   updateProduct(id: number, storeId: number, data: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: number, storeId: number): Promise<void>;
   countProducts(storeId: number): Promise<number>;
+  countOrdersThisMonth(storeId: number): Promise<number>;
+  countImages(storeId: number): Promise<number>;
 
   recordEvent(event: InsertStoreEvent): Promise<void>;
   getAnalytics(storeId: number): Promise<{ visits: number; checkouts: number; addToCarts: number }>;
@@ -215,6 +217,20 @@ export class DatabaseStorage implements IStorage {
   async countProducts(storeId: number): Promise<number> {
     const [result] = await db.select({ count: count() }).from(products).where(eq(products.storeId, storeId));
     return result?.count ?? 0;
+  }
+
+  async countOrdersThisMonth(storeId: number): Promise<number> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const [result] = await db.select({ count: count() }).from(orders).where(
+      and(eq(orders.storeId, storeId), gte(orders.createdAt, startOfMonth))
+    );
+    return result?.count ?? 0;
+  }
+
+  async countImages(storeId: number): Promise<number> {
+    const allProducts = await db.select({ imageUrls: products.imageUrls }).from(products).where(eq(products.storeId, storeId));
+    return allProducts.reduce((sum, p) => sum + (p.imageUrls?.length || 0), 0);
   }
 
   async recordEvent(data: InsertStoreEvent): Promise<void> {

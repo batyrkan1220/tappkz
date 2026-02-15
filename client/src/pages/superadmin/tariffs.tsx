@@ -6,27 +6,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { PLAN_PRICES, PLAN_NAMES, PLAN_LIMITS, PLAN_FEATURES } from "@shared/schema";
+import { PLAN_PRICES, PLAN_NAMES, PLAN_LIMITS, PLAN_FEATURES, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS } from "@shared/schema";
 import { useState, useEffect } from "react";
-import { CreditCard, Package, Check, Plus, X, Save, Pencil, Crown, Zap, Star } from "lucide-react";
+import { CreditCard, Package, Check, Plus, X, Save, Pencil, Crown, Zap, Star, ShoppingCart, ImageIcon } from "lucide-react";
 
 interface PlanConfig {
   price: number;
   limit: number;
+  orderLimit: number;
+  imageLimit: number;
   name: string;
   features: string[];
 }
 
 const defaultConfigs: Record<string, PlanConfig> = {
-  free: { price: PLAN_PRICES.free, limit: PLAN_LIMITS.free, name: PLAN_NAMES.free, features: PLAN_FEATURES.free },
-  pro: { price: PLAN_PRICES.pro, limit: PLAN_LIMITS.pro, name: PLAN_NAMES.pro, features: PLAN_FEATURES.pro },
-  business: { price: PLAN_PRICES.business, limit: PLAN_LIMITS.business, name: PLAN_NAMES.business, features: PLAN_FEATURES.business },
+  free: { price: PLAN_PRICES.free, limit: PLAN_LIMITS.free, orderLimit: PLAN_ORDER_LIMITS.free, imageLimit: PLAN_IMAGE_LIMITS.free, name: PLAN_NAMES.free, features: PLAN_FEATURES.free },
+  business: { price: PLAN_PRICES.business, limit: PLAN_LIMITS.business, orderLimit: PLAN_ORDER_LIMITS.business, imageLimit: PLAN_IMAGE_LIMITS.business, name: PLAN_NAMES.business, features: PLAN_FEATURES.business },
+  enterprise: { price: PLAN_PRICES.enterprise, limit: PLAN_LIMITS.enterprise, orderLimit: PLAN_ORDER_LIMITS.enterprise, imageLimit: PLAN_IMAGE_LIMITS.enterprise, name: PLAN_NAMES.enterprise, features: PLAN_FEATURES.enterprise },
 };
 
 const planIcons: Record<string, typeof Star> = {
   free: Star,
-  pro: Zap,
-  business: Crown,
+  business: Zap,
+  enterprise: Crown,
 };
 
 const planAccents: Record<string, { bg: string; border: string; text: string; icon: string; stripe: string }> = {
@@ -37,14 +39,14 @@ const planAccents: Record<string, { bg: string; border: string; text: string; ic
     icon: "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300",
     stripe: "bg-zinc-400",
   },
-  pro: {
+  business: {
     bg: "bg-blue-50/50 dark:bg-blue-900/10",
     border: "border-blue-200 dark:border-blue-800",
     text: "text-blue-700 dark:text-blue-300",
     icon: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300",
     stripe: "bg-blue-500",
   },
-  business: {
+  enterprise: {
     bg: "bg-purple-50/50 dark:bg-purple-900/10",
     border: "border-purple-200 dark:border-purple-800",
     text: "text-purple-700 dark:text-purple-300",
@@ -64,6 +66,8 @@ function PlanCard({ planKey, config, savedConfig, onSave, isPending }: {
   const [isEditing, setIsEditing] = useState(false);
   const [editPrice, setEditPrice] = useState(currentConfig.price);
   const [editLimit, setEditLimit] = useState(currentConfig.limit);
+  const [editOrderLimit, setEditOrderLimit] = useState(currentConfig.orderLimit);
+  const [editImageLimit, setEditImageLimit] = useState(currentConfig.imageLimit);
   const [editName, setEditName] = useState(currentConfig.name);
   const [editFeatures, setEditFeatures] = useState<string[]>(currentConfig.features);
   const [newFeature, setNewFeature] = useState("");
@@ -72,6 +76,8 @@ function PlanCard({ planKey, config, savedConfig, onSave, isPending }: {
     const c = savedConfig || config;
     setEditPrice(c.price);
     setEditLimit(c.limit);
+    setEditOrderLimit(c.orderLimit ?? -1);
+    setEditImageLimit(c.imageLimit ?? -1);
     setEditName(c.name);
     setEditFeatures([...c.features]);
   }, [savedConfig, config]);
@@ -80,7 +86,7 @@ function PlanCard({ planKey, config, savedConfig, onSave, isPending }: {
   const Icon = planIcons[planKey];
 
   const handleSave = () => {
-    onSave({ price: editPrice, limit: editLimit, name: editName, features: editFeatures });
+    onSave({ price: editPrice, limit: editLimit, orderLimit: editOrderLimit, imageLimit: editImageLimit, name: editName, features: editFeatures });
     setIsEditing(false);
   };
 
@@ -94,6 +100,8 @@ function PlanCard({ planKey, config, savedConfig, onSave, isPending }: {
   const removeFeature = (idx: number) => {
     setEditFeatures(editFeatures.filter((_, i) => i !== idx));
   };
+
+  const formatLimit = (val: number) => val < 0 ? "Безлимит" : val.toLocaleString("ru-RU");
 
   return (
     <Card className={`overflow-visible ${accent.bg}`} data-testid={`card-plan-${planKey}`}>
@@ -175,7 +183,45 @@ function PlanCard({ planKey, config, savedConfig, onSave, isPending }: {
               />
             ) : (
               <p className="text-2xl font-extrabold tracking-tight" data-testid={`text-plan-limit-${planKey}`}>
-                {currentConfig.limit.toLocaleString("ru-RU")}
+                {formatLimit(currentConfig.limit)}
+              </p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <ShoppingCart className="h-3.5 w-3.5" />
+              Заказы / мес (-1 = безлимит)
+            </label>
+            {isEditing ? (
+              <Input
+                type="number"
+                value={editOrderLimit}
+                onChange={(e) => setEditOrderLimit(parseInt(e.target.value) || 0)}
+                className="h-9"
+                data-testid={`input-plan-order-limit-${planKey}`}
+              />
+            ) : (
+              <p className="text-2xl font-extrabold tracking-tight" data-testid={`text-plan-order-limit-${planKey}`}>
+                {formatLimit(currentConfig.orderLimit)}
+              </p>
+            )}
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+              <ImageIcon className="h-3.5 w-3.5" />
+              Изображения (-1 = безлимит)
+            </label>
+            {isEditing ? (
+              <Input
+                type="number"
+                value={editImageLimit}
+                onChange={(e) => setEditImageLimit(parseInt(e.target.value) || 0)}
+                className="h-9"
+                data-testid={`input-plan-image-limit-${planKey}`}
+              />
+            ) : (
+              <p className="text-2xl font-extrabold tracking-tight" data-testid={`text-plan-image-limit-${planKey}`}>
+                {formatLimit(currentConfig.imageLimit)}
               </p>
             )}
           </div>
@@ -262,7 +308,7 @@ export default function SuperAdminTariffs() {
     return null;
   };
 
-  const plans = ["free", "pro", "business"];
+  const plans = ["free", "business", "enterprise"];
 
   return (
     <div className="space-y-6 p-6">
@@ -293,14 +339,11 @@ export default function SuperAdminTariffs() {
             <thead>
               <tr className="border-b">
                 <th className="text-left py-2.5 pr-4 font-medium text-muted-foreground">Параметр</th>
-                {plans.map(p => {
-                  const cfg = getConfig(p) || defaultConfigs[p];
-                  return (
-                    <th key={p} className="text-center py-2.5 px-4 font-bold" data-testid={`th-plan-${p}`}>
-                      <Badge variant="secondary" className={`${planAccents[p].text}`}>{p.toUpperCase()}</Badge>
-                    </th>
-                  );
-                })}
+                {plans.map(p => (
+                  <th key={p} className="text-center py-2.5 px-4 font-bold" data-testid={`th-plan-${p}`}>
+                    <Badge variant="secondary" className={`${planAccents[p].text}`}>{p.toUpperCase()}</Badge>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -315,7 +358,21 @@ export default function SuperAdminTariffs() {
                 <td className="py-2.5 pr-4 text-muted-foreground">Лимит товаров</td>
                 {plans.map(p => {
                   const cfg = getConfig(p) || defaultConfigs[p];
-                  return <td key={p} className="text-center py-2.5 px-4 font-bold">{cfg.limit.toLocaleString("ru-RU")}</td>;
+                  return <td key={p} className="text-center py-2.5 px-4 font-bold">{cfg.limit < 0 ? "Безлимит" : cfg.limit.toLocaleString("ru-RU")}</td>;
+                })}
+              </tr>
+              <tr className="border-b">
+                <td className="py-2.5 pr-4 text-muted-foreground">Заказы / мес</td>
+                {plans.map(p => {
+                  const cfg = getConfig(p) || defaultConfigs[p];
+                  return <td key={p} className="text-center py-2.5 px-4 font-bold">{cfg.orderLimit < 0 ? "Безлимит" : cfg.orderLimit}</td>;
+                })}
+              </tr>
+              <tr className="border-b">
+                <td className="py-2.5 pr-4 text-muted-foreground">Изображения</td>
+                {plans.map(p => {
+                  const cfg = getConfig(p) || defaultConfigs[p];
+                  return <td key={p} className="text-center py-2.5 px-4 font-bold">{cfg.imageLimit < 0 ? "Безлимит" : cfg.imageLimit}</td>;
                 })}
               </tr>
               {(() => {

@@ -73,8 +73,8 @@ interface StoreDetail {
 
 const planColors: Record<string, string> = {
   free: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-  pro: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  business: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+  business: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  enterprise: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
 };
 
 const statusLabels: Record<string, string> = {
@@ -235,8 +235,8 @@ export default function SuperAdminStoreDetail() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="free">Free</SelectItem>
-              <SelectItem value="pro">Pro</SelectItem>
               <SelectItem value="business">Business</SelectItem>
+              <SelectItem value="enterprise">Enterprise</SelectItem>
             </SelectContent>
           </Select>
         </div>
