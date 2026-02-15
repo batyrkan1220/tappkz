@@ -16,7 +16,6 @@ import ProductsPage from "@/pages/admin/products";
 import CategoriesPage from "@/pages/admin/categories";
 import BrandingPage from "@/pages/admin/branding";
 import WhatsAppPage from "@/pages/admin/whatsapp";
-import WhatsAppInboxPage from "@/pages/admin/whatsapp-inbox";
 
 import StoreSettingsPage from "@/pages/admin/store-settings";
 import SubscriptionPage from "@/pages/admin/subscription";
@@ -68,7 +67,7 @@ function Router() {
       <Route path="/admin/categories" component={() => <AdminRoute component={CategoriesPage} />} />
       <Route path="/admin/branding" component={() => <AdminRoute component={BrandingPage} />} />
       <Route path="/admin/whatsapp" component={() => <AdminRoute component={WhatsAppPage} />} />
-      <Route path="/admin/inbox" component={() => <AdminRoute component={WhatsAppInboxPage} />} />
+
 
       <Route path="/admin/orders" component={() => <AdminRoute component={OrdersPage} />} />
       <Route path="/admin/customers" component={() => <AdminRoute component={CustomersPage} />} />
