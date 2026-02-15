@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Store, Users, LogOut, Shield, ArrowLeft, ShoppingCart, Activity, CreditCard, MessageCircle, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Store, Users, LogOut, Shield, ArrowLeft, ShoppingCart, Activity, CreditCard, MessageCircle, BarChart3, Mail } from "lucide-react";
 import { useLocation, Link } from "wouter";
 
 function SuperAdminSidebar() {
@@ -31,6 +31,7 @@ function SuperAdminSidebar() {
     { title: "Пользователи", url: "/superadmin/users", icon: Users },
     { title: "Тарифы", url: "/superadmin/tariffs", icon: CreditCard },
     { title: "WhatsApp", url: "/superadmin/whatsapp", icon: MessageCircle },
+    { title: "Email", url: "/superadmin/email", icon: Mail },
     { title: "Пиксели", url: "/superadmin/tracking", icon: BarChart3 },
     { title: "Активность", url: "/superadmin/events", icon: Activity },
   ];

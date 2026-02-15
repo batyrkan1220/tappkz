@@ -225,6 +225,21 @@ export const scheduledMessages = pgTable("scheduled_messages", {
 export const insertScheduledMessageSchema = createInsertSchema(scheduledMessages).omit({ id: true, createdAt: true });
 export type ScheduledMessage = typeof scheduledMessages.$inferSelect;
 
+export const emailBroadcasts = pgTable("email_broadcasts", {
+  id: serial("id").primaryKey(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  htmlContent: text("html_content").notNull(),
+  recipientCount: integer("recipient_count").notNull().default(0),
+  successCount: integer("success_count").notNull().default(0),
+  failCount: integer("fail_count").notNull().default(0),
+  status: varchar("status", { length: 20 }).notNull().default("sending"),
+  sentBy: varchar("sent_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertEmailBroadcastSchema = createInsertSchema(emailBroadcasts).omit({ id: true, createdAt: true });
+export type EmailBroadcast = typeof emailBroadcasts.$inferSelect;
+
 export const PLAN_FEATURES: Record<string, string[]> = {
   free: [
     "50 заказов в месяц",

@@ -2,15 +2,16 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupSession, registerAuthRoutes, isAuthenticated, isSuperAdminMiddleware } from "./auth";
-import { PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS, PLAN_PRICES, PLAN_NAMES, PLAN_FEATURES, BUSINESS_TYPES } from "@shared/schema";
+import { PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS, PLAN_PRICES, PLAN_NAMES, PLAN_FEATURES, BUSINESS_TYPES, emailBroadcasts } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { sendOrderNotification, sendTextMessage, sendTemplateMessage, getWabaConfig, getWabaConfigRaw, saveWabaConfig, getMessageLog, getMessageStats, getOnboardingConfig, saveOnboardingConfig, sendOnboardingStoreCreated } from "./whatsapp";
+import { sendBroadcastEmail } from "./email";
 
 import { users } from "@shared/models/auth";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { db } from "./db";
 
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -1234,6 +1235,57 @@ export async function registerRoutes(
       const data = validate(schema, req.body);
       await storage.setPlatformSetting("tracking_pixels", data);
       res.json({ ok: true });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/email/broadcasts", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const broadcasts = await db.select().from(emailBroadcasts).orderBy(desc(emailBroadcasts.createdAt)).limit(50);
+      res.json(broadcasts);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/superadmin/email/broadcast", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({
+        subject: z.string().min(1).max(500),
+        htmlContent: z.string().min(1).max(50000),
+      });
+      const data = validate(schema, req.body);
+
+      const allUsers = await db.select({ email: users.email }).from(users);
+      const validEmails = allUsers.map(u => u.email).filter((e): e is string => !!e && e.includes("@"));
+
+      if (validEmails.length === 0) {
+        return res.status(400).json({ message: "Нет пользователей с email" });
+      }
+
+      const [broadcast] = await db.insert(emailBroadcasts).values({
+        subject: data.subject,
+        htmlContent: data.htmlContent,
+        recipientCount: validEmails.length,
+        status: "sending",
+        sentBy: (req as any).user?.id || null,
+      }).returning();
+
+      res.json({ id: broadcast.id, recipientCount: validEmails.length, status: "sending" });
+
+      sendBroadcastEmail(validEmails, data.subject, data.htmlContent).then(async ({ success, fail }) => {
+        await db.update(emailBroadcasts).set({
+          successCount: success,
+          failCount: fail,
+          status: "completed",
+        }).where(eq(emailBroadcasts.id, broadcast.id));
+      }).catch(async (err) => {
+        console.error("Broadcast email error:", err);
+        await db.update(emailBroadcasts).set({ status: "failed" }).where(eq(emailBroadcasts.id, broadcast.id));
+      });
+
     } catch (e: any) {
       if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
       res.status(500).json({ message: e.message });
