@@ -56,7 +56,10 @@ export const stores = pgTable("stores", {
   planExpiresAt: timestamp("plan_expires_at"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_stores_owner").on(table.ownerUserId),
+  index("idx_stores_slug").on(table.slug),
+]);
 
 export const storeThemes = pgTable("store_themes", {
   id: serial("id").primaryKey(),
@@ -94,7 +97,9 @@ export const categories = pgTable("categories", {
   name: text("name").notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
-});
+}, (table) => [
+  index("idx_categories_store").on(table.storeId),
+]);
 
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
@@ -110,7 +115,10 @@ export const products = pgTable("products", {
   sku: varchar("sku", { length: 50 }),
   unit: varchar("unit", { length: 30 }),
   attributes: jsonb("attributes").notNull().default({}),
-});
+}, (table) => [
+  index("idx_products_store").on(table.storeId),
+  index("idx_products_category").on(table.categoryId),
+]);
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
@@ -129,7 +137,10 @@ export const orders = pgTable("orders", {
   fulfillmentStatus: varchar("fulfillment_status", { length: 30 }).notNull().default("unfulfilled"),
   internalNote: text("internal_note"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_orders_store").on(table.storeId),
+  index("idx_orders_created").on(table.createdAt),
+]);
 
 export const customers = pgTable("customers", {
   id: serial("id").primaryKey(),
@@ -144,7 +155,9 @@ export const customers = pgTable("customers", {
   firstOrderAt: timestamp("first_order_at"),
   lastOrderAt: timestamp("last_order_at"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_customers_store").on(table.storeId),
+]);
 
 export const storeEvents = pgTable("store_events", {
   id: serial("id").primaryKey(),

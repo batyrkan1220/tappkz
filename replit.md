@@ -145,3 +145,4 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - Onboarding config stored in platform_settings (key: onboarding_messages), editable via SuperAdmin
 - API routes: GET/PUT /api/superadmin/waba/onboarding
 - SuperAdmin WhatsApp page: new "Онбординг" tab with welcome/store-created/tips message editors
+- Performance optimizations: React.lazy() code splitting for all pages, gzip compression middleware, DB indexes on key columns (stores.ownerUserId/slug, products/categories/orders/customers.storeId), image lazy loading on storefront, Cache-Control headers for uploads (1yr immutable) and storefront API (30s + stale-while-revalidate)

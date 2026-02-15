@@ -5,6 +5,7 @@ import { createServer } from "http";
 import { seedDatabase } from "./seed";
 import { ensureSuperAdmin } from "./auth";
 import { startScheduledMessagesWorker } from "./whatsapp";
+import compression from "compression";
 
 const app = express();
 const httpServer = createServer(app);
@@ -14,6 +15,8 @@ declare module "http" {
     rawBody: unknown;
   }
 }
+
+app.use(compression());
 
 app.use(
   express.json({

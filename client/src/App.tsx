@@ -4,39 +4,51 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
-import NotFound from "@/pages/not-found";
-import LandingPage from "@/pages/landing";
-import LoginPage from "@/pages/auth/login";
-import RegisterPage from "@/pages/auth/register";
-import ForgotPasswordPage from "@/pages/auth/forgot-password";
-import StorefrontPage from "@/pages/storefront";
-import InvoicePage from "@/pages/invoice";
+import { lazy, Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import AdminLayout from "@/pages/admin/admin-layout";
-import Dashboard from "@/pages/admin/dashboard";
-import ProductsPage from "@/pages/admin/products";
-import CategoriesPage from "@/pages/admin/categories";
-import BrandingPage from "@/pages/admin/branding";
-import WhatsAppPage from "@/pages/admin/whatsapp";
-
-import StoreSettingsPage from "@/pages/admin/store-settings";
-import SubscriptionPage from "@/pages/admin/subscription";
-import OrdersPage from "@/pages/admin/orders";
-import CustomersPage from "@/pages/admin/customers";
-import AnalyticsPage from "@/pages/admin/analytics";
 import SuperAdminLayout from "@/pages/superadmin/superadmin-layout";
-import SuperAdminDashboard from "@/pages/superadmin/dashboard";
-import SuperAdminStores from "@/pages/superadmin/stores";
-import SuperAdminStoreDetail from "@/pages/superadmin/store-detail";
-import SuperAdminOrders from "@/pages/superadmin/orders";
-import SuperAdminUsers from "@/pages/superadmin/users";
-import SuperAdminEvents from "@/pages/superadmin/events";
-import SuperAdminTariffs from "@/pages/superadmin/tariffs";
-import SuperAdminWhatsApp from "@/pages/superadmin/whatsapp";
+
+const NotFound = lazy(() => import("@/pages/not-found"));
+const LandingPage = lazy(() => import("@/pages/landing"));
+const LoginPage = lazy(() => import("@/pages/auth/login"));
+const RegisterPage = lazy(() => import("@/pages/auth/register"));
+const ForgotPasswordPage = lazy(() => import("@/pages/auth/forgot-password"));
+const StorefrontPage = lazy(() => import("@/pages/storefront"));
+const InvoicePage = lazy(() => import("@/pages/invoice"));
+const Dashboard = lazy(() => import("@/pages/admin/dashboard"));
+const ProductsPage = lazy(() => import("@/pages/admin/products"));
+const CategoriesPage = lazy(() => import("@/pages/admin/categories"));
+const BrandingPage = lazy(() => import("@/pages/admin/branding"));
+const WhatsAppPage = lazy(() => import("@/pages/admin/whatsapp"));
+const StoreSettingsPage = lazy(() => import("@/pages/admin/store-settings"));
+const SubscriptionPage = lazy(() => import("@/pages/admin/subscription"));
+const OrdersPage = lazy(() => import("@/pages/admin/orders"));
+const CustomersPage = lazy(() => import("@/pages/admin/customers"));
+const AnalyticsPage = lazy(() => import("@/pages/admin/analytics"));
+const SuperAdminDashboard = lazy(() => import("@/pages/superadmin/dashboard"));
+const SuperAdminStores = lazy(() => import("@/pages/superadmin/stores"));
+const SuperAdminStoreDetail = lazy(() => import("@/pages/superadmin/store-detail"));
+const SuperAdminOrders = lazy(() => import("@/pages/superadmin/orders"));
+const SuperAdminUsers = lazy(() => import("@/pages/superadmin/users"));
+const SuperAdminEvents = lazy(() => import("@/pages/superadmin/events"));
+const SuperAdminTariffs = lazy(() => import("@/pages/superadmin/tariffs"));
+const SuperAdminWhatsApp = lazy(() => import("@/pages/superadmin/whatsapp"));
+
+function PageLoader() {
+  return (
+    <div className="flex h-screen items-center justify-center" data-testid="page-loader">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (
     <AdminLayout>
-      <Component />
+      <Suspense fallback={<PageLoader />}>
+        <Component />
+      </Suspense>
     </AdminLayout>
   );
 }
@@ -44,7 +56,9 @@ function AdminRoute({ component: Component }: { component: React.ComponentType }
 function SuperAdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (
     <SuperAdminLayout>
-      <Component />
+      <Suspense fallback={<PageLoader />}>
+        <Component />
+      </Suspense>
     </SuperAdminLayout>
   );
 }
@@ -97,7 +111,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Router />
+        <Suspense fallback={<PageLoader />}>
+          <Router />
+        </Suspense>
       </TooltipProvider>
     </QueryClientProvider>
   );

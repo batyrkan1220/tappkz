@@ -112,6 +112,7 @@ export async function registerRoutes(
   app.use("/uploads", (req, res, next) => {
     const filePath = path.join(uploadDir, path.basename(req.path));
     if (fs.existsSync(filePath)) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       res.sendFile(filePath);
     } else {
       res.status(404).send("Not found");
@@ -594,6 +595,7 @@ export async function registerRoutes(
 
       await storage.recordEvent({ storeId: store.id, eventType: "visit" }).catch(() => {});
 
+      res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },

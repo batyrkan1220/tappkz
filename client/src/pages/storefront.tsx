@@ -481,7 +481,7 @@ export default function StorefrontPage() {
                 >
                   <div className="relative aspect-square overflow-hidden bg-muted">
                     {p.imageUrls?.[0] ? (
-                      <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <img src={p.imageUrls[0]} alt={p.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
