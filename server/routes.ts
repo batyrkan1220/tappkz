@@ -596,7 +596,7 @@ export async function registerRoutes(
       if (planLimits.orderLimit > 0) {
         const monthOrders = await storage.countOrdersThisMonth(store.id);
         if (monthOrders >= planLimits.orderLimit) {
-          return res.status(400).json({ message: `Лимит заказов в месяц: ${planLimits.orderLimit}. Обновите тариф.` });
+          return res.status(403).json({ message: "К сожалению, магазин временно не принимает заказы. Попробуйте позже.", code: "ORDER_LIMIT_REACHED" });
         }
       }
 
