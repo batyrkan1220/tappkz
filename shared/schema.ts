@@ -89,6 +89,8 @@ export const storeSettings = pgTable("store_settings", {
   kaspiEnabled: boolean("kaspi_enabled").notNull().default(false),
   kaspiPayUrl: text("kaspi_pay_url"),
   kaspiRecipientName: text("kaspi_recipient_name"),
+  facebookPixelId: varchar("facebook_pixel_id", { length: 50 }),
+  tiktokPixelId: varchar("tiktok_pixel_id", { length: 50 }),
 });
 
 export const categories = pgTable("categories", {

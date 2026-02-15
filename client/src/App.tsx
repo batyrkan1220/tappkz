@@ -34,6 +34,7 @@ const SuperAdminUsers = lazy(() => import("@/pages/superadmin/users"));
 const SuperAdminEvents = lazy(() => import("@/pages/superadmin/events"));
 const SuperAdminTariffs = lazy(() => import("@/pages/superadmin/tariffs"));
 const SuperAdminWhatsApp = lazy(() => import("@/pages/superadmin/whatsapp"));
+const SuperAdminTrackingPixels = lazy(() => import("@/pages/superadmin/tracking-pixels"));
 
 function PageLoader() {
   return (
@@ -99,6 +100,7 @@ function Router() {
       <Route path="/superadmin/events" component={() => <SuperAdminRoute component={SuperAdminEvents} />} />
       <Route path="/superadmin/tariffs" component={() => <SuperAdminRoute component={SuperAdminTariffs} />} />
       <Route path="/superadmin/whatsapp" component={() => <SuperAdminRoute component={SuperAdminWhatsApp} />} />
+      <Route path="/superadmin/tracking" component={() => <SuperAdminRoute component={SuperAdminTrackingPixels} />} />
       <Route path="/invoice/:id" component={InvoicePage} />
       <Route path="/:slug" component={StorefrontPage} />
       <Route component={NotFound} />

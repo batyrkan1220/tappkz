@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,10 @@ interface StoreData {
   categories: Category[];
   theme: StoreTheme;
   settings: StoreSettings;
+  platformPixels?: {
+    facebookPixelId: string | null;
+    tiktokPixelId: string | null;
+  };
 }
 
 function formatPrice(price: number) {
@@ -72,6 +76,61 @@ export default function StorefrontPage() {
   const businessLabels = getBusinessLabels(store?.businessType);
   useStorefrontTitle(store?.name, store?.city ?? undefined);
 
+  useEffect(() => {
+    if (!data) return;
+    const safeId = (v: string) => v.replace(/[^A-Za-z0-9_]/g, "");
+    const fbIds = [
+      data.platformPixels?.facebookPixelId,
+      data.settings?.facebookPixelId,
+    ].filter(Boolean).map((id) => safeId(id!));
+    const ttIds = [
+      data.platformPixels?.tiktokPixelId,
+      data.settings?.tiktokPixelId,
+    ].filter(Boolean).map((id) => safeId(id!));
+    const uniqueFb = [...new Set(fbIds)].filter((id) => id.length > 0);
+    const uniqueTt = [...new Set(ttIds)].filter((id) => id.length > 0);
+
+    const cleanup: (() => void)[] = [];
+
+    if (uniqueFb.length > 0) {
+      const w = window as any;
+      if (!w.fbq) {
+        const fbScript = document.createElement("script");
+        fbScript.async = true;
+        fbScript.src = "https://connect.facebook.net/en_US/fbevents.js";
+        const n = w.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+        w._fbq = n; n.push = n; n.loaded = true; n.version = "2.0"; n.queue = [];
+        document.head.appendChild(fbScript);
+        cleanup.push(() => { fbScript.remove(); delete w.fbq; delete w._fbq; });
+      }
+      uniqueFb.forEach((id) => w.fbq("init", id));
+      w.fbq("track", "PageView");
+    }
+
+    if (uniqueTt.length > 0) {
+      const w = window as any;
+      if (!w.ttq || !w.ttq.load) {
+        const ttScript = document.createElement("script");
+        ttScript.id = "tt-pixel-loader";
+        ttScript.innerHTML = `!function(w,d,t){w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"];ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e};ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{};ttq._i[e]=[];ttq._i[e]._u=r;ttq._t=ttq._t||{};ttq._t[e+""]=+new Date;ttq._o=ttq._o||{};ttq._o[e+""]=n||{};var a=d.createElement("script");a.type="text/javascript";a.async=!0;a.src=r+"?sdkid="+e+"&lib="+t;var s=d.getElementsByTagName("script")[0];s.parentNode.insertBefore(a,s)}}(window,document,"ttq");`;
+        document.head.appendChild(ttScript);
+        cleanup.push(() => { ttScript.remove(); delete w.ttq; delete w.TiktokAnalyticsObject; });
+      }
+      uniqueTt.forEach((id) => (window as any).ttq.load(id));
+      (window as any).ttq.page();
+    }
+
+    return () => { cleanup.forEach((fn) => fn()); };
+  }, [data]);
+
+  const trackFbEvent = useCallback((event: string, params?: Record<string, any>) => {
+    try { if (typeof (window as any).fbq === "function") (window as any).fbq("track", event, params); } catch {}
+  }, []);
+
+  const trackTtEvent = useCallback((event: string, params?: Record<string, any>) => {
+    try { if ((window as any).ttq) (window as any).ttq.track(event, params); } catch {}
+  }, []);
+
   const primaryColor = theme?.primaryColor || "#16a34a";
   const secondaryColor = theme?.secondaryColor || null;
   const bannerOverlay = theme?.bannerOverlay ?? true;
@@ -106,6 +165,9 @@ export default function StorefrontPage() {
       return [...prev, { product, quantity: 1 }];
     });
     apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "add_to_cart", metaJson: { productId: product.id } }).catch(() => {});
+    const price = product.discountPrice || product.price;
+    trackFbEvent("AddToCart", { content_name: product.name, content_ids: [String(product.id)], content_type: "product", value: price, currency: "KZT" });
+    trackTtEvent("AddToCart", { content_name: product.name, content_id: String(product.id), content_type: "product", value: price, currency: "KZT" });
   };
 
   const updateQuantity = (productId: number, delta: number) => {
@@ -169,6 +231,10 @@ export default function StorefrontPage() {
       window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
 
       apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "checkout_click" }).catch(() => {});
+
+      const contentIds = cart.map((i) => String(i.product.id));
+      trackFbEvent("Purchase", { value: cartTotal, currency: "KZT", content_ids: contentIds, content_type: "product", num_items: cartCount });
+      trackTtEvent("CompletePayment", { value: cartTotal, currency: "KZT", content_type: "product" });
 
       setCheckoutOpen(false);
       setCart([]);
@@ -324,7 +390,7 @@ export default function StorefrontPage() {
                       <button
                         className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
                         style={{ backgroundColor: "#25D366" }}
-                        onClick={() => setCheckoutOpen(true)}
+                        onClick={() => { setCheckoutOpen(true); trackFbEvent("InitiateCheckout", { value: cartTotal, currency: "KZT", num_items: cartCount }); trackTtEvent("InitiateCheckout", { value: cartTotal, currency: "KZT" }); }}
                         data-testid="button-checkout"
                       >
                         <SiWhatsapp className="h-5 w-5" />
@@ -632,7 +698,7 @@ export default function StorefrontPage() {
                 <button
                   className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
                   style={{ backgroundColor: "#25D366" }}
-                  onClick={() => setCheckoutOpen(true)}
+                  onClick={() => { setCheckoutOpen(true); trackFbEvent("InitiateCheckout", { value: cartTotal, currency: "KZT", num_items: cartCount }); trackTtEvent("InitiateCheckout", { value: cartTotal, currency: "KZT" }); }}
                   data-testid="button-checkout"
                 >
                   <SiWhatsapp className="h-5 w-5" />

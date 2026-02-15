@@ -12,7 +12,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
 
@@ -31,6 +31,8 @@ export default function StoreSettingsPage() {
   const [checkoutCommentEnabled, setCheckoutCommentEnabled] = useState(false);
   const [instagramUrl, setInstagramUrl] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [facebookPixelId, setFacebookPixelId] = useState("");
+  const [tiktokPixelId, setTiktokPixelId] = useState("");
   const [slugStatus, setSlugStatus] = useState<{ available: boolean; reason: string | null } | null>(null);
   const [slugChecking, setSlugChecking] = useState(false);
   const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -77,6 +79,8 @@ export default function StoreSettingsPage() {
       setCheckoutCommentEnabled(settings.checkoutCommentEnabled ?? false);
       setInstagramUrl(settings.instagramUrl || "");
       setPhoneNumber(settings.phoneNumber || "");
+      setFacebookPixelId(settings.facebookPixelId || "");
+      setTiktokPixelId(settings.tiktokPixelId || "");
     }
   }, [store, settings]);
 
@@ -92,6 +96,8 @@ export default function StoreSettingsPage() {
         checkoutCommentEnabled,
         instagramUrl: instagramUrl || null,
         phoneNumber: phoneNumber || null,
+        facebookPixelId: facebookPixelId || null,
+        tiktokPixelId: tiktokPixelId || null,
       });
     },
     onSuccess: () => {
@@ -192,6 +198,36 @@ export default function StoreSettingsPage() {
               <p className="text-sm text-muted-foreground">Покупатель сможет оставить пожелания к заказу</p>
             </div>
             <Switch checked={checkoutCommentEnabled} onCheckedChange={setCheckoutCommentEnabled} data-testid="switch-checkout-comment" />
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-extrabold tracking-tight">Пиксели для аналитики</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">Подключите пиксели для отслеживания конверсий и ретаргетинга</p>
+          <div className="space-y-3">
+            <div>
+              <Label className="font-semibold">Facebook Pixel ID</Label>
+              <Input
+                value={facebookPixelId}
+                onChange={(e) => setFacebookPixelId(e.target.value.replace(/\D/g, ""))}
+                placeholder="123456789012345"
+                data-testid="input-facebook-pixel"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">Найдите ID пикселя в Facebook Events Manager</p>
+            </div>
+            <div>
+              <Label className="font-semibold">TikTok Pixel ID</Label>
+              <Input
+                value={tiktokPixelId}
+                onChange={(e) => setTiktokPixelId(e.target.value)}
+                placeholder="ABCDEFG123456"
+                data-testid="input-tiktok-pixel"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">Найдите ID пикселя в TikTok Ads Manager</p>
+            </div>
           </div>
         </div>
 

@@ -86,6 +86,8 @@ const settingsSchema = z.object({
   checkoutCommentEnabled: z.boolean().optional(),
   instagramUrl: z.string().max(200).nullable().optional(),
   phoneNumber: z.string().max(30).nullable().optional(),
+  facebookPixelId: z.string().max(50).regex(/^[0-9]*$/, "Только цифры").nullable().optional(),
+  tiktokPixelId: z.string().max(50).regex(/^[A-Za-z0-9_]*$/, "Только латинские буквы и цифры").nullable().optional(),
 });
 
 const whatsappSchema = z.object({
@@ -439,6 +441,8 @@ export async function registerRoutes(
         phoneNumber: data.phoneNumber !== undefined ? (data.phoneNumber || null) : (existingSettings?.phoneNumber || null),
         checkoutAddressEnabled: data.checkoutAddressEnabled ?? existingSettings?.checkoutAddressEnabled ?? false,
         checkoutCommentEnabled: data.checkoutCommentEnabled ?? existingSettings?.checkoutCommentEnabled ?? false,
+        facebookPixelId: data.facebookPixelId !== undefined ? (data.facebookPixelId || null) : (existingSettings?.facebookPixelId || null),
+        tiktokPixelId: data.tiktokPixelId !== undefined ? (data.tiktokPixelId || null) : (existingSettings?.tiktokPixelId || null),
         currency: "KZT",
         whatsappTemplate: existingSettings?.whatsappTemplate || "",
       });
@@ -617,13 +621,26 @@ export async function registerRoutes(
 
       await storage.recordEvent({ storeId: store.id, eventType: "visit" }).catch(() => {});
 
+      let platformPixelData: any = {};
+      try {
+        const platformPixels = await storage.getPlatformSetting("tracking_pixels");
+        if (platformPixels) {
+          platformPixelData = typeof platformPixels === "string" ? JSON.parse(platformPixels) : platformPixels;
+        }
+      } catch {}
+
+
       res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
+        platformPixels: {
+          facebookPixelId: platformPixelData.facebookPixelId || null,
+          tiktokPixelId: platformPixelData.tiktokPixelId || null,
+        },
       });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -1117,6 +1134,30 @@ export async function registerRoutes(
       });
       const data = validate(schema, req.body);
       await saveOnboardingConfig(data);
+      res.json({ ok: true });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/tracking-pixels", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const pixels = await storage.getPlatformSetting("tracking_pixels");
+      res.json(pixels || { facebookPixelId: "", tiktokPixelId: "" });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/superadmin/tracking-pixels", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({
+        facebookPixelId: z.string().max(50).regex(/^[0-9]*$/).optional(),
+        tiktokPixelId: z.string().max(50).regex(/^[A-Za-z0-9_]*$/).optional(),
+      });
+      const data = validate(schema, req.body);
+      await storage.setPlatformSetting("tracking_pixels", data);
       res.json({ ok: true });
     } catch (e: any) {
       if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
