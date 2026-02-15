@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag, ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase } from "lucide-react";
+import { TappLogo } from "@/components/tapp-logo";
 import { PhoneInput } from "@/components/phone-input";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
 
@@ -70,9 +71,7 @@ export default function CreateStorePage() {
 
       <Card className="relative z-10 w-full max-w-lg space-y-5 p-6">
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary">
-            <ShoppingBag className="h-7 w-7 text-white" />
-          </div>
+          <TappLogo size={56} className="mx-auto mb-3 rounded-2xl" />
           <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-create-store-title">
             {step === 1 ? "Выберите тип бизнеса" : "Создайте ваш магазин"}
           </h1>

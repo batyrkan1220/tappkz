@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag, ArrowLeft, Eye, EyeOff, KeyRound, ShieldCheck, Mail } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, KeyRound, ShieldCheck, Mail } from "lucide-react";
+import { TappLogo } from "@/components/tapp-logo";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -126,9 +127,7 @@ export default function ForgotPasswordPage() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="text-center mb-6">
           <Link href="/">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground">
-              <ShoppingBag className="h-7 w-7 text-background" />
-            </div>
+            <TappLogo size={56} className="mx-auto mb-4 rounded-2xl" />
           </Link>
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-forgot-title">
             {step === "email" && "Восстановление пароля"}

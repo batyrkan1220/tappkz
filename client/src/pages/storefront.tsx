@@ -12,6 +12,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp } from "lucide-react";
+import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { PhoneInput } from "@/components/phone-input";
@@ -974,9 +975,7 @@ export default function StorefrontPage() {
 
       <footer className="mx-auto max-w-lg border-t border-border/30 px-4 py-6 text-center">
         <a href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground" data-testid="link-footer-tapp">
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-foreground">
-            <ShoppingBag className="h-3 w-3 text-background" />
-          </div>
+          <TappLogo size={20} />
           <span>Сделано в <span className="font-semibold text-foreground">Tapp</span></span>
         </a>
       </footer>

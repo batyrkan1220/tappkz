@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ShoppingBag,
   Smartphone,
   BarChart3,
   ArrowRight,
@@ -11,6 +10,7 @@ import {
   Menu,
   X,
   Star,
+  ShoppingBag,
   ShoppingCart,
   Store,
   MapPin,
@@ -23,6 +23,7 @@ import {
   Check,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import { TappLogo } from "@/components/tapp-logo";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import mockNapoleon from "@/assets/images/mock-cake-napoleon.png";
@@ -467,9 +468,7 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/80 dark:bg-background/80 backdrop-blur-xl border-b border-border/30">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <ShoppingBag className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <TappLogo size={32} />
             <span className="text-lg font-extrabold tracking-tight" data-testid="text-brand-name">Tapp</span>
           </div>
 
@@ -943,9 +942,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-5">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
-                <ShoppingBag className="h-3.5 w-3.5 text-primary-foreground" />
-              </div>
+              <TappLogo size={28} />
               <span className="text-sm font-extrabold tracking-tight">Tapp</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">

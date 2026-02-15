@@ -11,6 +11,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Trash2, Palette, CheckCircle2, ImageIcon, ShoppingBag, MapPin, ShoppingCart, Plus, Menu, Search } from "lucide-react";
+import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp } from "react-icons/si";
 import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import type { Store, StoreTheme } from "@shared/schema";
@@ -469,9 +470,7 @@ export default function BrandingPage() {
 
             <div className="border-t border-border/30 px-3 py-2 text-center">
               <div className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-                <div className="flex h-3.5 w-3.5 items-center justify-center rounded bg-foreground">
-                  <ShoppingBag className="h-2 w-2 text-background" />
-                </div>
+                <TappLogo size={14} />
                 <span>Сделано в <span className="font-semibold text-foreground">Tapp</span></span>
               </div>
             </div>

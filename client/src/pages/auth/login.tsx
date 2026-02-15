@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ShoppingBag, LogIn, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { LogIn, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { TappLogo } from "@/components/tapp-logo";
 import { Link } from "wouter";
 
 export default function LoginPage() {
@@ -48,9 +49,7 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="text-center mb-6">
           <Link href="/">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground">
-              <ShoppingBag className="h-7 w-7 text-background" />
-            </div>
+            <TappLogo size={56} className="mx-auto mb-4 rounded-2xl" />
           </Link>
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-login-title">Войти в Tapp</h1>
           <p className="mt-1.5 text-sm text-muted-foreground">Введите email и пароль для входа</p>
