@@ -180,7 +180,7 @@ export async function sendOrderNotification(
     return msg;
   }
 
-  const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером", yandex: "Яндекс Доставка" };
+  const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером" };
   const totalFormatted = new Intl.NumberFormat("ru-RU").format(total) + " ₸";
   let text = `*Новый заказ #${orderNumber}*\n\nПокупатель: ${customerName}\nСумма: ${totalFormatted}`;
   if (deliveryMethod) {

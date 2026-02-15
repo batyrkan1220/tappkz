@@ -51,10 +51,7 @@ export default function StorefrontPage() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerComment, setCustomerComment] = useState("");
-  const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | "yandex" | null>(null);
-  const [yandexEstimate, setYandexEstimate] = useState<number | null>(null);
-  const [yandexEstimating, setYandexEstimating] = useState(false);
-  const [yandexError, setYandexError] = useState<string | null>(null);
+  const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
   const { data, isLoading, error } = useQuery<StoreData>({
@@ -148,20 +145,15 @@ export default function StorefrontPage() {
     return sum + price * item.quantity;
   }, 0);
 
-  const hasDeliveryOptions = settings?.deliveryEnabled || settings?.pickupEnabled || settings?.yandexDeliveryEnabled;
+  const hasDeliveryOptions = settings?.deliveryEnabled || settings?.pickupEnabled;
 
   const computedDeliveryFee = useMemo(() => {
-    if (deliveryMethod === "delivery" && settings?.deliveryEnabled) {
-      const fee = settings?.deliveryFee || 0;
-      const threshold = settings?.deliveryFreeThreshold;
-      if (threshold && cartSubtotal >= threshold) return 0;
-      return fee;
-    }
-    if (deliveryMethod === "yandex" && yandexEstimate) {
-      return yandexEstimate;
-    }
-    return 0;
-  }, [deliveryMethod, settings, cartSubtotal, yandexEstimate]);
+    if (deliveryMethod !== "delivery" || !settings?.deliveryEnabled) return 0;
+    const fee = settings?.deliveryFee || 0;
+    const threshold = settings?.deliveryFreeThreshold;
+    if (threshold && cartSubtotal >= threshold) return 0;
+    return fee;
+  }, [deliveryMethod, settings, cartSubtotal]);
 
   const cartTotal = cartSubtotal + computedDeliveryFee;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -228,7 +220,7 @@ export default function StorefrontPage() {
         })
         .join("\n");
 
-      const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером", yandex: "Яндекс Доставка" };
+      const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером" };
       const totalFormatted = new Intl.NumberFormat("ru-KZ").format(cartTotal);
 
       let msg = `*#${order.orderNumber}*\n\n`;
@@ -261,7 +253,6 @@ export default function StorefrontPage() {
       setCustomerAddress("");
       setCustomerComment("");
       setDeliveryMethod(null);
-      setYandexEstimate(null);
     } catch (e: any) {
       let errorMsg = "Не удалось оформить заказ. Попробуйте позже.";
       try {
@@ -276,43 +267,6 @@ export default function StorefrontPage() {
       setIsSubmitting(false);
     }
   };
-
-  const fetchYandexEstimate = useCallback(async (address: string) => {
-    if (!store || !settings?.yandexDeliveryEnabled) return;
-    setYandexEstimating(true);
-    setYandexError(null);
-    try {
-      const res = await apiRequest("POST", "/api/delivery/estimate", {
-        storeSlug: params.slug,
-        customerAddress: address,
-        customerName: customerName || "Клиент",
-        customerPhone: customerPhone || "+77000000000",
-        totalCost: cartSubtotal,
-      });
-      const data = await res.json();
-      if (data.price && data.price > 0) {
-        setYandexEstimate(data.price);
-      } else {
-        setYandexEstimate(null);
-        setYandexError("Не удалось рассчитать стоимость");
-      }
-    } catch {
-      setYandexEstimate(null);
-      setYandexError("Сервис доставки недоступен");
-    } finally {
-      setYandexEstimating(false);
-    }
-  }, [store, settings, customerName, customerPhone, cartSubtotal]);
-
-  useEffect(() => {
-    if (deliveryMethod !== "yandex" || !customerAddress || customerAddress.length < 5) {
-      return;
-    }
-    const timer = setTimeout(() => {
-      fetchYandexEstimate(customerAddress);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [deliveryMethod, customerAddress, fetchYandexEstimate]);
 
   const getCategoryProductCount = (catId: number) => {
     return products.filter((p) => p.isActive && p.categoryId === catId).length;
@@ -1059,22 +1013,6 @@ export default function StorefrontPage() {
                           </div>
                         </button>
                       )}
-                      {settings?.yandexDeliveryEnabled && (
-                        <button
-                          className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${deliveryMethod === "yandex" ? "border-current" : "border-border"}`}
-                          style={deliveryMethod === "yandex" ? { borderColor: primaryColor } : undefined}
-                          onClick={() => { setDeliveryMethod("yandex"); setYandexEstimate(null); }}
-                          data-testid="button-delivery-yandex"
-                        >
-                          <Truck className="h-4 w-4 shrink-0 text-muted-foreground" />
-                          <div>
-                            <p className="text-sm font-medium">Яндекс Доставка</p>
-                            <p className="text-[11px] text-muted-foreground">
-                              {yandexEstimating ? "Расчёт..." : yandexEstimate ? formatPrice(yandexEstimate) : "Экспресс"}
-                            </p>
-                          </div>
-                        </button>
-                      )}
                     </div>
                     {deliveryMethod === "pickup" && settings?.pickupAddress && (
                       <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
@@ -1090,16 +1028,10 @@ export default function StorefrontPage() {
                         Бесплатная доставка от {formatPrice(settings.deliveryFreeThreshold)}
                       </p>
                     )}
-                    {deliveryMethod === "yandex" && yandexEstimating && (
-                      <p className="text-[11px] text-muted-foreground mt-2">Рассчитываем стоимость доставки...</p>
-                    )}
-                    {deliveryMethod === "yandex" && yandexError && (
-                      <p className="text-[11px] text-red-500 mt-2">{yandexError}</p>
-                    )}
                   </div>
                 )}
 
-                {(settings?.checkoutAddressEnabled || deliveryMethod === "delivery" || deliveryMethod === "yandex") && (
+                {(settings?.checkoutAddressEnabled || deliveryMethod === "delivery") && (
                   <div>
                     <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес доставки</Label>
                     <Input
@@ -1172,7 +1104,7 @@ export default function StorefrontPage() {
               <button
                 className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#25D366" }}
-                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting || (hasDeliveryOptions && !deliveryMethod) || ((deliveryMethod === "delivery" || deliveryMethod === "yandex") && !customerAddress) || (deliveryMethod === "yandex" && (!yandexEstimate || yandexEstimating))}
+                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting || (hasDeliveryOptions && !deliveryMethod) || (deliveryMethod === "delivery" && !customerAddress)}
                 onClick={() => { setCheckoutError(""); handleCheckout(); }}
                 data-testid="button-send-whatsapp"
               >

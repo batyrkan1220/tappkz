@@ -149,12 +149,11 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - SEO implementation: base meta tags in index.html (title, description, OG, Twitter), server-side dynamic meta injection for storefront pages in production (server/seo.ts + server/static.ts), client-side useDocumentTitle hook on all pages, robots.txt and sitemap.xml endpoints
 - GET /robots.txt - crawler directives, GET /sitemap.xml - dynamic XML sitemap with all active stores
 - useDocumentTitle hook (client/src/hooks/use-document-title.ts) sets page-specific titles across all admin, auth, and storefront pages
-- Delivery system: 3 methods (pickup, own courier, Yandex Go express delivery)
-- Admin delivery settings page (/admin/delivery): configure pickup address, courier fee/free threshold/zone, Yandex Go coordinates
-- store_settings: deliveryEnabled, pickupEnabled, deliveryFee, deliveryFreeThreshold, pickupAddress, deliveryZone, yandexDeliveryEnabled, yandexPickupLat/Lon
-- orders table: deliveryMethod, deliveryFee, deliveryStatus, yandexClaimId columns
+- Delivery system: 2 methods (pickup, own courier) - Yandex Delivery removed (doesn't support Kazakhstan)
+- Admin delivery settings page (/admin/delivery): configure pickup address, courier fee/free threshold/zone
+- store_settings: deliveryEnabled, pickupEnabled, deliveryFee, deliveryFreeThreshold, pickupAddress, deliveryZone (yandex columns preserved in DB but unused)
+- orders table: deliveryMethod, deliveryFee, deliveryStatus columns (yandexClaimId preserved in DB but unused)
 - Storefront checkout: delivery method selection (pickup/courier), dynamic fee calculation, free delivery threshold display
 - Invoice page: shows delivery method and fee
-- Yandex Delivery API module (server/yandex-delivery.ts): estimate, create claim, accept, get info, cancel
-- API routes: GET/PUT /api/my-store/delivery, POST /api/delivery/estimate
+- API routes: GET/PUT /api/my-store/delivery
 - WhatsApp order notifications include delivery method and fee

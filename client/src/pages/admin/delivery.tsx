@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Truck, MapPin, Package, Loader2, CheckCircle2, Info } from "lucide-react";
+import { Truck, MapPin, Loader2 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
 interface DeliverySettings {
@@ -19,10 +19,6 @@ interface DeliverySettings {
   deliveryFreeThreshold: number | null;
   pickupAddress: string | null;
   deliveryZone: string | null;
-  yandexDeliveryEnabled: boolean;
-  pickupLat: string | null;
-  pickupLon: string | null;
-  yandexAvailable: boolean;
 }
 
 export default function DeliveryPage() {
@@ -39,9 +35,6 @@ export default function DeliveryPage() {
   const [deliveryFreeThreshold, setDeliveryFreeThreshold] = useState("");
   const [pickupAddress, setPickupAddress] = useState("");
   const [deliveryZone, setDeliveryZone] = useState("");
-  const [yandexDeliveryEnabled, setYandexDeliveryEnabled] = useState(false);
-  const [pickupLat, setPickupLat] = useState("");
-  const [pickupLon, setPickupLon] = useState("");
 
   useEffect(() => {
     if (data) {
@@ -51,9 +44,6 @@ export default function DeliveryPage() {
       setDeliveryFreeThreshold(data.deliveryFreeThreshold !== null ? String(data.deliveryFreeThreshold) : "");
       setPickupAddress(data.pickupAddress || "");
       setDeliveryZone(data.deliveryZone || "");
-      setYandexDeliveryEnabled(data.yandexDeliveryEnabled);
-      setPickupLat(data.pickupLat || "");
-      setPickupLon(data.pickupLon || "");
     }
   }, [data]);
 
@@ -66,9 +56,6 @@ export default function DeliveryPage() {
         deliveryFreeThreshold: deliveryFreeThreshold ? parseInt(deliveryFreeThreshold) : null,
         pickupAddress: pickupAddress || null,
         deliveryZone: deliveryZone || null,
-        yandexDeliveryEnabled,
-        pickupLat: pickupLat || null,
-        pickupLon: pickupLon || null,
       });
     },
     onSuccess: () => {
@@ -183,79 +170,6 @@ export default function DeliveryPage() {
                 data-testid="input-delivery-zone"
               />
             </div>
-          </div>
-        )}
-      </Card>
-
-      <Card className="p-5 space-y-5">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
-              <Package className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm">Яндекс Доставка</p>
-              <p className="text-xs text-muted-foreground">Экспресс-доставка через Яндекс Go</p>
-            </div>
-            {data?.yandexAvailable ? (
-              <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400 no-default-hover-elevate no-default-active-elevate">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                API подключён
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="text-[10px] no-default-hover-elevate no-default-active-elevate">
-                Не подключён
-              </Badge>
-            )}
-          </div>
-          <Switch
-            checked={yandexDeliveryEnabled}
-            onCheckedChange={setYandexDeliveryEnabled}
-            disabled={!data?.yandexAvailable}
-            data-testid="switch-yandex-delivery-enabled"
-          />
-        </div>
-
-        {yandexDeliveryEnabled && data?.yandexAvailable && (
-          <div className="pl-[52px] space-y-3">
-            <div className="rounded-lg bg-muted/50 p-3 flex items-start gap-2">
-              <Info className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-              <p className="text-xs text-muted-foreground">
-                Укажите координаты точки отправки (вашего магазина/склада). Покупатель введёт свой адрес при оформлении заказа, и стоимость доставки рассчитается автоматически.
-              </p>
-            </div>
-            <div>
-              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес отправки</Label>
-              <Input
-                value={pickupAddress}
-                onChange={(e) => setPickupAddress(e.target.value)}
-                placeholder="ул. Абая 1, Алматы"
-                data-testid="input-yandex-pickup-address"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Широта (lat)</Label>
-                <Input
-                  value={pickupLat}
-                  onChange={(e) => setPickupLat(e.target.value)}
-                  placeholder="43.238949"
-                  data-testid="input-pickup-lat"
-                />
-              </div>
-              <div>
-                <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Долгота (lon)</Label>
-                <Input
-                  value={pickupLon}
-                  onChange={(e) => setPickupLon(e.target.value)}
-                  placeholder="76.945465"
-                  data-testid="input-pickup-lon"
-                />
-              </div>
-            </div>
-            <p className="text-[11px] text-muted-foreground">
-              Координаты можно найти на Google Maps или Яндекс Картах
-            </p>
           </div>
         )}
       </Card>

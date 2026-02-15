@@ -178,7 +178,7 @@ export default function InvoicePage() {
               <div>
                 <p className="text-xs text-muted-foreground">Способ получения</p>
                 <p className="text-sm font-semibold" data-testid="text-delivery-method">
-                  {order.deliveryMethod === "pickup" ? "Самовывоз" : order.deliveryMethod === "delivery" ? "Доставка курьером" : order.deliveryMethod === "yandex" ? "Яндекс Доставка" : order.deliveryMethod}
+                  {order.deliveryMethod === "pickup" ? "Самовывоз" : order.deliveryMethod === "delivery" ? "Доставка курьером" : order.deliveryMethod}
                 </p>
               </div>
             )}
