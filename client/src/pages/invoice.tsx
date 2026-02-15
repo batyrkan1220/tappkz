@@ -16,7 +16,7 @@ interface OrderItem {
 }
 
 function formatPrice(price: number) {
-  return new Intl.NumberFormat("ru-KZ").format(price) + " \u20B8";
+  return new Intl.NumberFormat("ru-KZ").format(price) + " ₸";
 }
 
 function formatDate(dateStr: string) {

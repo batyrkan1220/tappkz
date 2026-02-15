@@ -493,10 +493,10 @@ export default function BrandingPage() {
 
             <div className="grid grid-cols-2 gap-2 px-3 pb-3">
               {[
-                { name: "Товар 1", price: "4 500 \u20B8", discount: "3 200 \u20B8" },
-                { name: "Товар 2", price: "7 800 \u20B8", discount: null },
-                { name: "Товар 3", price: "2 900 \u20B8", discount: null },
-                { name: "Товар 4", price: "5 400 \u20B8", discount: "4 100 \u20B8" },
+                { name: "Товар 1", price: "4 500 ₸", discount: "3 200 ₸" },
+                { name: "Товар 2", price: "7 800 ₸", discount: null },
+                { name: "Товар 3", price: "2 900 ₸", discount: null },
+                { name: "Товар 4", price: "5 400 ₸", discount: "4 100 ₸" },
               ].map((p, i) => (
                 <div
                   key={i}
@@ -541,7 +541,7 @@ export default function BrandingPage() {
                   </span>
                   <span className="text-[11px] font-semibold">Корзина</span>
                 </div>
-                <span className="text-[11px] font-bold">11 000 {"\u20B8"}</span>
+                <span className="text-[11px] font-bold">11 000 ₸</span>
               </div>
             </div>
 

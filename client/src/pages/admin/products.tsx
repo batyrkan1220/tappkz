@@ -23,7 +23,7 @@ import { Link } from "wouter";
 import type { Product, Category, Store } from "@shared/schema";
 
 function formatPrice(price: number) {
-  return new Intl.NumberFormat("ru-KZ").format(price) + " \u20B8";
+  return new Intl.NumberFormat("ru-KZ").format(price) + " ₸";
 }
 
 type ProductAttributes = Record<string, any>;
@@ -231,7 +231,7 @@ function EcommerceFields({ form, setForm, businessType }: { form: ProductForm; s
             <Input type="number" placeholder="1" value={a.minOrderQty || ""} onChange={(e) => setAttr("minOrderQty", e.target.value)} data-testid="input-min-order" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Оптовая цена (\u20B8)</Label>
+            <Label className="text-xs text-muted-foreground">Оптовая цена (₸)</Label>
             <Input type="number" placeholder="0" value={a.wholesalePrice || ""} onChange={(e) => setAttr("wholesalePrice", e.target.value)} data-testid="input-wholesale-price" />
           </div>
         </>
@@ -333,7 +333,7 @@ function ServiceFields({ form, setForm, businessType }: { form: ProductForm; set
       {(isHotel || isRental) && (
         <>
           <div>
-            <Label className="text-xs text-muted-foreground">{isHotel ? "Макс. гостей" : "Залоговая стоимость (\u20B8)"}</Label>
+            <Label className="text-xs text-muted-foreground">{isHotel ? "Макс. гостей" : "Залоговая стоимость (₸)"}</Label>
             <Input type="number" placeholder="" value={isHotel ? (a.maxGuests || "") : (a.depositAmount || "")} onChange={(e) => setAttr(isHotel ? "maxGuests" : "depositAmount", e.target.value)} data-testid={`input-${isHotel ? "max-guests" : "deposit"}`} />
           </div>
           {isRental && (
@@ -831,11 +831,11 @@ export default function ProductsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="font-semibold">Цена (\u20B8) *</Label>
+                <Label className="font-semibold">Цена (₸) *</Label>
                 <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0" data-testid="input-product-price" />
               </div>
               <div>
-                <Label className="font-semibold">Скидочная цена (\u20B8)</Label>
+                <Label className="font-semibold">Скидочная цена (₸)</Label>
                 <Input type="number" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} placeholder="Необязательно" data-testid="input-product-discount" />
               </div>
             </div>
