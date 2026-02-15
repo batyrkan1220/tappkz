@@ -978,10 +978,10 @@ export default function StorefrontPage() {
       <footer className="mx-auto max-w-lg border-t border-border/30 px-4 py-6 text-center">
         <a
           href="/"
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all hover-elevate"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground shadow-sm transition-all hover-elevate"
           data-testid="link-footer-tapp"
         >
-          <ShoppingBag className="h-4 w-4" />
+          <ShoppingBag className="h-3.5 w-3.5" />
           <span>Создайте свой tapp.kz</span>
         </a>
       </footer>
