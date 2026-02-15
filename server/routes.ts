@@ -140,6 +140,24 @@ export async function registerRoutes(
     }
   });
 
+  const RESERVED_SLUGS = new Set([
+    "admin", "login", "register", "invoice", "superadmin", "api", "uploads",
+    "settings", "dashboard", "forgot-password", "reset-password",
+  ]);
+
+  app.get("/api/check-slug/:slug", async (req, res) => {
+    try {
+      const slug = req.params.slug.toLowerCase();
+      if (RESERVED_SLUGS.has(slug)) {
+        return res.json({ available: false, reason: "Этот адрес зарезервирован" });
+      }
+      const existing = await storage.getStoreBySlug(slug);
+      res.json({ available: !existing, reason: existing ? "Этот адрес уже занят" : null });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.post("/api/stores", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;
@@ -148,9 +166,12 @@ export async function registerRoutes(
       if (existing) {
         return res.status(400).json({ message: "У вас уже есть магазин" });
       }
+      if (RESERVED_SLUGS.has(data.slug)) {
+        return res.status(400).json({ message: "Этот адрес зарезервирован" });
+      }
       const slugCheck = await storage.getStoreBySlug(data.slug);
       if (slugCheck) {
-        return res.status(400).json({ message: "Этот URL уже занят" });
+        return res.status(400).json({ message: "Этот адрес уже занят" });
       }
       const store = await storage.createStore({
         name: data.name,
@@ -367,8 +388,9 @@ export async function registerRoutes(
       const data = validate(settingsSchema, req.body);
 
       if (data.slug && data.slug !== store.slug) {
+        if (RESERVED_SLUGS.has(data.slug)) return res.status(400).json({ message: "Этот адрес зарезервирован" });
         const slugCheck = await storage.getStoreBySlug(data.slug);
-        if (slugCheck) return res.status(400).json({ message: "Этот URL уже занят" });
+        if (slugCheck) return res.status(400).json({ message: "Этот адрес уже занят" });
       }
 
       const storeUpdate: Record<string, any> = {};

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown } from "lucide-react";
+import { Settings, Crown, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import type { Store, StoreSettings } from "@shared/schema";
 
 export default function StoreSettingsPage() {
@@ -29,11 +29,43 @@ export default function StoreSettingsPage() {
   const [checkoutCommentEnabled, setCheckoutCommentEnabled] = useState(false);
   const [instagramUrl, setInstagramUrl] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [slugStatus, setSlugStatus] = useState<{ available: boolean; reason: string | null } | null>(null);
+  const [slugChecking, setSlugChecking] = useState(false);
+  const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const originalSlugRef = useRef("");
+
+  const checkSlug = (value: string) => {
+    if (slugTimerRef.current) clearTimeout(slugTimerRef.current);
+    if (!value || value.length < 2 || value === originalSlugRef.current) {
+      setSlugStatus(null);
+      setSlugChecking(false);
+      return;
+    }
+    setSlugChecking(true);
+    slugTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-slug/${value}`);
+        const data = await res.json();
+        setSlugStatus(data);
+      } catch {
+        setSlugStatus(null);
+      } finally {
+        setSlugChecking(false);
+      }
+    }, 400);
+  };
+
+  const handleSlugChange = (val: string) => {
+    const clean = val.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setSlug(clean);
+    checkSlug(clean);
+  };
 
   useEffect(() => {
     if (store) {
       setName(store.name);
       setSlug(store.slug);
+      originalSlugRef.current = store.slug;
       setCity(store.city || "");
       setDescription(store.description || "");
     }
@@ -98,9 +130,20 @@ export default function StoreSettingsPage() {
         </div>
         <div>
           <Label className="font-semibold">Адрес магазина *</Label>
-          <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-shop" data-testid="input-store-slug" />
+          <Input value={slug} onChange={(e) => handleSlugChange(e.target.value)} placeholder="my-shop" data-testid="input-store-slug" />
           {slug && (
             <p className="mt-1 text-xs text-muted-foreground break-all">{window.location.origin}/{slug}</p>
+          )}
+          {slug.length >= 2 && slug !== originalSlugRef.current && (
+            <div className="mt-1 flex items-center gap-1.5 text-xs">
+              {slugChecking ? (
+                <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /><span className="text-muted-foreground">Проверяем...</span></>
+              ) : slugStatus?.available ? (
+                <><CheckCircle2 className="h-3.5 w-3.5 text-green-600" /><span className="text-green-600">Адрес свободен</span></>
+              ) : slugStatus && !slugStatus.available ? (
+                <><XCircle className="h-3.5 w-3.5 text-red-500" /><span className="text-red-500">{slugStatus.reason}</span></>
+              ) : null}
+            </div>
           )}
         </div>
         <div>
@@ -152,7 +195,7 @@ export default function StoreSettingsPage() {
 
         <Button
           onClick={() => saveMutation.mutate()}
-          disabled={!name || !slug || saveMutation.isPending}
+          disabled={!name || !slug || saveMutation.isPending || slugChecking || (slugStatus !== null && !slugStatus.available)}
           className="rounded-full font-semibold"
           data-testid="button-save-settings"
         >

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { PhoneInput } from "@/components/phone-input";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
@@ -30,6 +30,36 @@ export default function CreateStorePage() {
   const [whatsappPhone, setWhatsappPhone] = useState("");
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
+  const [slugStatus, setSlugStatus] = useState<{ available: boolean; reason: string | null } | null>(null);
+  const [slugChecking, setSlugChecking] = useState(false);
+  const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const checkSlug = (value: string) => {
+    if (slugTimerRef.current) clearTimeout(slugTimerRef.current);
+    if (!value || value.length < 2) {
+      setSlugStatus(null);
+      setSlugChecking(false);
+      return;
+    }
+    setSlugChecking(true);
+    slugTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-slug/${value}`);
+        const data = await res.json();
+        setSlugStatus(data);
+      } catch {
+        setSlugStatus(null);
+      } finally {
+        setSlugChecking(false);
+      }
+    }, 400);
+  };
+
+  const handleSlugChange = (val: string) => {
+    const clean = val.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setSlug(clean);
+    checkSlug(clean);
+  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -58,7 +88,9 @@ export default function CreateStorePage() {
   const handleNameChange = (val: string) => {
     setName(val);
     if (!slug || slug === nameToSlug(name)) {
-      setSlug(nameToSlug(val));
+      const newSlug = nameToSlug(val);
+      setSlug(newSlug);
+      checkSlug(newSlug);
     }
   };
 
@@ -154,8 +186,19 @@ export default function CreateStorePage() {
               <Label className="font-semibold">URL магазина *</Label>
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <span className="shrink-0">tapp.kz/</span>
-                <Input value={slug} onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="my-store" data-testid="input-create-store-slug" />
+                <Input value={slug} onChange={(e) => handleSlugChange(e.target.value)} placeholder="my-store" data-testid="input-create-store-slug" />
               </div>
+              {slug.length >= 2 && (
+                <div className="mt-1.5 flex items-center gap-1.5 text-xs">
+                  {slugChecking ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /><span className="text-muted-foreground">Проверяем...</span></>
+                  ) : slugStatus?.available ? (
+                    <><CheckCircle2 className="h-3.5 w-3.5 text-green-600" /><span className="text-green-600" data-testid="text-slug-available">Адрес свободен</span></>
+                  ) : slugStatus && !slugStatus.available ? (
+                    <><XCircle className="h-3.5 w-3.5 text-red-500" /><span className="text-red-500" data-testid="text-slug-taken">{slugStatus.reason}</span></>
+                  ) : null}
+                </div>
+              )}
             </div>
             <div>
               <Label className="font-semibold">Номер WhatsApp *</Label>
@@ -177,7 +220,7 @@ export default function CreateStorePage() {
               <Button
                 className="flex-1 rounded-full font-semibold"
                 onClick={() => createMutation.mutate()}
-                disabled={!name || !slug || !whatsappPhone || whatsappPhone.replace(/\D/g, "").length < 11 || createMutation.isPending}
+                disabled={!name || !slug || !whatsappPhone || whatsappPhone.replace(/\D/g, "").length < 11 || createMutation.isPending || slugChecking || (slugStatus !== null && !slugStatus.available)}
                 data-testid="button-create-store"
               >
                 {createMutation.isPending ? "Создание..." : "Создать магазин"}
