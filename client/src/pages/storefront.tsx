@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon, CheckCircle2, ExternalLink, FileText, Copy, Check } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
@@ -52,6 +52,7 @@ export default function StorefrontPage() {
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerComment, setCustomerComment] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | null>(null);
+  const [orderConfirmation, setOrderConfirmation] = useState<{ orderNumber: string; invoiceUrl: string; whatsappUrl: string } | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
   const { data, isLoading, error } = useQuery<StoreData>({
@@ -238,7 +239,7 @@ export default function StorefrontPage() {
 
       const encoded = encodeURIComponent(msg);
       const phone = store.whatsappPhone.replace(/[^0-9]/g, "");
-      window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+      const whatsappUrl = `https://wa.me/${phone}?text=${encoded}`;
 
       apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "checkout_click" }).catch(() => {});
 
@@ -253,6 +254,7 @@ export default function StorefrontPage() {
       setCustomerAddress("");
       setCustomerComment("");
       setDeliveryMethod(null);
+      setOrderConfirmation({ orderNumber: order.orderNumber, invoiceUrl, whatsappUrl });
     } catch (e: any) {
       let errorMsg = "Не удалось оформить заказ. Попробуйте позже.";
       try {
@@ -1114,6 +1116,61 @@ export default function StorefrontPage() {
               <p className="text-[10px] text-muted-foreground text-center mt-2">Заказ будет отправлен продавцу через WhatsApp</p>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!orderConfirmation} onOpenChange={(open) => { if (!open) setOrderConfirmation(null); }}>
+        <DialogContent className="max-w-[360px] rounded-3xl p-0 overflow-hidden border-0 gap-0">
+          <div className="flex flex-col items-center text-center px-6 pt-8 pb-4">
+            <div className="h-16 w-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: `${primaryColor}15` }}>
+              <CheckCircle2 className="h-9 w-9" style={{ color: primaryColor }} />
+            </div>
+            <h2 className="text-lg font-bold" data-testid="text-order-confirmed-title">
+              Заказ оформлен!
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1.5">
+              Заказ <span className="font-semibold text-foreground">#{orderConfirmation?.orderNumber}</span> успешно создан
+            </p>
+          </div>
+
+          <div className="px-6 pb-3 space-y-2.5">
+            <a
+              href={orderConfirmation?.whatsappUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
+              style={{ backgroundColor: "#25D366" }}
+              data-testid="link-whatsapp-order"
+            >
+              <SiWhatsapp className="h-5 w-5" />
+              Отправить в WhatsApp
+            </a>
+
+            <a
+              href={orderConfirmation?.invoiceUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3 font-medium text-sm border border-border transition-all active:scale-[0.98] hover-elevate"
+              data-testid="link-invoice-order"
+            >
+              <FileText className="h-4 w-4" />
+              Посмотреть счёт
+            </a>
+          </div>
+
+          <div className="px-6 pb-6 pt-1">
+            <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
+              Нажмите «Отправить в WhatsApp», чтобы связаться с продавцом. Продавец уже получил уведомление о вашем заказе.
+            </p>
+          </div>
+
+          <button
+            onClick={() => setOrderConfirmation(null)}
+            className="border-t border-border/50 py-3.5 text-sm text-muted-foreground font-medium transition-colors hover-elevate"
+            data-testid="button-close-confirmation"
+          >
+            Продолжить покупки
+          </button>
         </DialogContent>
       </Dialog>
 
