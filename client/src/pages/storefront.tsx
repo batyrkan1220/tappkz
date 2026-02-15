@@ -1136,38 +1136,30 @@ export default function StorefrontPage() {
             </p>
           </div>
 
-          <div className="px-6 pb-3 space-y-2.5">
+          <div className="px-6 pb-5 space-y-2.5">
             <a
               href={orderConfirmation?.whatsappUrl || "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
               style={{ backgroundColor: "#25D366" }}
+              onClick={() => setOrderConfirmation((prev) => prev ? { ...prev, whatsappSent: true } as any : null)}
               data-testid="link-whatsapp-order"
             >
               <SiWhatsapp className="h-5 w-5" />
               Написать продавцу
             </a>
-
-            <a
-              href={orderConfirmation?.invoiceUrl || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3 font-medium text-sm border border-border transition-all active:scale-[0.98] hover-elevate"
-              data-testid="link-invoice-order"
-            >
-              <FileText className="h-4 w-4" />
-              Посмотреть счёт
-            </a>
           </div>
 
-          <button
-            onClick={() => setOrderConfirmation(null)}
-            className="border-t border-border/50 py-3.5 text-sm text-muted-foreground font-medium transition-colors hover-elevate"
-            data-testid="button-close-confirmation"
-          >
-            Продолжить покупки
-          </button>
+          {(orderConfirmation as any)?.whatsappSent && (
+            <button
+              onClick={() => setOrderConfirmation(null)}
+              className="border-t border-border/50 py-3.5 text-sm text-muted-foreground font-medium transition-colors hover-elevate"
+              data-testid="button-close-confirmation"
+            >
+              Продолжить покупки
+            </button>
+          )}
         </DialogContent>
       </Dialog>
 
