@@ -164,6 +164,27 @@ export const platformSettings = pgTable("platform_settings", {
 export const insertPlatformSettingsSchema = createInsertSchema(platformSettings).omit({ id: true, updatedAt: true });
 export type PlatformSetting = typeof platformSettings.$inferSelect;
 
+export const whatsappMessages = pgTable("whatsapp_messages", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").references(() => stores.id, { onDelete: "set null" }),
+  recipientPhone: varchar("recipient_phone", { length: 30 }).notNull(),
+  messageType: varchar("message_type", { length: 30 }).notNull(),
+  templateName: varchar("template_name", { length: 100 }),
+  content: text("content"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  wamid: varchar("wamid", { length: 200 }),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertWhatsappMessageSchema = createInsertSchema(whatsappMessages).omit({ id: true, createdAt: true });
+export type WhatsappMessage = typeof whatsappMessages.$inferSelect;
+export type InsertWhatsappMessage = z.infer<typeof insertWhatsappMessageSchema>;
+
+export const whatsappMessagesRelations = relations(whatsappMessages, ({ one }) => ({
+  store: one(stores, { fields: [whatsappMessages.storeId], references: [stores.id] }),
+}));
+
 export const PLAN_FEATURES: Record<string, string[]> = {
   free: [
     "50 заказов в месяц",

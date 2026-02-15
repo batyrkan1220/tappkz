@@ -7,6 +7,7 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { sendOrderNotification, sendTextMessage, sendTemplateMessage, getWabaConfig, getWabaConfigRaw, saveWabaConfig, getMessageLog, getMessageStats } from "./whatsapp";
 
 const uploadDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -621,6 +622,10 @@ export async function registerRoutes(
         console.error("Failed to upsert customer from order:", err);
       });
 
+      sendOrderNotification(store.name, store.whatsappPhone, orderNumber, data.customerName, subtotal, store.id).catch((err) => {
+        console.error("Failed to send WhatsApp order notification:", err);
+      });
+
       res.json(order);
     } catch (e: any) {
       if (e instanceof z.ZodError) {
@@ -920,6 +925,112 @@ export async function registerRoutes(
       const data = validate(schema, req.body);
       await storage.setPlatformSetting(`plan_${planKey}`, data);
       res.json({ ok: true });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/waba/config", isSuperAdminMiddleware, async (_req, res) => {
+    try {
+      const config = await getWabaConfigRaw();
+      const safeConfig = { ...config, apiKey: config.apiKey ? "***" + (config.apiKey as string).slice(-4) : "" };
+      res.json(safeConfig);
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.put("/api/superadmin/waba/config", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({
+        apiKey: z.string().optional(),
+        senderPhone: z.string().optional(),
+        orderNotificationTemplate: z.string().optional(),
+        broadcastTemplate: z.string().optional(),
+        enabled: z.boolean().optional(),
+      });
+      const data = validate(schema, req.body);
+      const currentConfig = await getWabaConfigRaw();
+      if (data.apiKey === undefined || data.apiKey === "" || data.apiKey?.startsWith("***")) {
+        data.apiKey = (currentConfig as any).apiKey;
+      }
+      await saveWabaConfig(data);
+      res.json({ ok: true });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/superadmin/waba/messages", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const storeId = req.query.storeId ? parseInt(req.query.storeId as string) : undefined;
+      const messages = await getMessageLog(limit, storeId);
+      const stats = await getMessageStats();
+      res.json({ messages, stats });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/superadmin/waba/broadcast", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({
+        storeId: z.number().optional(),
+        message: z.string().min(1).max(4096),
+        targetType: z.enum(["all_customers", "store_customers"]),
+      });
+      const data = validate(schema, req.body);
+
+      let customers: { phone: string | null; name: string; storeId: number }[] = [];
+      if (data.targetType === "store_customers" && data.storeId) {
+        const storeCustomers = await storage.getCustomersByStore(data.storeId);
+        customers = storeCustomers.filter((c) => c.phone && c.isActive).map((c) => ({ phone: c.phone, name: c.name, storeId: c.storeId }));
+      } else {
+        const allStores = await storage.getAllStores();
+        for (const store of allStores) {
+          const sc = await storage.getCustomersByStore(store.id);
+          customers.push(...sc.filter((c) => c.phone && c.isActive).map((c) => ({ phone: c.phone, name: c.name, storeId: c.storeId })));
+        }
+      }
+
+      const uniquePhones = new Map<string, { phone: string; name: string; storeId: number }>();
+      for (const c of customers) {
+        if (c.phone) {
+          const cleaned = c.phone.replace(/[^0-9]/g, "");
+          if (cleaned && !uniquePhones.has(cleaned)) {
+            uniquePhones.set(cleaned, { phone: cleaned, name: c.name, storeId: c.storeId });
+          }
+        }
+      }
+
+      const results: { phone: string; status: string; error?: string }[] = [];
+      for (const [phone, cust] of uniquePhones) {
+        try {
+          const msg = await sendTextMessage(phone, data.message, cust.storeId);
+          results.push({ phone, status: msg.status, error: msg.errorMessage || undefined });
+        } catch (err: any) {
+          results.push({ phone, status: "failed", error: err.message });
+        }
+      }
+
+      const sent = results.filter((r) => r.status === "sent").length;
+      const failed = results.filter((r) => r.status === "failed").length;
+      res.json({ total: results.length, sent, failed, results });
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.post("/api/superadmin/waba/test", isSuperAdminMiddleware, async (req, res) => {
+    try {
+      const schema = z.object({ phone: z.string().min(5), message: z.string().min(1) });
+      const data = validate(schema, req.body);
+      const msg = await sendTextMessage(data.phone, data.message);
+      res.json(msg);
     } catch (e: any) {
       if (e instanceof z.ZodError) return res.status(400).json({ message: "Некорректные данные", errors: e.errors });
       res.status(500).json({ message: e.message });

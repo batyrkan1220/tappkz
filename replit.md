@@ -133,3 +133,9 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - Super Admin store detail: dedicated plan/subscription card with dates, pricing, usage stats
 - Merchant admin settings: enhanced plan card with limits, start/expiry dates, pricing info
 - API auto-sets plan dates when changing plans (start=now, expires=+30d for paid plans, clears for free)
+- 360dialog WhatsApp Business API integration (server/whatsapp.ts): order notifications to store owners, broadcast/newsletter to customers
+- SuperAdmin WhatsApp page (/superadmin/whatsapp): WABA config (API key, sender phone), test messaging, broadcast to all/store customers, message history with stats
+- whatsapp_messages table: logs all sent/failed messages with status, wamid, error tracking
+- API routes: GET/PUT /api/superadmin/waba/config, GET /api/superadmin/waba/messages, POST /api/superadmin/waba/broadcast, POST /api/superadmin/waba/test
+- WABA config stored in platform_settings (key: waba_config), API key redacted in responses
+- Order creation auto-triggers WhatsApp notification to store owner (non-blocking)
