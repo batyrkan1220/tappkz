@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Customer } from "@shared/schema";
 
 type CustomerWithStatus = Customer & {
@@ -74,6 +75,7 @@ function formatPrice(amount: number) {
 }
 
 export default function CustomersPage() {
+  useDocumentTitle("Клиенты");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [addOpen, setAddOpen] = useState(false);

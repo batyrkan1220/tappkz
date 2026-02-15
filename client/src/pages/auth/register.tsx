@@ -8,6 +8,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Link } from "wouter";
 import { InternationalPhoneInput, COUNTRIES } from "@/components/international-phone-input";
 
@@ -19,6 +20,7 @@ const benefits = [
 ];
 
 export default function RegisterPage() {
+  useDocumentTitle("Регистрация");
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

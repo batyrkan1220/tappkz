@@ -26,6 +26,7 @@ import { SiWhatsapp } from "react-icons/si";
 import { TappLogo } from "@/components/tapp-logo";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import mockNapoleon from "@/assets/images/mock-cake-napoleon.png";
 import mockMacarons from "@/assets/images/mock-macarons.png";
 import mockEclair from "@/assets/images/mock-eclair.png";
@@ -403,6 +404,7 @@ function AnimatedPhoneMockup() {
 type TariffData = Record<string, { price: number; limit: number; orderLimit: number; imageLimit: number; name: string; features: string[] }>;
 
 export default function LandingPage() {
+  useDocumentTitle();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: tariffs } = useQuery<TariffData>({ queryKey: ["/api/tariffs"] });
 

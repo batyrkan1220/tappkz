@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Eye, EyeOff, KeyRound, ShieldCheck, Mail } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Link } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 type Step = "email" | "code" | "password";
 
 export default function ForgotPasswordPage() {
+  useDocumentTitle("Восстановление пароля");
   const { toast } = useToast();
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");

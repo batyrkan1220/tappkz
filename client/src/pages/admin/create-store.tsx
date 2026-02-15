@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { PhoneInput } from "@/components/phone-input";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
 
 const GROUPS = [
@@ -21,6 +22,7 @@ const GROUPS = [
 const businessTypeEntries = Object.entries(BUSINESS_TYPES) as [BusinessTypeKey, typeof BUSINESS_TYPES[BusinessTypeKey]][];
 
 export default function CreateStorePage() {
+  useDocumentTitle("Создание магазина");
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);

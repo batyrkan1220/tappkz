@@ -18,6 +18,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { PhoneInput } from "@/components/phone-input";
 import { getBusinessLabels } from "@shared/schema";
 import type { Store, Product, Category, StoreTheme, StoreSettings } from "@shared/schema";
+import { useStorefrontTitle } from "@/hooks/use-document-title";
 
 interface CartItem {
   product: Product;
@@ -69,6 +70,7 @@ export default function StorefrontPage() {
   const settings = data?.settings;
 
   const businessLabels = getBusinessLabels(store?.businessType);
+  useStorefrontTitle(store?.name, store?.city ?? undefined);
 
   const primaryColor = theme?.primaryColor || "#16a34a";
   const secondaryColor = theme?.secondaryColor || null;

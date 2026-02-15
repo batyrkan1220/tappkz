@@ -13,9 +13,11 @@ import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Settings, Crown, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
 
 export default function StoreSettingsPage() {
+  useDocumentTitle("Настройки");
   const { toast } = useToast();
   const { data: store, isLoading: storeLoading } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: settings, isLoading: settingsLoading } = useQuery<StoreSettings>({ queryKey: ["/api/my-store/settings"] });

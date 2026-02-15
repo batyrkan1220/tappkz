@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { DateRangePicker } from "@/components/date-range-picker";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { DateRange } from "react-day-picker";
 
 type AnalyticsData = {
@@ -150,6 +151,7 @@ function MiniChart({
 }
 
 export default function AnalyticsPage() {
+  useDocumentTitle("Аналитика");
   const [activeTab, setActiveTab] = useState("traffic");
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultRange);
 

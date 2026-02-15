@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
+import { isStoreSlug, getStoreSeoMeta, injectSeoMeta, getBaseUrl } from "./seo";
 
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
@@ -12,8 +13,20 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("/{*path}", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  app.use("/{*path}", async (req, res) => {
+    const indexPath = path.resolve(distPath, "index.html");
+    const slug = isStoreSlug(req.path);
+    if (slug) {
+      try {
+        const baseUrl = getBaseUrl(req);
+        const metaTags = await getStoreSeoMeta(slug, baseUrl);
+        if (metaTags) {
+          let html = await fs.promises.readFile(indexPath, "utf-8");
+          html = injectSeoMeta(html, metaTags);
+          return res.status(200).set({ "Content-Type": "text/html" }).end(html);
+        }
+      } catch {}
+    }
+    res.sendFile(indexPath);
   });
 }

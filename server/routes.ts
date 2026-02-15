@@ -109,6 +109,32 @@ export async function registerRoutes(
   setupSession(app);
   registerAuthRoutes(app);
 
+  app.get("/robots.txt", (_req, res) => {
+    const baseUrl = `${_req.headers["x-forwarded-proto"] || _req.protocol}://${_req.headers["x-forwarded-host"] || _req.headers.host}`;
+    res.type("text/plain").send(
+      `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /superadmin\nDisallow: /api/\nDisallow: /login\nDisallow: /register\n\nSitemap: ${baseUrl}/sitemap.xml`
+    );
+  });
+
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const baseUrl = `${req.headers["x-forwarded-proto"] || req.protocol}://${req.headers["x-forwarded-host"] || req.headers.host}`;
+      const stores = await storage.getAllStores();
+      const activeStores = stores.filter((s: any) => s.isActive);
+
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+      xml += `  <url><loc>${baseUrl}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>\n`;
+      for (const store of activeStores) {
+        xml += `  <url><loc>${baseUrl}/${store.slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+      }
+      xml += `</urlset>`;
+
+      res.type("application/xml").set("Cache-Control", "public, max-age=3600").send(xml);
+    } catch {
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+
   app.use("/uploads", (req, res, next) => {
     const filePath = path.join(uploadDir, path.basename(req.path));
     if (fs.existsSync(filePath)) {

@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Search, FileText, ChevronDown, ChevronUp, Bell, BellOff, Volume2, AlertCircle, ExternalLink } from "lucide-react";
 import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Order } from "@shared/schema";
 
 type OrderItem = {
@@ -116,6 +117,7 @@ function needsFulfillmentAction(order: Order): boolean {
 }
 
 export default function OrdersPage() {
+  useDocumentTitle("Заказы");
   const [search, setSearch] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);

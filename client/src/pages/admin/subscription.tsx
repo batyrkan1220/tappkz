@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { Crown, Check, Package, Calendar, Clock, Zap, ShoppingCart, ImageIcon } from "lucide-react";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store } from "@shared/schema";
 
 type TariffData = Record<string, { price: number; limit: number; orderLimit: number; imageLimit: number; name: string; features: string[] }>;
@@ -22,6 +23,7 @@ const PLAN_STRIPE_COLORS: Record<string, string> = {
 };
 
 export default function SubscriptionPage() {
+  useDocumentTitle("Подписка");
   const { data: store, isLoading: storeLoading } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: tariffs, isLoading: tariffsLoading } = useQuery<TariffData>({ queryKey: ["/api/tariffs"] });
   const { data: products } = useQuery<any[]>({ queryKey: ["/api/my-store/products"] });

@@ -8,9 +8,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Link } from "wouter";
 
 export default function LoginPage() {
+  useDocumentTitle("Вход");
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

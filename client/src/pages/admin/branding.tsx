@@ -16,6 +16,7 @@ import { SiWhatsapp } from "react-icons/si";
 import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import type { Store, StoreTheme } from "@shared/schema";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const PRIMARY_COLORS = [
   { value: "#2563eb", label: "Синий" },
@@ -167,6 +168,7 @@ function ColorPicker({ value, onChange, label, description, allowNone, isNone, o
 }
 
 export default function BrandingPage() {
+  useDocumentTitle("Брендинг");
   const { toast } = useToast();
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: theme, isLoading } = useQuery<StoreTheme>({ queryKey: ["/api/my-store/theme"] });

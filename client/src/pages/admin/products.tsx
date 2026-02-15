@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Link } from "wouter";
 import type { Product, Category, Store } from "@shared/schema";
 
@@ -386,6 +387,7 @@ function getAttrBadges(product: Product, group: string): string[] {
 type SortMode = "default" | "name" | "price_asc" | "price_desc";
 
 export default function ProductsPage() {
+  useDocumentTitle("Товары");
   const { toast } = useToast();
   const labels = useBusinessLabels();
   const [search, setSearch] = useState("");

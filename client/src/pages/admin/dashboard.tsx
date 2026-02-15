@@ -8,9 +8,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { UpgradeBanner } from "@/components/upgrade-banner";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, Product, Category } from "@shared/schema";
 
 export default function Dashboard() {
+  useDocumentTitle("Панель управления");
   const { toast } = useToast();
   const labels = useBusinessLabels();
   const { data: store, isLoading } = useQuery<Store>({ queryKey: ["/api/my-store"] });

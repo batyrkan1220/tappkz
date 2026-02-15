@@ -11,11 +11,13 @@ import { useToast } from "@/hooks/use-toast";
 import { SiWhatsapp } from "react-icons/si";
 import { MessageCircle } from "lucide-react";
 import { PhoneInput } from "@/components/phone-input";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
 
 const DEFAULT_TEMPLATE = "Новый заказ из {store_name}!\n\nКлиент: {customer_name}\nТелефон: {customer_phone}\nАдрес: {address}\nКомментарий: {comment}\n\nТовары:\n{items}\n\nИтого: {total} ₸";
 
 export default function WhatsAppPage() {
+  useDocumentTitle("WhatsApp");
   const { toast } = useToast();
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: settings, isLoading } = useQuery<StoreSettings>({ queryKey: ["/api/my-store/settings"] });

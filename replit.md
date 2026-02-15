@@ -146,3 +146,6 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - API routes: GET/PUT /api/superadmin/waba/onboarding
 - SuperAdmin WhatsApp page: new "Онбординг" tab with welcome/store-created/tips message editors
 - Performance optimizations: React.lazy() code splitting for all pages, gzip compression middleware, DB indexes on key columns (stores.ownerUserId/slug, products/categories/orders/customers.storeId), image lazy loading on storefront, Cache-Control headers for uploads (1yr immutable) and storefront API (30s + stale-while-revalidate)
+- SEO implementation: base meta tags in index.html (title, description, OG, Twitter), server-side dynamic meta injection for storefront pages in production (server/seo.ts + server/static.ts), client-side useDocumentTitle hook on all pages, robots.txt and sitemap.xml endpoints
+- GET /robots.txt - crawler directives, GET /sitemap.xml - dynamic XML sitemap with all active stores
+- useDocumentTitle hook (client/src/hooks/use-document-title.ts) sets page-specific titles across all admin, auth, and storefront pages

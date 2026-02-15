@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Order } from "@shared/schema";
 
 interface OrderItem {
@@ -33,6 +34,7 @@ function formatDate(dateStr: string) {
 
 export default function InvoicePage() {
   const params = useParams<{ id: string }>();
+  useDocumentTitle(`Заказ #${params.id}`);
 
   const { data, isLoading, error } = useQuery<{ order: Order; storeName: string; storeSlug: string }>({
     queryKey: ["/api/orders", params.id],

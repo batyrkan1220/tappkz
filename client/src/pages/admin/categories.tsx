@@ -12,9 +12,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, FolderOpen } from "lucide-react";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
+import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Category, Store } from "@shared/schema";
 
 export default function CategoriesPage() {
+  useDocumentTitle("Категории");
   const { toast } = useToast();
   const labels = useBusinessLabels();
   const [dialogOpen, setDialogOpen] = useState(false);
