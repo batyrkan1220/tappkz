@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon, CheckCircle2, ExternalLink, FileText, Copy, Check } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp, SiInstagram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
@@ -52,7 +52,8 @@ export default function StorefrontPage() {
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerComment, setCustomerComment] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | null>(null);
-  const [orderConfirmation, setOrderConfirmation] = useState<{ orderNumber: string; invoiceUrl: string; whatsappUrl: string } | null>(null);
+  const [orderConfirmation, setOrderConfirmation] = useState<{ orderNumber: string; invoiceUrl: string; whatsappUrl: string; whatsappPhone: string; orderMessage: string; whatsappClicked: boolean } | null>(null);
+  const [troubleshootOpen, setTroubleshootOpen] = useState<string | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
 
   const { data, isLoading, error } = useQuery<StoreData>({
@@ -254,7 +255,8 @@ export default function StorefrontPage() {
       setCustomerAddress("");
       setCustomerComment("");
       setDeliveryMethod(null);
-      setOrderConfirmation({ orderNumber: order.orderNumber, invoiceUrl, whatsappUrl });
+      setOrderConfirmation({ orderNumber: order.orderNumber, invoiceUrl, whatsappUrl, whatsappPhone: phone, orderMessage: msg, whatsappClicked: false });
+      setTroubleshootOpen(null);
     } catch (e: any) {
       let errorMsg = "Не удалось оформить заказ. Попробуйте позже.";
       try {
@@ -1119,49 +1121,120 @@ export default function StorefrontPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!orderConfirmation} onOpenChange={(open) => { if (!open) setOrderConfirmation(null); }}>
-        <DialogContent className="max-w-[360px] rounded-3xl p-0 overflow-hidden border-0 gap-0">
-          <div className="flex flex-col items-center text-center px-6 pt-8 pb-4">
-            <div className="h-16 w-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: `${primaryColor}15` }}>
-              <CheckCircle2 className="h-9 w-9" style={{ color: primaryColor }} />
+      {orderConfirmation && (
+        <div className="fixed inset-0 z-[100] bg-background overflow-y-auto" data-testid="page-order-confirmation">
+          <div className="mx-auto max-w-lg min-h-screen flex flex-col">
+            <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+              {!orderConfirmation.whatsappClicked ? (
+                <>
+                  <h1 className="text-xl font-bold text-center leading-snug mb-8" data-testid="text-order-confirmed-title">
+                    Отправьте нам детали заказа для подтверждения заказа
+                  </h1>
+                  <a
+                    href={orderConfirmation.whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full max-w-sm items-center justify-center gap-2.5 rounded-full py-4 text-white font-semibold text-base shadow-lg transition-all active:scale-[0.98]"
+                    style={{ backgroundColor: "#25D366" }}
+                    onClick={() => setOrderConfirmation((prev) => prev ? { ...prev, whatsappClicked: true } : null)}
+                    data-testid="link-whatsapp-order"
+                  >
+                    <SiWhatsapp className="h-5 w-5" />
+                    Отправить WhatsApp
+                  </a>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-xl font-bold text-center leading-snug mb-8" data-testid="text-order-confirmed-title">
+                    Отправьте нам детали заказа для подтверждения заказа
+                  </h1>
+
+                  <div className="w-full max-w-sm space-y-3 mb-6">
+                    <button
+                      onClick={() => setOrderConfirmation(null)}
+                      className="flex w-full items-center justify-center rounded-full py-3.5 font-semibold text-sm border border-border transition-all active:scale-[0.98] hover-elevate"
+                      data-testid="button-close-confirmation"
+                    >
+                      Назад в магазин
+                    </button>
+                  </div>
+
+                  <a
+                    href={orderConfirmation.whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-full border border-[#25D366] text-[#25D366] px-8 py-3 font-semibold text-sm transition-all active:scale-[0.98] mb-10"
+                    data-testid="link-whatsapp-retry"
+                  >
+                    <SiWhatsapp className="h-4 w-4" />
+                    Отправить WhatsApp
+                  </a>
+
+                  <div className="w-full max-w-sm border-t border-border pt-6">
+                    <h2 className="text-base font-bold text-center mb-4">WhatsApp не открывается?</h2>
+
+                    <div className="space-y-0 border border-border rounded-xl overflow-hidden">
+                      <button
+                        className="flex w-full items-center justify-between px-4 py-3.5 text-sm font-medium text-left hover-elevate"
+                        onClick={() => setTroubleshootOpen(troubleshootOpen === "browser" ? null : "browser")}
+                        data-testid="button-troubleshoot-browser"
+                      >
+                        <span>Открыть во внешнем браузере</span>
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${troubleshootOpen === "browser" ? "rotate-180" : ""}`} />
+                      </button>
+                      {troubleshootOpen === "browser" && (
+                        <div className="px-4 pb-4 text-sm text-muted-foreground border-t border-border/50 pt-3">
+                          <p className="leading-relaxed">Если вы открыли ссылку через Instagram или другое приложение, нажмите на меню (три точки) и выберите <span className="font-semibold text-foreground">«Открыть во внешнем браузере»</span></p>
+                        </div>
+                      )}
+
+                      <button
+                        className="flex w-full items-center justify-between px-4 py-3.5 text-sm font-medium text-left border-t border-border hover-elevate"
+                        onClick={() => setTroubleshootOpen(troubleshootOpen === "manual" ? null : "manual")}
+                        data-testid="button-troubleshoot-manual"
+                      >
+                        <span>Отправьте нам детали заказа вручную</span>
+                        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${troubleshootOpen === "manual" ? "rotate-180" : ""}`} />
+                      </button>
+                      {troubleshootOpen === "manual" && (
+                        <div className="px-4 pb-4 border-t border-border/50 pt-3 space-y-4">
+                          <div className="flex items-center justify-between gap-2">
+                            <a href={`tel:+${orderConfirmation.whatsappPhone}`} className="text-sm font-medium text-foreground underline">
+                              +{orderConfirmation.whatsappPhone.replace(/(\d{1})(\d{3})(\d{3})(\d{2})(\d{2})/, "$1 $2 $3 $4 $5")}
+                            </a>
+                            <button
+                              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover-elevate"
+                              onClick={() => { navigator.clipboard.writeText(`+${orderConfirmation.whatsappPhone}`); }}
+                              data-testid="button-copy-phone"
+                            >
+                              Копировать
+                            </button>
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="text-sm text-muted-foreground">Информация о заказе</span>
+                              <button
+                                className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover-elevate"
+                                onClick={() => { navigator.clipboard.writeText(orderConfirmation.orderMessage); }}
+                                data-testid="button-copy-order"
+                              >
+                                Копировать
+                              </button>
+                            </div>
+                            <div className="rounded-xl border border-border p-3 text-sm text-muted-foreground whitespace-pre-wrap max-h-40 overflow-y-auto">
+                              {orderConfirmation.orderMessage}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-            <h2 className="text-lg font-bold" data-testid="text-order-confirmed-title">
-              Заказ оформлен!
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1.5">
-              Заказ <span className="font-semibold text-foreground">#{orderConfirmation?.orderNumber}</span> успешно создан
-            </p>
-            <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-              Отправьте заказ продавцу через WhatsApp для подтверждения
-            </p>
           </div>
-
-          <div className="px-6 pb-5 space-y-2.5">
-            <a
-              href={orderConfirmation?.whatsappUrl || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
-              style={{ backgroundColor: "#25D366" }}
-              onClick={() => setOrderConfirmation((prev) => prev ? { ...prev, whatsappSent: true } as any : null)}
-              data-testid="link-whatsapp-order"
-            >
-              <SiWhatsapp className="h-5 w-5" />
-              Написать продавцу
-            </a>
-          </div>
-
-          {(orderConfirmation as any)?.whatsappSent && (
-            <button
-              onClick={() => setOrderConfirmation(null)}
-              className="border-t border-border/50 py-3.5 text-sm text-muted-foreground font-medium transition-colors hover-elevate"
-              data-testid="button-close-confirmation"
-            >
-              Продолжить покупки
-            </button>
-          )}
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
 
       <footer className="mx-auto max-w-lg border-t border-border/30 px-4 py-6 text-center">
         <a
