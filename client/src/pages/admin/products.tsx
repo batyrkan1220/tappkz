@@ -12,14 +12,18 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Search, ImageIcon, Package, FolderOpen, ArrowRight, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Plus, Pencil, Trash2, Search, ImageIcon, Package, FolderOpen, ArrowRight,
+  AlertCircle, ChevronDown, ChevronUp, LayoutGrid, LayoutList, Copy,
+  ArrowUpDown, EyeOff
+} from "lucide-react";
 import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { Link } from "wouter";
 import type { Product, Category, Store } from "@shared/schema";
 
 function formatPrice(price: number) {
-  return new Intl.NumberFormat("ru-KZ").format(price) + " ₸";
+  return new Intl.NumberFormat("ru-KZ").format(price) + " \u20B8";
 }
 
 type ProductAttributes = Record<string, any>;
@@ -227,7 +231,7 @@ function EcommerceFields({ form, setForm, businessType }: { form: ProductForm; s
             <Input type="number" placeholder="1" value={a.minOrderQty || ""} onChange={(e) => setAttr("minOrderQty", e.target.value)} data-testid="input-min-order" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Оптовая цена (₸)</Label>
+            <Label className="text-xs text-muted-foreground">Оптовая цена (\u20B8)</Label>
             <Input type="number" placeholder="0" value={a.wholesalePrice || ""} onChange={(e) => setAttr("wholesalePrice", e.target.value)} data-testid="input-wholesale-price" />
           </div>
         </>
@@ -329,7 +333,7 @@ function ServiceFields({ form, setForm, businessType }: { form: ProductForm; set
       {(isHotel || isRental) && (
         <>
           <div>
-            <Label className="text-xs text-muted-foreground">{isHotel ? "Макс. гостей" : "Залоговая стоимость (₸)"}</Label>
+            <Label className="text-xs text-muted-foreground">{isHotel ? "Макс. гостей" : "Залоговая стоимость (\u20B8)"}</Label>
             <Input type="number" placeholder="" value={isHotel ? (a.maxGuests || "") : (a.depositAmount || "")} onChange={(e) => setAttr(isHotel ? "maxGuests" : "depositAmount", e.target.value)} data-testid={`input-${isHotel ? "max-guests" : "deposit"}`} />
           </div>
           {isRental && (
@@ -379,6 +383,8 @@ function getAttrBadges(product: Product, group: string): string[] {
   return badges;
 }
 
+type SortMode = "default" | "name" | "price_asc" | "price_desc";
+
 export default function ProductsPage() {
   const { toast } = useToast();
   const labels = useBusinessLabels();
@@ -386,6 +392,8 @@ export default function ProductsPage() {
   const [filterCat, setFilterCat] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [sortMode, setSortMode] = useState<SortMode>("default");
 
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: products, isLoading } = useQuery<Product[]>({ queryKey: ["/api/my-store/products"] });
@@ -397,6 +405,9 @@ export default function ProductsPage() {
   const group = labels.group;
 
   const [form, setForm] = useState<ProductForm>({ ...emptyForm });
+
+  const catMap = new Map<number, string>();
+  (categories || []).forEach((c) => catMap.set(c.id, c.name));
 
   const openCreate = () => {
     setEditProduct(null);
@@ -415,6 +426,23 @@ export default function ProductsPage() {
       isActive: p.isActive,
       imageUrls: p.imageUrls || [],
       sku: (p as any).sku || "",
+      unit: (p as any).unit || "",
+      attributes: (p as any).attributes || {},
+    });
+    setDialogOpen(true);
+  };
+
+  const duplicateProduct = (p: Product) => {
+    setEditProduct(null);
+    setForm({
+      name: p.name + " (копия)",
+      description: p.description || "",
+      price: String(p.price),
+      discountPrice: p.discountPrice ? String(p.discountPrice) : "",
+      categoryId: p.categoryId ? String(p.categoryId) : "",
+      isActive: p.isActive,
+      imageUrls: p.imageUrls || [],
+      sku: "",
       unit: (p as any).unit || "",
       attributes: (p as any).attributes || {},
     });
@@ -447,7 +475,7 @@ export default function ProductsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/my-store/products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/my-store/usage"] });
       setDialogOpen(false);
-      toast({ title: editProduct ? `${labels.itemLabelPlural} обновлён` : `${labels.itemLabelPlural} создан` });
+      toast({ title: editProduct ? "Сохранено" : "Добавлено" });
     },
     onError: (e: Error) => {
       let msg = e.message;
@@ -500,21 +528,45 @@ export default function ProductsPage() {
     setForm((prev) => ({ ...prev, imageUrls: prev.imageUrls.filter((_, i) => i !== idx) }));
   };
 
-  const filtered = (products || [])
+  const moveImage = (from: number, to: number) => {
+    if (to < 0 || to >= form.imageUrls.length) return;
+    setForm((prev) => {
+      const urls = [...prev.imageUrls];
+      const [item] = urls.splice(from, 1);
+      urls.splice(to, 0, item);
+      return { ...prev, imageUrls: urls };
+    });
+  };
+
+  let filtered = (products || [])
     .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
     .filter((p) => filterCat === "all" || String(p.categoryId) === filterCat);
+
+  if (sortMode === "name") {
+    filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name, "ru"));
+  } else if (sortMode === "price_asc") {
+    filtered = [...filtered].sort((a, b) => a.price - b.price);
+  } else if (sortMode === "price_desc") {
+    filtered = [...filtered].sort((a, b) => b.price - a.price);
+  }
+
+  const activeCount = (products || []).filter(p => p.isActive).length;
+  const inactiveCount = (products || []).filter(p => !p.isActive).length;
 
   if (isLoading) {
     return (
       <div className="space-y-4 p-6">
         <Skeleton className="h-8 w-32" />
+        <div className="flex gap-3">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-[180px]" />
+        </div>
         {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20" />)}
       </div>
     );
   }
 
   const unitOptions = UNIT_OPTIONS[group] || UNIT_OPTIONS.ecommerce;
-
   const sectionTitle = group === "fnb" ? "Параметры блюда" : group === "service" ? "Параметры услуги" : "Характеристики";
 
   return (
@@ -526,7 +578,11 @@ export default function ProductsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-products-title">{labels.itemLabelPlural}</h1>
-            <p className="text-xs text-muted-foreground" data-testid="text-products-count">{products?.length ?? 0} позиций</p>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground" data-testid="text-products-count">
+              <span>{products?.length ?? 0} всего</span>
+              {activeCount > 0 && <span className="text-green-600">{activeCount} активных</span>}
+              {inactiveCount > 0 && <span className="text-muted-foreground">{inactiveCount} скрытых</span>}
+            </div>
           </div>
         </div>
         <Button
@@ -565,8 +621,8 @@ export default function ProductsPage() {
       )}
 
       {hasCategories && (
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 min-w-[200px]" data-testid="container-search-products">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[180px]" data-testid="container-search-products">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Поиск..."
@@ -577,16 +633,53 @@ export default function ProductsPage() {
             />
           </div>
           <Select value={filterCat} onValueChange={setFilterCat}>
-            <SelectTrigger className="w-[180px]" data-testid="select-filter-category">
+            <SelectTrigger className="w-[160px]" data-testid="select-filter-category">
               <SelectValue placeholder="Все категории" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все категории</SelectItem>
-              {(categories || []).map((c) => (
-                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-              ))}
+              {(categories || []).map((c) => {
+                const count = (products || []).filter(p => p.categoryId === c.id).length;
+                return (
+                  <SelectItem key={c.id} value={String(c.id)}>
+                    {c.name} ({count})
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
+          <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
+            <SelectTrigger className="w-[150px]" data-testid="select-sort-products">
+              <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">По умолчанию</SelectItem>
+              <SelectItem value="name">По названию</SelectItem>
+              <SelectItem value="price_asc">Цена: сначала дешёвые</SelectItem>
+              <SelectItem value="price_desc">Цена: сначала дорогие</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="flex rounded-lg border">
+            <Button
+              size="icon"
+              variant={viewMode === "list" ? "default" : "ghost"}
+              onClick={() => setViewMode("list")}
+              className="rounded-r-none"
+              data-testid="button-view-list"
+            >
+              <LayoutList className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              onClick={() => setViewMode("grid")}
+              className="rounded-l-none"
+              data-testid="button-view-grid"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       )}
 
@@ -598,37 +691,49 @@ export default function ProductsPage() {
           <p className="font-extrabold tracking-tight">Нет позиций</p>
           <p className="mt-1 text-sm text-muted-foreground">Добавьте первую позицию в каталог</p>
         </Card>
-      ) : (
+      ) : viewMode === "list" ? (
         <div className="space-y-2">
           {filtered.map((p) => {
             const badges = getAttrBadges(p, group);
+            const catName = p.categoryId ? catMap.get(p.categoryId) : null;
             return (
-              <Card key={p.id} className="flex items-center gap-3 p-3" data-testid={`card-product-${p.id}`}>
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
+              <Card key={p.id} className={`flex items-center gap-3 p-3 transition-opacity ${!p.isActive ? "opacity-60" : ""}`} data-testid={`card-product-${p.id}`}>
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
                   {p.imageUrls?.[0] ? (
-                    <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" />
+                    <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
                   ) : (
-                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-semibold" data-testid={`text-product-name-${p.id}`}>{p.name}</p>
-                    {!p.isActive && <Badge variant="secondary">Скрыт</Badge>}
+                    <p className="truncate font-semibold leading-tight" data-testid={`text-product-name-${p.id}`}>{p.name}</p>
+                    {!p.isActive && <Badge variant="secondary" className="text-[10px]"><EyeOff className="mr-1 h-3 w-3" />Скрыт</Badge>}
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                     {p.discountPrice ? (
                       <>
-                        <span className="font-semibold text-green-600">{formatPrice(p.discountPrice)}</span>
-                        <span className="text-muted-foreground line-through">{formatPrice(p.price)}</span>
+                        <span className="text-sm font-bold text-green-600" data-testid={`text-product-price-${p.id}`}>{formatPrice(p.discountPrice)}</span>
+                        <span className="text-xs text-muted-foreground line-through">{formatPrice(p.price)}</span>
+                        <Badge variant="secondary" className="text-[10px] bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400 no-default-hover-elevate no-default-active-elevate">
+                          -{p.price > 0 ? Math.round((1 - p.discountPrice / p.price) * 100) : 0}%
+                        </Badge>
                       </>
                     ) : (
-                      <span className="font-semibold">{formatPrice(p.price)}</span>
+                      <span className="text-sm font-bold" data-testid={`text-product-price-${p.id}`}>{formatPrice(p.price)}</span>
                     )}
-                    {badges.length > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        {badges.join(" · ")}
-                      </span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {catName && (
+                      <Badge variant="outline" className="text-[10px] no-default-hover-elevate no-default-active-elevate" data-testid={`badge-product-category-${p.id}`}>
+                        <FolderOpen className="mr-1 h-2.5 w-2.5" />{catName}
+                      </Badge>
+                    )}
+                    {badges.map((b, i) => (
+                      <Badge key={i} variant="secondary" className="text-[10px] no-default-hover-elevate no-default-active-elevate">{b}</Badge>
+                    ))}
+                    {(p.imageUrls?.length || 0) > 1 && (
+                      <span className="text-[10px] text-muted-foreground">{p.imageUrls!.length} фото</span>
                     )}
                   </div>
                 </div>
@@ -638,12 +743,71 @@ export default function ProductsPage() {
                     onCheckedChange={(v) => toggleMutation.mutate({ id: p.id, isActive: v })}
                     data-testid={`switch-product-active-${p.id}`}
                   />
+                  <Button size="icon" variant="ghost" onClick={() => duplicateProduct(p)} title="Дублировать" data-testid={`button-duplicate-product-${p.id}`}>
+                    <Copy className="h-4 w-4" />
+                  </Button>
                   <Button size="icon" variant="ghost" onClick={() => openEdit(p)} data-testid={`button-edit-product-${p.id}`}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button size="icon" variant="ghost" onClick={() => deleteMutation.mutate(p.id)} data-testid={`button-delete-product-${p.id}`}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {filtered.map((p) => {
+            const catName = p.categoryId ? catMap.get(p.categoryId) : null;
+            return (
+              <Card key={p.id} className={`group overflow-hidden transition-opacity ${!p.isActive ? "opacity-60" : ""}`} data-testid={`card-product-${p.id}`}>
+                <div className="relative aspect-square bg-muted">
+                  {p.imageUrls?.[0] ? (
+                    <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
+                    </div>
+                  )}
+                  {p.discountPrice && (
+                    <Badge className="absolute left-1.5 top-1.5 bg-green-600 text-white text-[10px] no-default-hover-elevate no-default-active-elevate">
+                      -{p.price > 0 ? Math.round((1 - p.discountPrice / p.price) * 100) : 0}%
+                    </Badge>
+                  )}
+                  {!p.isActive && (
+                    <Badge variant="secondary" className="absolute right-1.5 top-1.5 text-[10px] no-default-hover-elevate no-default-active-elevate">
+                      <EyeOff className="mr-1 h-3 w-3" />Скрыт
+                    </Badge>
+                  )}
+                  <div className="absolute bottom-1.5 right-1.5 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 invisible group-hover:visible">
+                    <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => duplicateProduct(p)} data-testid={`button-duplicate-product-${p.id}`}>
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                    <Button size="icon" variant="secondary" className="h-7 w-7" onClick={() => openEdit(p)} data-testid={`button-edit-product-${p.id}`}>
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button size="icon" variant="destructive" className="h-7 w-7" onClick={() => deleteMutation.mutate(p.id)} data-testid={`button-delete-product-${p.id}`}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="p-2.5">
+                  <p className="truncate text-sm font-semibold leading-tight" data-testid={`text-product-name-${p.id}`}>{p.name}</p>
+                  {catName && (
+                    <p className="mt-0.5 truncate text-[10px] text-muted-foreground" data-testid={`badge-product-category-${p.id}`}>{catName}</p>
+                  )}
+                  <div className="mt-1 flex flex-wrap items-center gap-1">
+                    {p.discountPrice ? (
+                      <>
+                        <span className="text-sm font-bold text-green-600">{formatPrice(p.discountPrice)}</span>
+                        <span className="text-[10px] text-muted-foreground line-through">{formatPrice(p.price)}</span>
+                      </>
+                    ) : (
+                      <span className="text-sm font-bold">{formatPrice(p.price)}</span>
+                    )}
+                  </div>
                 </div>
               </Card>
             );
@@ -659,20 +823,20 @@ export default function ProductsPage() {
           <div className="space-y-4">
             <div>
               <Label className="font-semibold">Название *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} data-testid="input-product-name" />
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Введите название" data-testid="input-product-name" />
             </div>
             <div>
               <Label className="font-semibold">Описание</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} data-testid="input-product-description" />
+              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Краткое описание товара" data-testid="input-product-description" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="font-semibold">Цена (₸) *</Label>
-                <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} data-testid="input-product-price" />
+                <Label className="font-semibold">Цена (\u20B8) *</Label>
+                <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0" data-testid="input-product-price" />
               </div>
               <div>
-                <Label className="font-semibold">Скидочная цена (₸)</Label>
-                <Input type="number" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} data-testid="input-product-discount" />
+                <Label className="font-semibold">Скидочная цена (\u20B8)</Label>
+                <Input type="number" value={form.discountPrice} onChange={(e) => setForm({ ...form, discountPrice: e.target.value })} placeholder="Необязательно" data-testid="input-product-discount" />
               </div>
             </div>
             <div>
@@ -717,22 +881,52 @@ export default function ProductsPage() {
 
             <div>
               <Label className="font-semibold">Фото</Label>
+              <p className="mb-1.5 text-xs text-muted-foreground">Первое фото будет обложкой. Перетащите для изменения порядка.</p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {form.imageUrls.map((url, i) => (
-                  <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-lg border">
+                  <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-lg border" data-testid={`image-preview-${i}`}>
                     <img src={url} alt="" className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(i)}
-                      className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <Trash2 className="h-4 w-4 text-white" />
-                    </button>
+                    {i === 0 && form.imageUrls.length > 1 && (
+                      <span className="absolute left-0 top-0 rounded-br-md bg-foreground/80 px-1.5 py-0.5 text-[8px] font-bold text-background">
+                        Обложка
+                      </span>
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100 invisible group-hover:visible">
+                      {i > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => moveImage(i, i - 1)}
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs"
+                          data-testid={`button-move-image-left-${i}`}
+                        >
+                          ←
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(i)}
+                        className="flex h-6 w-6 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+                        data-testid={`button-remove-image-${i}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                      {i < form.imageUrls.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={() => moveImage(i, i + 1)}
+                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs"
+                          data-testid={`button-move-image-right-${i}`}
+                        >
+                          →
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
                 {form.imageUrls.length < 5 && (
-                  <label className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border border-dashed hover-elevate">
+                  <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed hover-elevate" data-testid="label-product-image-upload">
                     <Plus className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-[9px] text-muted-foreground">{form.imageUrls.length}/5</span>
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} data-testid="input-product-images" />
                   </label>
                 )}
