@@ -471,6 +471,31 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/my-store/usage", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const products = await storage.getProducts(store.id);
+      const monthlyOrders = await storage.countOrdersThisMonth(store.id);
+      const totalImages = await storage.countImages(store.id);
+      const productLimit = PLAN_LIMITS[store.plan] ?? 30;
+      const orderLimit = PLAN_ORDER_LIMITS[store.plan] ?? 50;
+      const imageLimit = PLAN_IMAGE_LIMITS[store.plan] ?? 20;
+      res.json({
+        plan: store.plan,
+        products: products.length,
+        productLimit,
+        monthlyOrders,
+        orderLimit,
+        totalImages,
+        imageLimit,
+      });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.get("/api/my-store/analytics/detailed", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;

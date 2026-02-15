@@ -12,6 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Trash2, Palette, CheckCircle2, ImageIcon, ShoppingBag, MapPin, ShoppingCart, Plus, Menu, Search } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import type { Store, StoreTheme } from "@shared/schema";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 
@@ -52,6 +53,7 @@ export default function BrandingPage() {
   const { toast } = useToast();
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: theme, isLoading } = useQuery<StoreTheme>({ queryKey: ["/api/my-store/theme"] });
+  const { data: usage } = useUsageData();
   const businessLabels = useBusinessLabels();
 
   const [primaryColor, setPrimaryColor] = useState("#2563eb");
@@ -106,12 +108,18 @@ export default function BrandingPage() {
     formData.append("images", files[0]);
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = "Ошибка загрузки";
+        try { const p = JSON.parse(text); if (p?.message) msg = p.message; } catch {}
+        throw new Error(msg);
+      }
       const data = await res.json();
       if (type === "logo") setLogoUrl(data.urls[0]);
       else setBannerUrl(data.urls[0]);
-    } catch {
-      toast({ title: "Ошибка загрузки", variant: "destructive" });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store/usage"] });
+    } catch (err: any) {
+      toast({ title: "Ошибка загрузки", description: err?.message || "", variant: "destructive" });
     }
   };
 
@@ -208,6 +216,10 @@ export default function BrandingPage() {
               </div>
             </div>
           </Card>
+
+          {usage && usage.plan === "free" && (
+            <LimitAlert type="images" current={usage.totalImages} limit={usage.imageLimit} />
+          )}
 
           <Card className="p-5">
             <h2 className="mb-4 text-base font-bold">Логотип и баннер</h2>

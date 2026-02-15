@@ -13,6 +13,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Search, ImageIcon, Package, FolderOpen, ArrowRight, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { Link } from "wouter";
 import type { Product, Category, Store } from "@shared/schema";
@@ -389,6 +390,7 @@ export default function ProductsPage() {
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: products, isLoading } = useQuery<Product[]>({ queryKey: ["/api/my-store/products"] });
   const { data: categories } = useQuery<Category[]>({ queryKey: ["/api/my-store/categories"] });
+  const { data: usage } = useUsageData();
 
   const hasCategories = (categories?.length ?? 0) > 0;
   const businessType = store?.businessType || "ecommerce";
@@ -443,11 +445,14 @@ export default function ProductsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/my-store/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store/usage"] });
       setDialogOpen(false);
       toast({ title: editProduct ? `${labels.itemLabelPlural} обновлён` : `${labels.itemLabelPlural} создан` });
     },
     onError: (e: Error) => {
-      toast({ title: "Ошибка", description: e.message, variant: "destructive" });
+      let msg = e.message;
+      try { const p = JSON.parse(msg.replace(/^\d+:\s*/, "")); if (p?.message) msg = p.message; } catch {}
+      toast({ title: "Ошибка", description: msg, variant: "destructive" });
     },
   });
 
@@ -477,11 +482,17 @@ export default function ProductsPage() {
     Array.from(files).forEach((f) => formData.append("images", f));
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = "Ошибка загрузки";
+        try { const p = JSON.parse(text); if (p?.message) msg = p.message; } catch {}
+        throw new Error(msg);
+      }
       const data = await res.json();
       setForm((prev) => ({ ...prev, imageUrls: [...prev.imageUrls, ...data.urls] }));
-    } catch {
-      toast({ title: "Ошибка загрузки", variant: "destructive" });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store/usage"] });
+    } catch (err: any) {
+      toast({ title: "Ошибка загрузки", description: err?.message || "", variant: "destructive" });
     }
   };
 
@@ -547,6 +558,10 @@ export default function ProductsPage() {
             </Button>
           </Link>
         </Card>
+      )}
+
+      {usage && usage.plan === "free" && (
+        <LimitAlert type="products" current={usage.products} limit={usage.productLimit} />
       )}
 
       {hasCategories && (

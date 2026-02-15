@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Search, FileText, ChevronDown, ChevronUp, Bell, BellOff, Volume2, AlertCircle, ExternalLink } from "lucide-react";
+import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import type { Order } from "@shared/schema";
 
 type OrderItem = {
@@ -129,6 +130,7 @@ export default function OrdersPage() {
     queryKey: ["/api/my-store/orders"],
     refetchInterval: 15000,
   });
+  const { data: usage } = useUsageData();
 
   const toggleSound = useCallback(() => {
     setSoundEnabled((prev) => {
@@ -232,6 +234,10 @@ export default function OrdersPage() {
           {soundEnabled ? <Volume2 className="h-4 w-4" /> : <BellOff className="h-4 w-4 text-muted-foreground" />}
         </Button>
       </div>
+
+      {usage && usage.plan === "free" && (
+        <LimitAlert type="orders" current={usage.monthlyOrders} limit={usage.orderLimit} />
+      )}
 
       <div className="flex items-center flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-md">

@@ -7,6 +7,7 @@ import { Eye, MousePointerClick, ShoppingCart, Package, FolderOpen, ExternalLink
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
+import { UpgradeBanner } from "@/components/upgrade-banner";
 import type { Store, Product, Category } from "@shared/schema";
 
 export default function Dashboard() {
@@ -138,6 +139,8 @@ export default function Dashboard() {
           </div>
         </Card>
       )}
+
+      <UpgradeBanner />
 
       <div className="grid gap-4 sm:grid-cols-3">
         {stats.map((s) => (

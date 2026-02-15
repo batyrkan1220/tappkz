@@ -40,6 +40,7 @@ export default function StorefrontPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"overview" | "search">("overview");
   const [searchQuery, setSearchQuery] = useState("");
@@ -172,8 +173,16 @@ export default function StorefrontPage() {
       setCustomerPhone("");
       setCustomerAddress("");
       setCustomerComment("");
-    } catch (e) {
-      console.error("Order creation failed:", e);
+    } catch (e: any) {
+      let errorMsg = "Не удалось оформить заказ. Попробуйте позже.";
+      try {
+        if (e?.message) {
+          const raw = e.message.replace(/^\d+:\s*/, "");
+          const parsed = JSON.parse(raw);
+          if (parsed?.message) errorMsg = parsed.message;
+        }
+      } catch {}
+      setCheckoutError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -942,11 +951,16 @@ export default function StorefrontPage() {
             </div>
 
             <div className="sticky bottom-0 bg-background border-t px-5 py-4 mt-4">
+              {checkoutError && (
+                <div className="mb-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 px-4 py-3" data-testid="text-checkout-error">
+                  <p className="text-xs font-semibold text-red-700 dark:text-red-400">{checkoutError}</p>
+                </div>
+              )}
               <button
                 className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#25D366" }}
                 disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting}
-                onClick={handleCheckout}
+                onClick={() => { setCheckoutError(""); handleCheckout(); }}
                 data-testid="button-send-whatsapp"
               >
                 <SiWhatsapp className="h-5 w-5" />
