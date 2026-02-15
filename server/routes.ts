@@ -573,6 +573,23 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/platform-pixels", async (_req, res) => {
+    try {
+      let pixelData: any = {};
+      const raw = await storage.getPlatformSetting("tracking_pixels");
+      if (raw) {
+        pixelData = typeof raw === "string" ? JSON.parse(raw) : raw;
+      }
+      res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=120");
+      res.json({
+        facebookPixelId: pixelData.facebookPixelId || null,
+        tiktokPixelId: pixelData.tiktokPixelId || null,
+      });
+    } catch {
+      res.json({ facebookPixelId: null, tiktokPixelId: null });
+    }
+  });
+
   app.get("/api/tariffs", async (_req, res) => {
     try {
       const settings = await storage.getAllPlatformSettings();
@@ -621,15 +638,6 @@ export async function registerRoutes(
 
       await storage.recordEvent({ storeId: store.id, eventType: "visit" }).catch(() => {});
 
-      let platformPixelData: any = {};
-      try {
-        const platformPixels = await storage.getPlatformSetting("tracking_pixels");
-        if (platformPixels) {
-          platformPixelData = typeof platformPixels === "string" ? JSON.parse(platformPixels) : platformPixels;
-        }
-      } catch {}
-
-
       res.setHeader("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
       res.json({
         store,
@@ -637,10 +645,6 @@ export async function registerRoutes(
         settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
-        platformPixels: {
-          facebookPixelId: platformPixelData.facebookPixelId || null,
-          tiktokPixelId: platformPixelData.tiktokPixelId || null,
-        },
       });
     } catch (e: any) {
       res.status(500).json({ message: e.message });

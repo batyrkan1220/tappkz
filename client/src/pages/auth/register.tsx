@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Eye, EyeOff, ArrowRight, CheckCircle2 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 import { Link } from "wouter";
 import { InternationalPhoneInput, COUNTRIES } from "@/components/international-phone-input";
 
@@ -20,6 +21,7 @@ const benefits = [
 ];
 
 export default function RegisterPage() {
+  usePlatformPixels();
   useDocumentTitle("Регистрация");
   const { toast } = useToast();
   const [email, setEmail] = useState("");

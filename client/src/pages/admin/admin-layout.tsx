@@ -7,8 +7,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import CreateStorePage from "./create-store";
 import { getQueryFn } from "@/lib/queryClient";
 import type { Store } from "@shared/schema";
+import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  usePlatformPixels();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
   useEffect(() => {

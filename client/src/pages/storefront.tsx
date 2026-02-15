@@ -31,10 +31,6 @@ interface StoreData {
   categories: Category[];
   theme: StoreTheme;
   settings: StoreSettings;
-  platformPixels?: {
-    facebookPixelId: string | null;
-    tiktokPixelId: string | null;
-  };
 }
 
 function formatPrice(price: number) {
@@ -79,16 +75,10 @@ export default function StorefrontPage() {
   useEffect(() => {
     if (!data) return;
     const safeId = (v: string) => v.replace(/[^A-Za-z0-9_]/g, "");
-    const fbIds = [
-      data.platformPixels?.facebookPixelId,
-      data.settings?.facebookPixelId,
-    ].filter(Boolean).map((id) => safeId(id!));
-    const ttIds = [
-      data.platformPixels?.tiktokPixelId,
-      data.settings?.tiktokPixelId,
-    ].filter(Boolean).map((id) => safeId(id!));
-    const uniqueFb = [...new Set(fbIds)].filter((id) => id.length > 0);
-    const uniqueTt = [...new Set(ttIds)].filter((id) => id.length > 0);
+    const fbId = data.settings?.facebookPixelId ? safeId(data.settings.facebookPixelId) : "";
+    const ttId = data.settings?.tiktokPixelId ? safeId(data.settings.tiktokPixelId) : "";
+    const uniqueFb = fbId.length > 0 ? [fbId] : [];
+    const uniqueTt = ttId.length > 0 ? [ttId] : [];
 
     const cleanup: (() => void)[] = [];
 

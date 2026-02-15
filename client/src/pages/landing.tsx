@@ -27,6 +27,7 @@ import { TappLogo } from "@/components/tapp-logo";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 import mockNapoleon from "@/assets/images/mock-cake-napoleon.png";
 import mockMacarons from "@/assets/images/mock-macarons.png";
 import mockEclair from "@/assets/images/mock-eclair.png";
@@ -405,6 +406,7 @@ type TariffData = Record<string, { price: number; limit: number; orderLimit: num
 
 export default function LandingPage() {
   useDocumentTitle();
+  usePlatformPixels();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: tariffs } = useQuery<TariffData>({ queryKey: ["/api/tariffs"] });
 
