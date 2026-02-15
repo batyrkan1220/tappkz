@@ -149,10 +149,10 @@ export async function registerRoutes(
     try {
       const slug = req.params.slug.toLowerCase();
       if (RESERVED_SLUGS.has(slug)) {
-        return res.json({ available: false, reason: "Этот адрес зарезервирован" });
+        return res.json({ available: false, reason: "Этот адрес уже занят" });
       }
       const existing = await storage.getStoreBySlug(slug);
-      res.json({ available: !existing, reason: existing ? "Этот адрес уже занят" : null });
+      res.json({ available: !existing, reason: existing ? "Этот адрес уже занят другим магазином" : null });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
@@ -167,7 +167,7 @@ export async function registerRoutes(
         return res.status(400).json({ message: "У вас уже есть магазин" });
       }
       if (RESERVED_SLUGS.has(data.slug)) {
-        return res.status(400).json({ message: "Этот адрес зарезервирован" });
+        return res.status(400).json({ message: "Этот адрес уже занят" });
       }
       const slugCheck = await storage.getStoreBySlug(data.slug);
       if (slugCheck) {
@@ -388,7 +388,7 @@ export async function registerRoutes(
       const data = validate(settingsSchema, req.body);
 
       if (data.slug && data.slug !== store.slug) {
-        if (RESERVED_SLUGS.has(data.slug)) return res.status(400).json({ message: "Этот адрес зарезервирован" });
+        if (RESERVED_SLUGS.has(data.slug)) return res.status(400).json({ message: "Этот адрес уже занят" });
         const slugCheck = await storage.getStoreBySlug(data.slug);
         if (slugCheck) return res.status(400).json({ message: "Этот адрес уже занят" });
       }
