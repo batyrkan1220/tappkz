@@ -9,16 +9,70 @@ function escapeHtml(str: string): string {
     .replace(/>/g, "&gt;");
 }
 
+function escapeJsonLd(str: string): string {
+  return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n").replace(/</g, "\\u003c");
+}
+
 function sanitizeUrl(url: string): string {
   return url.replace(/['"<>]/g, "");
 }
 
-function buildStoreMeta(store: any, theme: any, productCount: number, baseUrl: string): string {
+function buildStoreJsonLd(store: any, theme: any, products: any[], baseUrl: string): string {
+  const safeSlug = encodeURIComponent(store.slug);
+  const storeUrl = `${sanitizeUrl(baseUrl)}/${safeSlug}`;
+  const imageUrl = theme?.logoUrl ? `${sanitizeUrl(baseUrl)}${sanitizeUrl(theme.logoUrl)}` : null;
+
+  const ld: any = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    "name": store.name,
+    "url": storeUrl,
+    ...(store.description && { "description": store.description }),
+    ...(imageUrl && { "image": imageUrl, "logo": imageUrl }),
+    ...(store.city && { "address": { "@type": "PostalAddress", "addressLocality": store.city } }),
+    ...(store.whatsappPhone && { "telephone": `+${store.whatsappPhone}` }),
+    "brand": { "@type": "Brand", "name": store.name },
+    "isPartOf": {
+      "@type": "WebApplication",
+      "name": "Tapp",
+      "url": sanitizeUrl(baseUrl),
+    },
+  };
+
+  if (products.length > 0) {
+    const priceRange = products.reduce(
+      (acc: any, p: any) => {
+        const price = parseFloat(p.price);
+        if (!isNaN(price) && price > 0) {
+          acc.min = Math.min(acc.min, price);
+          acc.max = Math.max(acc.max, price);
+        }
+        return acc;
+      },
+      { min: Infinity, max: 0 }
+    );
+
+    if (priceRange.min !== Infinity) {
+      ld.priceRange = `${Math.round(priceRange.min)} - ${Math.round(priceRange.max)} ₸`;
+    }
+
+    ld.hasOfferCatalog = {
+      "@type": "OfferCatalog",
+      "name": `${store.name} — каталог`,
+      "numberOfItems": products.length,
+    };
+  }
+
+  return JSON.stringify(ld);
+}
+
+function buildStoreMeta(store: any, theme: any, products: any[], baseUrl: string): string {
   const storeName = escapeHtml(store.name);
   const city = store.city ? ` в ${escapeHtml(store.city)}` : "";
+  const activeCount = products.length;
   const desc = store.description
     ? escapeHtml(store.description)
-    : `${storeName}${city} — каталог товаров и услуг. Заказ через WhatsApp. ${productCount} позиций в каталоге.`;
+    : `${storeName}${city} — каталог товаров и услуг. Заказ через WhatsApp. ${activeCount} позиций в каталоге.`;
   const title = `${storeName}${city} — Каталог и заказы через WhatsApp`;
   const safeSlug = encodeURIComponent(store.slug);
   const storeUrl = `${sanitizeUrl(baseUrl)}/${safeSlug}`;
@@ -28,6 +82,7 @@ function buildStoreMeta(store: any, theme: any, productCount: number, baseUrl: s
   const tags = [
     `<title>${title}</title>`,
     `<meta name="description" content="${desc}" />`,
+    `<link rel="canonical" href="${storeUrl}" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${desc}" />`,
@@ -48,6 +103,9 @@ function buildStoreMeta(store: any, theme: any, productCount: number, baseUrl: s
   if (theme?.primaryColor) {
     tags.push(`<meta name="theme-color" content="${escapeHtml(theme.primaryColor)}" />`);
   }
+
+  const jsonLd = buildStoreJsonLd(store, theme, products, baseUrl);
+  tags.push(`<script type="application/ld+json">${jsonLd}</script>`);
 
   return tags.join("\n    ");
 }
@@ -89,7 +147,7 @@ export async function getStoreSeoMeta(slug: string, baseUrl: string): Promise<st
     ]);
 
     const activeProducts = products.filter((p: any) => p.isActive);
-    return buildStoreMeta(store, theme, activeProducts.length, baseUrl);
+    return buildStoreMeta(store, theme, activeProducts, baseUrl);
   } catch {
     return null;
   }

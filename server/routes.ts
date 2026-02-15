@@ -112,7 +112,7 @@ export async function registerRoutes(
   app.get("/robots.txt", (_req, res) => {
     const baseUrl = `${_req.headers["x-forwarded-proto"] || _req.protocol}://${_req.headers["x-forwarded-host"] || _req.headers.host}`;
     res.type("text/plain").send(
-      `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /superadmin\nDisallow: /api/\nDisallow: /login\nDisallow: /register\n\nSitemap: ${baseUrl}/sitemap.xml`
+      `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /superadmin\nDisallow: /api/\nDisallow: /login\nDisallow: /register\nDisallow: /forgot-password\nDisallow: /invoice/\n\nSitemap: ${baseUrl}/sitemap.xml`
     );
   });
 
@@ -121,11 +121,13 @@ export async function registerRoutes(
       const baseUrl = `${req.headers["x-forwarded-proto"] || req.protocol}://${req.headers["x-forwarded-host"] || req.headers.host}`;
       const stores = await storage.getAllStores();
       const activeStores = stores.filter((s: any) => s.isActive);
+      const today = new Date().toISOString().split("T")[0];
 
       let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-      xml += `  <url><loc>${baseUrl}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>\n`;
+      xml += `  <url>\n    <loc>${baseUrl}/</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n`;
       for (const store of activeStores) {
-        xml += `  <url><loc>${baseUrl}/${store.slug}</loc><changefreq>daily</changefreq><priority>0.8</priority></url>\n`;
+        const lastmod = store.createdAt ? new Date(store.createdAt).toISOString().split("T")[0] : today;
+        xml += `  <url>\n    <loc>${baseUrl}/${encodeURIComponent(store.slug)}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
       }
       xml += `</urlset>`;
 
