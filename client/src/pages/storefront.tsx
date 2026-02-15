@@ -1131,36 +1131,39 @@ export default function StorefrontPage() {
             <p className="text-sm text-muted-foreground mt-1.5">
               Заказ <span className="font-semibold text-foreground">#{orderConfirmation?.orderNumber}</span> успешно создан
             </p>
+            <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+              Продавец уже получил уведомление и скоро свяжется с вами. Переход в WhatsApp необязателен.
+            </p>
           </div>
 
           <div className="px-6 pb-3 space-y-2.5">
             <a
-              href={orderConfirmation?.whatsappUrl || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98]"
-              style={{ backgroundColor: "#25D366" }}
-              data-testid="link-whatsapp-order"
-            >
-              <SiWhatsapp className="h-5 w-5" />
-              Отправить в WhatsApp
-            </a>
-
-            <a
               href={orderConfirmation?.invoiceUrl || "#"}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3 font-medium text-sm border border-border transition-all active:scale-[0.98] hover-elevate"
+              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 font-semibold text-[15px] text-white shadow-lg transition-all active:scale-[0.98]"
+              style={{ backgroundColor: primaryColor }}
               data-testid="link-invoice-order"
             >
-              <FileText className="h-4 w-4" />
+              <FileText className="h-5 w-5" />
               Посмотреть счёт
+            </a>
+
+            <a
+              href={orderConfirmation?.whatsappUrl || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3 font-medium text-sm border border-border transition-all active:scale-[0.98] hover-elevate"
+              data-testid="link-whatsapp-order"
+            >
+              <SiWhatsapp className="h-4 w-4 text-[#25D366]" />
+              Написать в WhatsApp
             </a>
           </div>
 
-          <div className="px-6 pb-6 pt-1">
-            <p className="text-[11px] text-muted-foreground text-center leading-relaxed">
-              Нажмите «Отправить в WhatsApp», чтобы связаться с продавцом. Продавец уже получил уведомление о вашем заказе.
+          <div className="px-6 pb-5 pt-1">
+            <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+              WhatsApp — по желанию. Ваш заказ уже принят.
             </p>
           </div>
 
