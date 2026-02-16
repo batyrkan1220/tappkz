@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon, Megaphone } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon, Megaphone, FolderOpen, LayoutGrid } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp, SiInstagram, SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
@@ -574,32 +574,115 @@ export default function StorefrontPage() {
         )}
 
         {activeTab === "overview" && categories.length > 0 && settings?.showCategoryChips !== false && (
-          <div className="mb-4 -mx-4 px-4 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
-            <div className="flex gap-2 pb-1 w-max">
-              <button
-                className={`shrink-0 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
-                style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
-                onClick={() => setActiveCategory(null)}
-                data-testid="button-category-all"
-              >
-                Все
-              </button>
-              {categories.map((c) => (
+          <>
+            {(settings as any)?.categoryDisplayStyle === "grid" ? (
+              <div className="mb-4 grid grid-cols-2 gap-2">
                 <button
-                  key={c.id}
-                  className={`shrink-0 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
-                  style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
-                  onClick={() => setActiveCategory(c.id)}
-                  data-testid={`button-category-${c.id}`}
+                  className={`relative overflow-hidden rounded-xl p-3 text-left transition-all ${activeCategory === null ? "ring-2 ring-primary shadow-sm" : "bg-muted"}`}
+                  onClick={() => setActiveCategory(null)}
+                  data-testid="button-category-all"
                 >
-                  {(c as any).imageUrl && (
-                    <img src={getThumbUrl((c as any).imageUrl)} alt="" className="h-5 w-5 rounded-full object-cover" />
-                  )}
-                  {c.name}
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: primaryColor + "20" }}>
+                      <LayoutGrid className="h-4 w-4" style={{ color: primaryColor }} />
+                    </div>
+                    <span className="text-sm font-semibold">Все</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{products.length} {products.length === 1 ? "товар" : "товаров"}</p>
                 </button>
-              ))}
-            </div>
-          </div>
+                {categories.map((c) => (
+                  <button
+                    key={c.id}
+                    className={`relative overflow-hidden rounded-xl p-3 text-left transition-all ${activeCategory === c.id ? "ring-2 ring-primary shadow-sm" : "bg-muted"}`}
+                    onClick={() => setActiveCategory(c.id)}
+                    data-testid={`button-category-${c.id}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {(c as any).imageUrl ? (
+                        <img src={getThumbUrl((c as any).imageUrl)} alt="" className="h-8 w-8 rounded-lg object-cover" />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: primaryColor + "20" }}>
+                          <FolderOpen className="h-4 w-4" style={{ color: primaryColor }} />
+                        </div>
+                      )}
+                      <span className="text-sm font-semibold truncate">{c.name}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{getCategoryProductCount(c.id)} товаров</p>
+                  </button>
+                ))}
+              </div>
+            ) : (settings as any)?.categoryDisplayStyle === "list" ? (
+              <div className="mb-4 space-y-1">
+                <button
+                  className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-all ${activeCategory === null ? "font-semibold" : ""}`}
+                  style={activeCategory === null ? { backgroundColor: primaryColor + "15" } : {}}
+                  onClick={() => setActiveCategory(null)}
+                  data-testid="button-category-all"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: primaryColor + "20" }}>
+                      <LayoutGrid className="h-4 w-4" style={{ color: primaryColor }} />
+                    </div>
+                    <span className="text-sm font-medium">Все</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{products.length}</span>
+                </button>
+                {categories.map((c) => (
+                  <button
+                    key={c.id}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left transition-all ${activeCategory === c.id ? "font-semibold" : ""}`}
+                    style={activeCategory === c.id ? { backgroundColor: primaryColor + "15" } : {}}
+                    onClick={() => setActiveCategory(c.id)}
+                    data-testid={`button-category-${c.id}`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {(c as any).imageUrl ? (
+                        <img src={getThumbUrl((c as any).imageUrl)} alt="" className="h-8 w-8 rounded-lg object-cover" />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: primaryColor + "20" }}>
+                          <FolderOpen className="h-4 w-4" style={{ color: primaryColor }} />
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-sm font-medium">{c.name}</span>
+                        {(c as any).description && (
+                          <p className="text-xs text-muted-foreground truncate max-w-[200px]">{(c as any).description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">{getCategoryProductCount(c.id)}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="mb-4 -mx-4 px-4 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+                <div className="flex gap-2 pb-1 w-max">
+                  <button
+                    className={`shrink-0 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                    style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
+                    onClick={() => setActiveCategory(null)}
+                    data-testid="button-category-all"
+                  >
+                    Все
+                  </button>
+                  {categories.map((c) => (
+                    <button
+                      key={c.id}
+                      className={`shrink-0 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                      style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
+                      onClick={() => setActiveCategory(c.id)}
+                      data-testid={`button-category-${c.id}`}
+                    >
+                      {(c as any).imageUrl && (
+                        <img src={getThumbUrl((c as any).imageUrl)} alt="" className="h-5 w-5 rounded-full object-cover" />
+                      )}
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {filteredProducts.length === 0 ? (

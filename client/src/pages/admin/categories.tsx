@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,10 +11,10 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, FolderOpen, Upload, X, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, FolderOpen, X, ImageIcon, GripVertical, Package } from "lucide-react";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import type { Category, Store } from "@shared/schema";
+import type { Category, Store, Product } from "@shared/schema";
 
 export default function CategoriesPage() {
   useDocumentTitle("Категории");
@@ -28,9 +28,22 @@ export default function CategoriesPage() {
   const [isActive, setIsActive] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [dragOverId, setDragOverId] = useState<number | null>(null);
 
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: categories, isLoading } = useQuery<Category[]>({ queryKey: ["/api/my-store/categories"] });
+  const { data: products } = useQuery<Product[]>({ queryKey: ["/api/my-store/products"] });
+
+  const productCountMap = useCallback(() => {
+    const map: Record<number, number> = {};
+    (products || []).forEach((p) => {
+      if (p.categoryId) {
+        map[p.categoryId] = (map[p.categoryId] || 0) + 1;
+      }
+    });
+    return map;
+  }, [products]);
 
   const openCreate = () => {
     setEditCat(null);
@@ -71,7 +84,7 @@ export default function CategoriesPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const body: any = { name, isActive, storeId: store!.id, sortOrder: editCat?.sortOrder ?? 0, description: description || null, imageUrl: imageUrl || null };
+      const body: any = { name, isActive, storeId: store!.id, sortOrder: editCat?.sortOrder ?? (categories?.length ?? 0), description: description || null, imageUrl: imageUrl || null };
       if (editCat) {
         await apiRequest("PATCH", `/api/my-store/categories/${editCat.id}`, body);
       } else {
@@ -97,6 +110,47 @@ export default function CategoriesPage() {
       toast({ title: "Категория удалена" });
     },
   });
+
+  const reorderMutation = useMutation({
+    mutationFn: async (order: number[]) => {
+      await apiRequest("PUT", "/api/my-store/categories/reorder", { order });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/my-store/categories"] });
+    },
+  });
+
+  const handleDragStart = (id: number) => {
+    setDraggedId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: number) => {
+    e.preventDefault();
+    if (id !== draggedId) {
+      setDragOverId(id);
+    }
+  };
+
+  const handleDrop = (targetId: number) => {
+    if (draggedId === null || draggedId === targetId || !categories) return;
+    const sorted = [...categories];
+    const fromIndex = sorted.findIndex((c) => c.id === draggedId);
+    const toIndex = sorted.findIndex((c) => c.id === targetId);
+    if (fromIndex === -1 || toIndex === -1) return;
+    const [moved] = sorted.splice(fromIndex, 1);
+    sorted.splice(toIndex, 0, moved);
+    const newOrder = sorted.map((c) => c.id);
+    reorderMutation.mutate(newOrder);
+    setDraggedId(null);
+    setDragOverId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDragOverId(null);
+  };
+
+  const counts = productCountMap();
 
   if (isLoading) {
     return (
@@ -124,6 +178,10 @@ export default function CategoriesPage() {
         </Button>
       </div>
 
+      {(categories || []).length > 1 && (
+        <p className="text-xs text-muted-foreground">Перетащите категории для изменения порядка</p>
+      )}
+
       {(categories || []).length === 0 ? (
         <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed" data-testid="card-empty-categories">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-purple-50 dark:bg-purple-950/30">
@@ -137,22 +195,40 @@ export default function CategoriesPage() {
       ) : (
         <div className="space-y-2">
           {(categories || []).map((c) => (
-            <Card key={c.id} className="flex items-center gap-3 p-3" data-testid={`card-category-${c.id}`}>
+            <Card
+              key={c.id}
+              className={`flex items-center gap-3 p-3 transition-all ${dragOverId === c.id ? "ring-2 ring-primary" : ""} ${draggedId === c.id ? "opacity-50" : ""}`}
+              draggable
+              onDragStart={() => handleDragStart(c.id)}
+              onDragOver={(e) => handleDragOver(e, c.id)}
+              onDrop={() => handleDrop(c.id)}
+              onDragEnd={handleDragEnd}
+              data-testid={`card-category-${c.id}`}
+            >
+              <div className="cursor-grab text-muted-foreground" data-testid={`drag-handle-category-${c.id}`}>
+                <GripVertical className="h-4 w-4" />
+              </div>
               {(c as any).imageUrl ? (
-                <img src={`/uploads/thumbs/${((c as any).imageUrl as string).replace("/uploads/", "")}`} alt={c.name} className="h-10 w-10 rounded-lg object-cover" />
+                <img src={`/uploads/thumbs/${((c as any).imageUrl as string).replace("/uploads/", "")}`} alt={c.name} className="h-11 w-11 rounded-lg object-cover" />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/30">
-                  <FolderOpen className="h-4 w-4 text-purple-600" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/30">
+                  <FolderOpen className="h-5 w-5 text-purple-600" />
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold" data-testid={`text-category-name-${c.id}`}>{c.name}</p>
                   {!c.isActive && <Badge variant="secondary">Скрыта</Badge>}
                 </div>
-                {(c as any).description && (
-                  <p className="text-xs text-muted-foreground truncate">{(c as any).description}</p>
-                )}
+                <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                  {(c as any).description && (
+                    <p className="text-xs text-muted-foreground truncate max-w-[200px]">{(c as any).description}</p>
+                  )}
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Package className="h-3 w-3" />
+                    <span data-testid={`text-category-count-${c.id}`}>{counts[c.id] || 0}</span>
+                  </div>
+                </div>
               </div>
               <div className="flex items-center gap-1">
                 <Button size="icon" variant="ghost" onClick={() => openEdit(c)} data-testid={`button-edit-category-${c.id}`}>
@@ -207,7 +283,7 @@ export default function CategoriesPage() {
                   {uploading ? "Загрузка..." : <><ImageIcon className="mr-2 h-4 w-4" /> Загрузить фото</>}
                 </Button>
               )}
-              <p className="mt-1 text-xs text-muted-foreground">Отображается в чипсе категории на витрине</p>
+              <p className="mt-1 text-xs text-muted-foreground">Отображается рядом с названием категории на витрине</p>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={isActive} onCheckedChange={setIsActive} data-testid="switch-category-active" />

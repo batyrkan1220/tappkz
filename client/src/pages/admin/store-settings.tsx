@@ -12,7 +12,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, Share2 } from "lucide-react";
+import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, Share2, LayoutGrid, List, Circle } from "lucide-react";
 import { SiTelegram, SiInstagram, SiWhatsapp } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
@@ -39,6 +39,7 @@ export default function StoreSettingsPage() {
   const [telegramUrl, setTelegramUrl] = useState("");
   const [showSocialCards, setShowSocialCards] = useState(true);
   const [showCategoryChips, setShowCategoryChips] = useState(true);
+  const [categoryDisplayStyle, setCategoryDisplayStyle] = useState("chips");
   const [slugStatus, setSlugStatus] = useState<{ available: boolean; reason: string | null } | null>(null);
   const [slugChecking, setSlugChecking] = useState(false);
   const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -92,6 +93,7 @@ export default function StoreSettingsPage() {
       setTelegramUrl(settings.telegramUrl || "");
       setShowSocialCards(settings.showSocialCards ?? true);
       setShowCategoryChips(settings.showCategoryChips ?? true);
+      setCategoryDisplayStyle(settings.categoryDisplayStyle || "chips");
     }
   }, [store, settings]);
 
@@ -114,6 +116,7 @@ export default function StoreSettingsPage() {
         telegramUrl: telegramUrl || null,
         showSocialCards,
         showCategoryChips,
+        categoryDisplayStyle,
       });
     },
     onSuccess: () => {
@@ -256,11 +259,57 @@ export default function StoreSettingsPage() {
           </div>
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className="font-semibold">Иконки категорий на витрине</p>
-              <p className="text-sm text-muted-foreground">Горизонтальная полоса с иконками категорий</p>
+              <p className="font-semibold">Показывать категории на витрине</p>
+              <p className="text-sm text-muted-foreground">Отображение категорий для навигации по товарам</p>
             </div>
             <Switch checked={showCategoryChips} onCheckedChange={setShowCategoryChips} data-testid="switch-show-category-chips" />
           </div>
+          {showCategoryChips && (
+            <div>
+              <p className="font-semibold mb-2">Стиль отображения категорий</p>
+              <p className="text-sm text-muted-foreground mb-3">Выберите как категории будут выглядеть на витрине</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: "chips", label: "Чипсы", icon: Circle, preview: (
+                    <div className="flex gap-1 mt-1.5">
+                      <div className="h-2 w-6 rounded-full bg-primary/60" />
+                      <div className="h-2 w-8 rounded-full bg-muted" />
+                      <div className="h-2 w-5 rounded-full bg-muted" />
+                    </div>
+                  )},
+                  { value: "grid", label: "Сетка", icon: LayoutGrid, preview: (
+                    <div className="grid grid-cols-2 gap-1 mt-1.5">
+                      <div className="h-4 rounded bg-muted" />
+                      <div className="h-4 rounded bg-muted" />
+                      <div className="h-4 rounded bg-muted" />
+                      <div className="h-4 rounded bg-muted" />
+                    </div>
+                  )},
+                  { value: "list", label: "Список", icon: List, preview: (
+                    <div className="space-y-1 mt-1.5">
+                      <div className="h-2 w-full rounded bg-muted" />
+                      <div className="h-2 w-3/4 rounded bg-muted" />
+                      <div className="h-2 w-full rounded bg-muted" />
+                    </div>
+                  )},
+                ].map((style) => (
+                  <button
+                    key={style.value}
+                    type="button"
+                    className={`rounded-lg border-2 p-3 text-left transition-all ${categoryDisplayStyle === style.value ? "border-primary bg-primary/5" : "border-border"}`}
+                    onClick={() => setCategoryDisplayStyle(style.value)}
+                    data-testid={`button-style-${style.value}`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <style.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs font-semibold">{style.label}</span>
+                    </div>
+                    {style.preview}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="border-t pt-4">

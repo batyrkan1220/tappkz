@@ -163,3 +163,7 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - Admin settings page: announcement section with toggle, Telegram URL field, social cards toggle, category chips toggle
 - Admin categories page: description and image upload fields for categories
 - Storefront: social pills under store info, announcement banner with Megaphone icon, category chips show images when available
+- Category display styles: merchants can choose between chips (horizontal pills), grid (2-column cards with images), or list (vertical with descriptions) via admin settings
+- store_settings: categoryDisplayStyle field (chips/grid/list, default "chips")
+- Admin categories page: drag-to-reorder (HTML5 drag and drop), product counts per category shown
+- API: PUT /api/my-store/categories/reorder - reorder categories by passing array of IDs

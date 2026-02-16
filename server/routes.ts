@@ -102,6 +102,7 @@ const settingsSchema = z.object({
   telegramUrl: z.string().max(200).nullable().optional(),
   showSocialCards: z.boolean().optional(),
   showCategoryChips: z.boolean().optional(),
+  categoryDisplayStyle: z.enum(["chips", "grid", "list"]).optional(),
 });
 
 const whatsappSchema = z.object({
@@ -452,6 +453,22 @@ export async function registerRoutes(
     }
   });
 
+  app.put("/api/my-store/categories/reorder", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const store = await storage.getStoreByOwner(userId);
+      if (!store) return res.status(404).json({ message: "Магазин не найден" });
+      const { order } = req.body;
+      if (!Array.isArray(order)) return res.status(400).json({ message: "Некорректные данные" });
+      for (let i = 0; i < order.length; i++) {
+        await storage.updateCategory(order[i], store.id, { sortOrder: i });
+      }
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   app.get("/api/my-store/theme", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;
@@ -530,6 +547,7 @@ export async function registerRoutes(
         telegramUrl: data.telegramUrl !== undefined ? (data.telegramUrl || null) : (existingSettings?.telegramUrl || null),
         showSocialCards: data.showSocialCards ?? existingSettings?.showSocialCards ?? true,
         showCategoryChips: data.showCategoryChips ?? existingSettings?.showCategoryChips ?? true,
+        categoryDisplayStyle: data.categoryDisplayStyle ?? existingSettings?.categoryDisplayStyle ?? "chips",
         currency: "KZT",
         whatsappTemplate: existingSettings?.whatsappTemplate || "",
       });
@@ -793,7 +811,7 @@ export async function registerRoutes(
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, announcementText: null, showAnnouncement: false, telegramUrl: null, showSocialCards: true, showCategoryChips: true },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, announcementText: null, showAnnouncement: false, telegramUrl: null, showSocialCards: true, showCategoryChips: true, categoryDisplayStyle: "chips" },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
       });
