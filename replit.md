@@ -167,3 +167,12 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - store_settings: categoryDisplayStyle field (chips/grid/list, default "chips")
 - Admin categories page: drag-to-reorder (HTML5 drag and drop), product counts per category shown
 - API: PUT /api/my-store/categories/reorder - reorder categories by passing array of IDs
+- Product variants system: `variants` JSONB column on products table stores array of variant groups (ProductVariantGroup[])
+- Each variant group has id, name, and options array; each option has id, label, optional price override, imageUrl, sku, isActive
+- Admin product form: VariantsSection component for managing variant groups and options (add/remove groups, add/remove options with label and custom price)
+- Storefront product detail: variant selection UI with pill-style buttons, price updates based on selected variant
+- Cart supports variant-specific items (same product with different variants = separate cart entries)
+- Order items include variantTitle field for tracking selected variant
+- Invoice and admin orders pages display variant info under item names
+- WhatsApp order messages include variant info in parentheses
+- Removed profile page (/admin/profile) - no longer in sidebar, routes, or API

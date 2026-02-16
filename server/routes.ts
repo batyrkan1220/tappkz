@@ -48,6 +48,21 @@ const createStoreSchema = z.object({
   businessType: z.enum(Object.keys(BUSINESS_TYPES) as [string, ...string[]]).nullable().optional(),
 });
 
+const variantOptionSchema = z.object({
+  id: z.string(),
+  label: z.string().min(1).max(100),
+  price: z.coerce.number().int().min(0).nullable().optional(),
+  imageUrl: z.string().max(500).nullable().optional(),
+  sku: z.string().max(50).nullable().optional(),
+  isActive: z.boolean().optional().default(true),
+});
+
+const variantGroupSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(100),
+  options: z.array(variantOptionSchema).min(1),
+});
+
 const createProductSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(2000).nullable().optional(),
@@ -60,6 +75,7 @@ const createProductSchema = z.object({
   sku: z.string().max(50).nullable().optional(),
   unit: z.string().max(30).nullable().optional(),
   attributes: z.record(z.any()).optional().default({}),
+  variants: z.array(variantGroupSchema).optional().default([]),
 });
 
 const updateProductSchema = createProductSchema.partial();
@@ -831,6 +847,7 @@ export async function registerRoutes(
       quantity: z.number().min(1),
       price: z.number(),
       imageUrl: z.string().nullable().optional(),
+      variantTitle: z.string().nullable().optional(),
     })).min(1),
     paymentMethod: z.string().max(30).nullable().optional(),
     deliveryMethod: z.enum(["pickup", "delivery"]).nullable().optional(),

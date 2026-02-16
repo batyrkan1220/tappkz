@@ -21,7 +21,7 @@ import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Link } from "wouter";
-import type { Product, Category, Store } from "@shared/schema";
+import type { Product, Category, Store, ProductVariantGroup } from "@shared/schema";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("ru-KZ").format(price) + " ₸";
@@ -48,11 +48,12 @@ interface ProductForm {
   sku: string;
   unit: string;
   attributes: ProductAttributes;
+  variants: ProductVariantGroup[];
 }
 
 const emptyForm: ProductForm = {
   name: "", description: "", price: "", discountPrice: "", categoryId: "",
-  isActive: true, imageUrls: [], sku: "", unit: "", attributes: {},
+  isActive: true, imageUrls: [], sku: "", unit: "", attributes: {}, variants: [],
 };
 
 const UNIT_OPTIONS: Record<string, { value: string; label: string }[]> = {
@@ -392,6 +393,152 @@ function getAttrBadges(product: Product, group: string): string[] {
   return badges;
 }
 
+function VariantsSection({ form, setForm }: { form: ProductForm; setForm: (f: ProductForm) => void }) {
+  const addGroup = () => {
+    const newGroup: ProductVariantGroup = {
+      id: crypto.randomUUID(),
+      name: "",
+      options: [],
+    };
+    setForm({ ...form, variants: [...form.variants, newGroup] });
+  };
+
+  const removeGroup = (groupId: string) => {
+    setForm({ ...form, variants: form.variants.filter((g) => g.id !== groupId) });
+  };
+
+  const updateGroupName = (groupId: string, name: string) => {
+    setForm({
+      ...form,
+      variants: form.variants.map((g) => (g.id === groupId ? { ...g, name } : g)),
+    });
+  };
+
+  const addOption = (groupId: string) => {
+    setForm({
+      ...form,
+      variants: form.variants.map((g) =>
+        g.id === groupId
+          ? {
+              ...g,
+              options: [
+                ...g.options,
+                { id: crypto.randomUUID(), label: "", price: null, imageUrl: null, sku: null, isActive: true },
+              ],
+            }
+          : g
+      ),
+    });
+  };
+
+  const removeOption = (groupId: string, optionId: string) => {
+    setForm({
+      ...form,
+      variants: form.variants.map((g) =>
+        g.id === groupId ? { ...g, options: g.options.filter((o) => o.id !== optionId) } : g
+      ),
+    });
+  };
+
+  const updateOption = (groupId: string, optionId: string, field: string, value: any) => {
+    setForm({
+      ...form,
+      variants: form.variants.map((g) =>
+        g.id === groupId
+          ? { ...g, options: g.options.map((o) => (o.id === optionId ? { ...o, [field]: value } : o)) }
+          : g
+      ),
+    });
+  };
+
+  const totalOptions = form.variants.reduce((sum, g) => sum + g.options.length, 0);
+
+  return (
+    <CollapsibleSection title="Варианты" defaultOpen={form.variants.length > 0}>
+      <div className="space-y-4">
+        {form.variants.map((group) => (
+          <div key={group.id} className="space-y-2 rounded-lg border p-3" data-testid={`variant-group-${group.id}`}>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Название группы (напр. Размер, Цвет)"
+                value={group.name}
+                onChange={(e) => updateGroupName(group.id, e.target.value)}
+                className="flex-1"
+                data-testid={`input-variant-group-name-${group.id}`}
+              />
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => removeGroup(group.id)}
+                data-testid={`button-delete-variant-group-${group.id}`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {group.options.map((option) => (
+              <div key={option.id} className="flex items-center gap-2 pl-3" data-testid={`variant-option-${option.id}`}>
+                <Input
+                  placeholder="Значение (напр. S, M, L)"
+                  value={option.label}
+                  onChange={(e) => updateOption(group.id, option.id, "label", e.target.value)}
+                  className="flex-1"
+                  data-testid={`input-variant-option-label-${option.id}`}
+                />
+                <Input
+                  type="number"
+                  placeholder="Цена"
+                  value={option.price ?? ""}
+                  onChange={(e) =>
+                    updateOption(group.id, option.id, "price", e.target.value ? parseInt(e.target.value) : null)
+                  }
+                  className="w-24"
+                  data-testid={`input-variant-option-price-${option.id}`}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => removeOption(group.id, option.id)}
+                  data-testid={`button-delete-variant-option-${option.id}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => addOption(group.id)}
+              className="ml-3"
+              data-testid={`button-add-variant-option-${group.id}`}
+            >
+              <Plus className="mr-1 h-3.5 w-3.5" />
+              Добавить вариант
+            </Button>
+          </div>
+        ))}
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={addGroup}
+          data-testid="button-add-variant-group"
+        >
+          <Plus className="mr-1 h-3.5 w-3.5" />
+          Добавить группу вариантов
+        </Button>
+
+        {totalOptions > 0 && (
+          <p className="text-xs text-muted-foreground" data-testid="text-variant-count">
+            {totalOptions} {totalOptions === 1 ? "вариант" : totalOptions < 5 ? "варианта" : "вариантов"}
+          </p>
+        )}
+      </div>
+    </CollapsibleSection>
+  );
+}
+
 type SortMode = "default" | "name" | "price_asc" | "price_desc";
 
 export default function ProductsPage() {
@@ -438,6 +585,7 @@ export default function ProductsPage() {
       sku: (p as any).sku || "",
       unit: (p as any).unit || "",
       attributes: (p as any).attributes || {},
+      variants: (p as any).variants || [],
     });
     setDialogOpen(true);
   };
@@ -455,6 +603,7 @@ export default function ProductsPage() {
       sku: "",
       unit: (p as any).unit || "",
       attributes: (p as any).attributes || {},
+      variants: (p as any).variants || [],
     });
     setDialogOpen(true);
   };
@@ -474,6 +623,7 @@ export default function ProductsPage() {
         sku: form.sku || null,
         unit: form.unit || null,
         attributes: form.attributes,
+        variants: form.variants,
       };
       if (editProduct) {
         await apiRequest("PATCH", `/api/my-store/products/${editProduct.id}`, body);
@@ -742,6 +892,14 @@ export default function ProductsPage() {
                     {badges.map((b, i) => (
                       <Badge key={i} variant="secondary" className="text-[10px] no-default-hover-elevate no-default-active-elevate">{b}</Badge>
                     ))}
+                    {(() => {
+                      const variantOptions = ((p as any).variants || []).reduce((sum: number, g: any) => sum + (g.options?.length || 0), 0);
+                      return variantOptions > 0 ? (
+                        <Badge variant="secondary" className="text-[10px] no-default-hover-elevate no-default-active-elevate" data-testid={`badge-product-variants-${p.id}`}>
+                          {variantOptions} {variantOptions === 1 ? "вариант" : variantOptions < 5 ? "варианта" : "вариантов"}
+                        </Badge>
+                      ) : null;
+                    })()}
                     {(p.imageUrls?.length || 0) > 1 && (
                       <span className="text-[10px] text-muted-foreground">{p.imageUrls!.length} фото</span>
                     )}
@@ -888,6 +1046,8 @@ export default function ProductsPage() {
               {group === "ecommerce" && <EcommerceFields form={form} setForm={setForm} businessType={businessType} />}
               {group === "service" && <ServiceFields form={form} setForm={setForm} businessType={businessType} />}
             </CollapsibleSection>
+
+            <VariantsSection form={form} setForm={setForm} />
 
             <div>
               <Label className="font-semibold">Фото</Label>

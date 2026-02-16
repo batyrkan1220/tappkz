@@ -134,6 +134,7 @@ export const products = pgTable("products", {
   sku: varchar("sku", { length: 50 }),
   unit: varchar("unit", { length: 30 }),
   attributes: jsonb("attributes").notNull().default({}),
+  variants: jsonb("variants").notNull().default([]),
 }, (table) => [
   index("idx_products_store").on(table.storeId),
   index("idx_products_category").on(table.categoryId),
@@ -336,6 +337,23 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
+
+export interface ProductVariantOption {
+  id: string;
+  label: string;
+  price: number | null;
+  imageUrl: string | null;
+  sku: string | null;
+  isActive: boolean;
+}
+
+export interface ProductVariantGroup {
+  id: string;
+  name: string;
+  options: ProductVariantOption[];
+}
+
+export type ProductVariants = ProductVariantGroup[];
 
 export const PLAN_LIMITS: Record<string, number> = {
   free: 30,

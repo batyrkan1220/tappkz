@@ -17,7 +17,7 @@ import { SiWhatsapp, SiInstagram, SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { PhoneInput } from "@/components/phone-input";
 import { getBusinessLabels } from "@shared/schema";
-import type { Store, Product, Category, StoreTheme, StoreSettings } from "@shared/schema";
+import type { Store, Product, Category, StoreTheme, StoreSettings, ProductVariantGroup } from "@shared/schema";
 import { useStorefrontTitle } from "@/hooks/use-document-title";
 
 function getThumbUrl(url: string): string {
@@ -31,6 +31,8 @@ function getThumbUrl(url: string): string {
 interface CartItem {
   product: Product;
   quantity: number;
+  variantTitle?: string | null;
+  variantPrice?: number | null;
 }
 
 interface StoreData {
@@ -63,6 +65,7 @@ export default function StorefrontPage() {
   const [orderConfirmation, setOrderConfirmation] = useState<{ orderNumber: string; invoiceUrl: string; whatsappUrl: string; whatsappPhone: string; orderMessage: string; whatsappClicked: boolean } | null>(null);
   const [troubleshootOpen, setTroubleshootOpen] = useState<string | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
   const { data, isLoading, error } = useQuery<StoreData>({
     queryKey: ["/api/storefront", params.slug],
@@ -151,7 +154,7 @@ export default function StorefrontPage() {
   }, [products, activeCategory, activeTab, searchQuery]);
 
   const cartSubtotal = cart.reduce((sum, item) => {
-    const price = item.product.discountPrice || item.product.price;
+    const price = item.variantPrice || item.product.discountPrice || item.product.price;
     return sum + price * item.quantity;
   }, 0);
 
@@ -168,30 +171,40 @@ export default function StorefrontPage() {
   const cartTotal = cartSubtotal + computedDeliveryFee;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, variantTitle?: string | null, variantPrice?: number | null) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id);
+      const cartKey = variantTitle ? `${product.id}-${variantTitle}` : `${product.id}`;
+      const existing = prev.find((i) => {
+        const itemKey = i.variantTitle ? `${i.product.id}-${i.variantTitle}` : `${i.product.id}`;
+        return itemKey === cartKey;
+      });
       if (existing) {
-        return prev.map((i) => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map((i) => {
+          const itemKey = i.variantTitle ? `${i.product.id}-${i.variantTitle}` : `${i.product.id}`;
+          return itemKey === cartKey ? { ...i, quantity: i.quantity + 1 } : i;
+        });
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: 1, variantTitle, variantPrice }];
     });
+    const price = variantPrice || product.discountPrice || product.price;
     apiRequest("POST", `/api/storefront/${params.slug}/event`, { eventType: "add_to_cart", metaJson: { productId: product.id } }).catch(() => {});
-    const price = product.discountPrice || product.price;
     trackFbEvent("AddToCart", { content_name: product.name, content_ids: [String(product.id)], content_type: "product", value: price, currency: "KZT" });
     trackTtEvent("AddToCart", { content_name: product.name, content_id: String(product.id), content_type: "product", value: price, currency: "KZT" });
   };
 
-  const updateQuantity = (productId: number, delta: number) => {
+  const updateQuantity = (productId: number, delta: number, variantTitle?: string | null) => {
     setCart((prev) => {
       return prev
-        .map((i) => i.product.id === productId ? { ...i, quantity: i.quantity + delta } : i)
+        .map((i) => {
+          const match = i.product.id === productId && (i.variantTitle || null) === (variantTitle || null);
+          return match ? { ...i, quantity: i.quantity + delta } : i;
+        })
         .filter((i) => i.quantity > 0);
     });
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prev) => prev.filter((i) => i.product.id !== productId));
+  const removeFromCart = (productId: number, variantTitle?: string | null) => {
+    setCart((prev) => prev.filter((i) => !(i.product.id === productId && (i.variantTitle || null) === (variantTitle || null))));
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -205,8 +218,9 @@ export default function StorefrontPage() {
         productId: i.product.id,
         name: i.product.name,
         quantity: i.quantity,
-        price: i.product.discountPrice || i.product.price,
+        price: i.variantPrice || i.product.discountPrice || i.product.price,
         imageUrl: i.product.imageUrls?.[0] || null,
+        variantTitle: i.variantTitle || null,
       }));
 
       const orderRes = await apiRequest("POST", `/api/storefront/${params.slug}/order`, {
@@ -225,8 +239,9 @@ export default function StorefrontPage() {
 
       const itemsText = cart
         .map((i) => {
-          const price = i.product.discountPrice || i.product.price;
-          return `*${i.quantity}x* ${i.product.name} - ${formatPrice(price * i.quantity)}`;
+          const price = i.variantPrice || i.product.discountPrice || i.product.price;
+          const variantInfo = i.variantTitle ? ` (${i.variantTitle})` : "";
+          return `*${i.quantity}x* ${i.product.name}${variantInfo} - ${formatPrice(price * i.quantity)}`;
         })
         .join("\n");
 
@@ -369,8 +384,8 @@ export default function StorefrontPage() {
                   <>
                     <div className="flex-1 overflow-y-auto px-5">
                       <div className="space-y-2.5 pb-4">
-                        {cart.map((item) => (
-                          <div key={item.product.id} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-${item.product.id}`}>
+                        {cart.map((item, idx) => (
+                          <div key={`${item.product.id}-${item.variantTitle || idx}`} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-${item.product.id}`}>
                             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
                               {item.product.imageUrls?.[0] ? (
                                 <img src={getThumbUrl(item.product.imageUrls[0])} alt="" className="h-full w-full object-cover" />
@@ -382,21 +397,22 @@ export default function StorefrontPage() {
                             </div>
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium">{item.product.name}</p>
+                              {item.variantTitle && <p className="text-xs text-muted-foreground">{item.variantTitle}</p>}
                               <p className="text-sm font-bold mt-0.5" style={{ color: primaryColor }}>
-                                {formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}
+                                {formatPrice((item.variantPrice || item.product.discountPrice || item.product.price) * item.quantity)}
                               </p>
                             </div>
                             <div className="flex items-center rounded-full bg-background border">
                               <button
                                 className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-                                onClick={() => updateQuantity(item.product.id, -1)}
+                                onClick={() => updateQuantity(item.product.id, -1, item.variantTitle)}
                               >
                                 <Minus className="h-3.5 w-3.5" />
                               </button>
                               <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                               <button
                                 className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-                                onClick={() => updateQuantity(item.product.id, 1)}
+                                onClick={() => updateQuantity(item.product.id, 1, item.variantTitle)}
                               >
                                 <Plus className="h-3.5 w-3.5" />
                               </button>
@@ -815,8 +831,8 @@ export default function StorefrontPage() {
               </SheetHeader>
               <div className="px-5 overflow-y-auto" style={{ maxHeight: "calc(85vh - 200px)" }}>
                 <div className="space-y-2.5">
-                  {cart.map((item) => (
-                    <div key={item.product.id} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-bottom-${item.product.id}`}>
+                  {cart.map((item, idx) => (
+                    <div key={`${item.product.id}-${item.variantTitle || idx}`} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-bottom-${item.product.id}`}>
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
                         {item.product.imageUrls?.[0] ? (
                           <img src={getThumbUrl(item.product.imageUrls[0])} alt="" className="h-full w-full object-cover" />
@@ -828,14 +844,15 @@ export default function StorefrontPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{item.product.name}</p>
+                        {item.variantTitle && <p className="text-xs text-muted-foreground">{item.variantTitle}</p>}
                         <p className="text-sm font-bold mt-0.5" style={{ color: primaryColor }}>
-                          {formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}
+                          {formatPrice((item.variantPrice || item.product.discountPrice || item.product.price) * item.quantity)}
                         </p>
                       </div>
                       <div className="flex items-center rounded-full bg-background border">
                         <button
                           className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-                          onClick={() => updateQuantity(item.product.id, -1)}
+                          onClick={() => updateQuantity(item.product.id, -1, item.variantTitle)}
                           data-testid={`button-cart-qty-minus-${item.product.id}`}
                         >
                           <Minus className="h-3.5 w-3.5" />
@@ -843,7 +860,7 @@ export default function StorefrontPage() {
                         <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                         <button
                           className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
-                          onClick={() => updateQuantity(item.product.id, 1)}
+                          onClick={() => updateQuantity(item.product.id, 1, item.variantTitle)}
                           data-testid={`button-cart-qty-plus-${item.product.id}`}
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -873,7 +890,7 @@ export default function StorefrontPage() {
         </div>
       )}
 
-      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) { setSelectedProduct(null); setSelectedVariants({}); } }}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>{selectedProduct?.name}</DialogTitle>
@@ -951,21 +968,74 @@ export default function StorefrontPage() {
                     </div>
                   );
                 })()}
-                {settings?.showPrices !== false && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    {selectedProduct.discountPrice ? (
-                      <>
-                        <span className="text-xl font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(selectedProduct.discountPrice)}</span>
-                        <span className="text-muted-foreground line-through">{formatPrice(selectedProduct.price)}</span>
-                        <Badge variant="secondary" className="text-xs rounded-full" style={{ backgroundColor: (secondaryColor || primaryColor) + "15", color: secondaryColor || primaryColor }}>
-                          -{Math.round((1 - selectedProduct.discountPrice / selectedProduct.price) * 100)}%
-                        </Badge>
-                      </>
-                    ) : (
-                      <span className="text-xl font-bold">{formatPrice(selectedProduct.price)}</span>
-                    )}
-                  </div>
-                )}
+                {(() => {
+                  const variants = (selectedProduct as any).variants as ProductVariantGroup[] | undefined;
+                  if (!variants || variants.length === 0) return null;
+                  return (
+                    <div className="space-y-3" data-testid="container-variant-selection">
+                      {variants.map((group) => (
+                        <div key={group.id}>
+                          <Label className="text-xs font-semibold text-muted-foreground">{group.name}</Label>
+                          <div className="mt-1.5 flex flex-wrap gap-2">
+                            {group.options.filter(o => o.isActive !== false).map((option) => {
+                              const isSelected = selectedVariants[group.id] === option.id;
+                              return (
+                                <button
+                                  key={option.id}
+                                  type="button"
+                                  className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${
+                                    isSelected 
+                                      ? "border-transparent text-white shadow-sm" 
+                                      : "hover-elevate"
+                                  }`}
+                                  style={isSelected ? { backgroundColor: primaryColor } : {}}
+                                  onClick={() => setSelectedVariants(prev => ({ ...prev, [group.id]: option.id }))}
+                                  data-testid={`button-variant-${group.id}-${option.id}`}
+                                >
+                                  {option.label}
+                                  {option.price != null && settings?.showPrices !== false && (
+                                    <span className="ml-1 text-xs opacity-80">{formatPrice(option.price)}</span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+                {settings?.showPrices !== false && (() => {
+                  const effectivePrice = (() => {
+                    const variants = (selectedProduct as any).variants as ProductVariantGroup[] | undefined;
+                    if (!variants) return null;
+                    for (const group of variants) {
+                      const selectedOptionId = selectedVariants[group.id];
+                      if (selectedOptionId) {
+                        const option = group.options.find(o => o.id === selectedOptionId);
+                        if (option?.price != null) return option.price;
+                      }
+                    }
+                    return null;
+                  })();
+                  return (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {effectivePrice != null ? (
+                        <span className="text-xl font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(effectivePrice)}</span>
+                      ) : selectedProduct.discountPrice ? (
+                        <>
+                          <span className="text-xl font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(selectedProduct.discountPrice)}</span>
+                          <span className="text-muted-foreground line-through">{formatPrice(selectedProduct.price)}</span>
+                          <Badge variant="secondary" className="text-xs rounded-full" style={{ backgroundColor: (secondaryColor || primaryColor) + "15", color: secondaryColor || primaryColor }}>
+                            -{Math.round((1 - selectedProduct.discountPrice / selectedProduct.price) * 100)}%
+                          </Badge>
+                        </>
+                      ) : (
+                        <span className="text-xl font-bold">{formatPrice(selectedProduct.price)}</span>
+                      )}
+                    </div>
+                  );
+                })()}
                 {selectedProduct.imageUrls && selectedProduct.imageUrls.length > 1 && (
                   <div className="flex gap-2 overflow-x-auto">
                     {selectedProduct.imageUrls.map((url, i) => (
@@ -978,8 +1048,26 @@ export default function StorefrontPage() {
                   style={{ backgroundColor: primaryColor }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    addToCart(selectedProduct);
+                    const variants = (selectedProduct as any).variants as ProductVariantGroup[] | undefined;
+                    let variantTitle: string | null = null;
+                    let variantPrice: number | null = null;
+                    if (variants && variants.length > 0) {
+                      const parts: string[] = [];
+                      for (const group of variants) {
+                        const selectedOptionId = selectedVariants[group.id];
+                        if (selectedOptionId) {
+                          const option = group.options.find(o => o.id === selectedOptionId);
+                          if (option) {
+                            parts.push(`${group.name}: ${option.label}`);
+                            if (option.price != null) variantPrice = option.price;
+                          }
+                        }
+                      }
+                      if (parts.length > 0) variantTitle = parts.join(", ");
+                    }
+                    addToCart(selectedProduct, variantTitle, variantPrice);
                     setSelectedProduct(null);
+                    setSelectedVariants({});
                   }}
                   data-testid="button-add-to-cart-detail"
                 >
@@ -1224,8 +1312,8 @@ export default function StorefrontPage() {
               <div className="rounded-xl bg-muted/50 p-4">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2.5">Ваш заказ</p>
                 <div className="space-y-2">
-                  {cart.map((item) => (
-                    <div key={item.product.id} className="flex items-center justify-between gap-2">
+                  {cart.map((item, idx) => (
+                    <div key={`${item.product.id}-${item.variantTitle || idx}`} className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {item.product.imageUrls?.[0] ? (
@@ -1238,10 +1326,11 @@ export default function StorefrontPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm truncate">{item.product.name}</p>
+                          {item.variantTitle && <p className="text-xs text-muted-foreground">{item.variantTitle}</p>}
                           <p className="text-xs text-muted-foreground">{item.quantity} шт.</p>
                         </div>
                       </div>
-                      <span className="text-sm font-semibold shrink-0">{formatPrice((item.product.discountPrice || item.product.price) * item.quantity)}</span>
+                      <span className="text-sm font-semibold shrink-0">{formatPrice((item.variantPrice || item.product.discountPrice || item.product.price) * item.quantity)}</span>
                     </div>
                   ))}
                 </div>

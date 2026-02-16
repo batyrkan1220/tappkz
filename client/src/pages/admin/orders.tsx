@@ -19,6 +19,7 @@ type OrderItem = {
   quantity: number;
   price: number;
   imageUrl?: string | null;
+  variantTitle?: string | null;
 };
 
 const PAYMENT_FILTER_TABS = [
@@ -586,7 +587,10 @@ function OrderDetailPanel({
                 {item.imageUrl && (
                   <img src={item.imageUrl} alt="" className="h-8 w-8 rounded object-cover shrink-0" />
                 )}
-                <span className="truncate">{item.quantity}x {item.name}</span>
+                <div className="min-w-0">
+                  <span className="truncate">{item.quantity}x {item.name}</span>
+                  {item.variantTitle && <p className="text-xs text-muted-foreground truncate">{item.variantTitle}</p>}
+                </div>
               </div>
               <span className="shrink-0 font-medium">{formatPriceSimple(item.price * item.quantity)}</span>
             </div>

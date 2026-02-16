@@ -14,6 +14,7 @@ interface OrderItem {
   quantity: number;
   price: number;
   imageUrl?: string | null;
+  variantTitle?: string | null;
 }
 
 function formatPrice(price: number) {
@@ -126,6 +127,9 @@ export default function InvoicePage() {
                   <p className="text-sm font-medium" data-testid={`text-item-name-${i}`}>
                     <span className="font-bold">{item.quantity}x</span> {item.name}
                   </p>
+                  {item.variantTitle && (
+                    <p className="text-xs text-muted-foreground" data-testid={`text-item-variant-${i}`}>{item.variantTitle}</p>
+                  )}
                 </div>
                 <p className="shrink-0 text-sm font-semibold" data-testid={`text-item-price-${i}`}>
                   {formatPrice(item.price * item.quantity)}
