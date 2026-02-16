@@ -893,7 +893,7 @@ export async function registerRoutes(
         console.error("Failed to upsert customer from order:", err);
       });
 
-      sendOrderNotification(store.name, store.whatsappPhone, orderNumber, data.customerName, total, store.id, data.deliveryMethod, deliveryFee).catch((err) => {
+      sendOrderNotification(store.name, store.whatsappPhone, orderNumber, data.customerName, total, store.id, data.deliveryMethod, deliveryFee, data.items).catch((err) => {
         console.error("Failed to send WhatsApp order notification:", err);
       });
 

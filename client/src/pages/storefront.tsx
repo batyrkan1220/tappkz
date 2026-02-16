@@ -66,6 +66,7 @@ export default function StorefrontPage() {
   const [troubleshootOpen, setTroubleshootOpen] = useState<string | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
+  const [variantValidationError, setVariantValidationError] = useState(false);
 
   const { data, isLoading, error } = useQuery<StoreData>({
     queryKey: ["/api/storefront", params.slug],
@@ -723,7 +724,23 @@ export default function StorefrontPage() {
                 <div
                   key={p.id}
                   className="group cursor-pointer overflow-hidden rounded-xl border border-border/40 bg-card"
-                  onClick={() => setSelectedProduct(p)}
+                  onClick={() => {
+                    setSelectedProduct(p);
+                    setVariantValidationError(false);
+                    const variants = (p as any).variants as ProductVariantGroup[] | undefined;
+                    if (variants && variants.length > 0) {
+                      const initial: Record<string, string> = {};
+                      for (const group of variants) {
+                        const activeOptions = group.options.filter(o => o.isActive !== false);
+                        if (activeOptions.length > 0) {
+                          initial[group.id] = activeOptions[0].id;
+                        }
+                      }
+                      setSelectedVariants(initial);
+                    } else {
+                      setSelectedVariants({});
+                    }
+                  }}
                   data-testid={`card-storefront-product-${p.id}`}
                 >
                   <div className="relative aspect-square overflow-hidden bg-muted">
@@ -789,14 +806,33 @@ export default function StorefrontPage() {
                     })()}
                     {settings?.showPrices !== false && (
                       <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                        {p.discountPrice ? (
-                          <>
-                            <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(p.discountPrice)}</span>
-                            <span className="text-[11px] text-muted-foreground line-through">{formatPrice(p.price)}</span>
-                          </>
-                        ) : (
-                          <span className="text-sm font-bold">{formatPrice(p.price)}</span>
-                        )}
+                        {(() => {
+                          const variants = (p as any).variants as ProductVariantGroup[] | undefined;
+                          const activeOptions = variants?.flatMap(g => g.options.filter(o => o.isActive !== false)) || [];
+                          if (activeOptions.length > 0) {
+                            const basePrice = p.discountPrice || p.price;
+                            const allPrices = activeOptions.map(o => o.price != null ? o.price : basePrice);
+                            const minPrice = Math.min(...allPrices);
+                            const maxPrice = Math.max(...allPrices);
+                            if (minPrice !== maxPrice) {
+                              return (
+                                <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }}>
+                                  от {formatPrice(minPrice)}
+                                </span>
+                              );
+                            }
+                            return <span className="text-sm font-bold">{formatPrice(minPrice)}</span>;
+                          }
+                          if (p.discountPrice) {
+                            return (
+                              <>
+                                <span className="text-sm font-bold" style={{ color: secondaryColor || primaryColor }}>{formatPrice(p.discountPrice)}</span>
+                                <span className="text-[11px] text-muted-foreground line-through">{formatPrice(p.price)}</span>
+                              </>
+                            );
+                          }
+                          return <span className="text-sm font-bold">{formatPrice(p.price)}</span>;
+                        })()}
                       </div>
                     )}
                   </div>
@@ -890,7 +926,7 @@ export default function StorefrontPage() {
         </div>
       )}
 
-      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) { setSelectedProduct(null); setSelectedVariants({}); } }}>
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => { if (!open) { setSelectedProduct(null); setSelectedVariants({}); setVariantValidationError(false); } }}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md p-0">
           <DialogHeader className="sr-only">
             <DialogTitle>{selectedProduct?.name}</DialogTitle>
@@ -899,13 +935,27 @@ export default function StorefrontPage() {
           {selectedProduct && (
             <>
               <div className="aspect-square overflow-hidden bg-muted">
-                {selectedProduct.imageUrls?.[0] ? (
-                  <img src={selectedProduct.imageUrls[0]} alt={selectedProduct.name} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <ImageIcon className="h-12 w-12 text-muted-foreground/30" />
-                  </div>
-                )}
+                {(() => {
+                  const variants = (selectedProduct as any).variants as ProductVariantGroup[] | undefined;
+                  let variantImage: string | null = null;
+                  if (variants) {
+                    for (const group of variants) {
+                      const selectedOptionId = selectedVariants[group.id];
+                      if (selectedOptionId) {
+                        const option = group.options.find(o => o.id === selectedOptionId);
+                        if (option?.imageUrl) { variantImage = option.imageUrl; break; }
+                      }
+                    }
+                  }
+                  const displayImage = variantImage || selectedProduct.imageUrls?.[0];
+                  return displayImage ? (
+                    <img src={displayImage} alt={selectedProduct.name} className="h-full w-full object-cover transition-all duration-200" />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <ImageIcon className="h-12 w-12 text-muted-foreground/30" />
+                    </div>
+                  );
+                })()}
               </div>
               <div className="space-y-3 p-5">
                 <h2 className="text-xl font-bold" data-testid="text-product-detail-name">{selectedProduct.name}</h2>
@@ -989,7 +1039,7 @@ export default function StorefrontPage() {
                                       : "hover-elevate"
                                   }`}
                                   style={isSelected ? { backgroundColor: primaryColor } : {}}
-                                  onClick={() => setSelectedVariants(prev => ({ ...prev, [group.id]: option.id }))}
+                                  onClick={() => { setSelectedVariants(prev => ({ ...prev, [group.id]: option.id })); setVariantValidationError(false); }}
                                   data-testid={`button-variant-${group.id}-${option.id}`}
                                 >
                                   {option.label}
@@ -1043,6 +1093,11 @@ export default function StorefrontPage() {
                     ))}
                   </div>
                 )}
+                {variantValidationError && (
+                  <p className="text-xs text-destructive font-medium" data-testid="text-variant-validation-error">
+                    Пожалуйста, выберите все варианты
+                  </p>
+                )}
                 <button
                   className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-md transition-all active:scale-[0.98]"
                   style={{ backgroundColor: primaryColor }}
@@ -1052,8 +1107,14 @@ export default function StorefrontPage() {
                     let variantTitle: string | null = null;
                     let variantPrice: number | null = null;
                     if (variants && variants.length > 0) {
+                      const activeGroups = variants.filter(g => g.options.some(o => o.isActive !== false));
+                      const unselected = activeGroups.filter(g => !selectedVariants[g.id]);
+                      if (unselected.length > 0) {
+                        setVariantValidationError(true);
+                        return;
+                      }
                       const parts: string[] = [];
-                      for (const group of variants) {
+                      for (const group of activeGroups) {
                         const selectedOptionId = selectedVariants[group.id];
                         if (selectedOptionId) {
                           const option = group.options.find(o => o.id === selectedOptionId);
@@ -1065,6 +1126,7 @@ export default function StorefrontPage() {
                       }
                       if (parts.length > 0) variantTitle = parts.join(", ");
                     }
+                    setVariantValidationError(false);
                     addToCart(selectedProduct, variantTitle, variantPrice);
                     setSelectedProduct(null);
                     setSelectedVariants({});

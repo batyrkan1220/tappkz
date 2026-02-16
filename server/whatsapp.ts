@@ -165,7 +165,8 @@ export async function sendOrderNotification(
   total: number,
   storeId: number,
   deliveryMethod?: string | null,
-  deliveryFee?: number | null
+  deliveryFee?: number | null,
+  items?: Array<{ name: string; quantity: number; price: number; variantTitle?: string | null }> | null
 ): Promise<WhatsappMessage> {
   const config = await getWabaConfig();
   if (!config) {
@@ -182,7 +183,17 @@ export async function sendOrderNotification(
 
   const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером" };
   const totalFormatted = new Intl.NumberFormat("ru-RU").format(total) + " ₸";
-  let text = `*Новый заказ #${orderNumber}*\n\nПокупатель: ${customerName}\nСумма: ${totalFormatted}`;
+  let text = `*Новый заказ #${orderNumber}*\n\nПокупатель: ${customerName}`;
+  if (items && items.length > 0) {
+    text += `\n\nТовары:`;
+    for (const item of items) {
+      const itemLine = item.variantTitle
+        ? `${item.name} (${item.variantTitle}) x${item.quantity}`
+        : `${item.name} x${item.quantity}`;
+      text += `\n• ${itemLine}`;
+    }
+  }
+  text += `\n\nСумма: ${totalFormatted}`;
   if (deliveryMethod) {
     text += `\nПолучение: ${deliveryLabels[deliveryMethod] || deliveryMethod}`;
   }
