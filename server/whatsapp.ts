@@ -337,6 +337,11 @@ export async function getMessageStats(): Promise<{ total: number; sent: number; 
 
 async function processScheduledMessages(): Promise<void> {
   try {
+    const config = await getWabaConfig();
+    if (!config) {
+      return;
+    }
+
     const now = new Date();
     const pending = await db.select()
       .from(scheduledMessages)
@@ -346,13 +351,10 @@ async function processScheduledMessages(): Promise<void> {
     for (const msg of pending) {
       try {
         const result = await sendTextMessage(msg.recipientPhone, msg.content);
-        if (result.status === "sent") {
-          await db.delete(scheduledMessages).where(eq(scheduledMessages.id, msg.id));
-        } else {
-          console.error(`Scheduled message #${msg.id} failed, will retry`);
-        }
+        await db.delete(scheduledMessages).where(eq(scheduledMessages.id, msg.id));
       } catch (err) {
-        console.error(`Scheduled message #${msg.id} error:`, err);
+        await db.delete(scheduledMessages).where(eq(scheduledMessages.id, msg.id));
+        console.error(`Scheduled message #${msg.id} error, removed:`, err);
       }
     }
 
