@@ -151,17 +151,22 @@ export function AppSidebar({ store }: { store?: Store | null }) {
           </>
         )}
       </SidebarContent>
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-3">
         <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user?.profileImageUrl || undefined} />
-            <AvatarFallback className="text-xs font-semibold bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400">{user?.firstName?.[0] || user?.email?.[0] || "U"}</AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold" data-testid="text-sidebar-user">
-              {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user?.email || "Пользователь"}
-            </p>
-          </div>
+          <Link href="/admin/profile" data-testid="link-sidebar-profile">
+            <div className="flex items-center gap-2 hover-elevate rounded-md p-1.5 -m-1.5 flex-1 min-w-0">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.profileImageUrl || undefined} />
+                <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">{user?.firstName?.[0] || user?.email?.[0] || "U"}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold" data-testid="text-sidebar-user">
+                  {user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user?.email || "Пользователь"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+              </div>
+            </div>
+          </Link>
           <Button size="icon" variant="ghost" onClick={() => logout()} data-testid="button-logout">
             <LogOut className="h-4 w-4" />
           </Button>

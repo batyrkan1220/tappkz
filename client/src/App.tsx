@@ -27,6 +27,7 @@ const OrdersPage = lazy(() => import("@/pages/admin/orders"));
 const CustomersPage = lazy(() => import("@/pages/admin/customers"));
 const AnalyticsPage = lazy(() => import("@/pages/admin/analytics"));
 const DeliveryPage = lazy(() => import("@/pages/admin/delivery"));
+const ProfilePage = lazy(() => import("@/pages/admin/profile"));
 const SuperAdminDashboard = lazy(() => import("@/pages/superadmin/dashboard"));
 const SuperAdminStores = lazy(() => import("@/pages/superadmin/stores"));
 const SuperAdminStoreDetail = lazy(() => import("@/pages/superadmin/store-detail"));
@@ -95,6 +96,7 @@ function Router() {
       <Route path="/admin/delivery" component={() => <AdminRoute component={DeliveryPage} />} />
       <Route path="/admin/settings" component={() => <AdminRoute component={StoreSettingsPage} />} />
       <Route path="/admin/subscription" component={() => <AdminRoute component={SubscriptionPage} />} />
+      <Route path="/admin/profile" component={() => <AdminRoute component={ProfilePage} />} />
       <Route path="/superadmin" component={() => <SuperAdminRoute component={SuperAdminDashboard} />} />
       <Route path="/superadmin/stores/:id" component={() => <SuperAdminRoute component={SuperAdminStoreDetail} />} />
       <Route path="/superadmin/stores" component={() => <SuperAdminRoute component={SuperAdminStores} />} />
