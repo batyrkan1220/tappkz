@@ -105,6 +105,7 @@ export const storeSettings = pgTable("store_settings", {
   telegramUrl: text("telegram_url"),
   showSocialCards: boolean("show_social_cards").notNull().default(true),
   showCategoryChips: boolean("show_category_chips").notNull().default(true),
+  categoryDisplayStyle: varchar("category_display_style", { length: 20 }).notNull().default("chips"),
 });
 
 export const categories = pgTable("categories", {
