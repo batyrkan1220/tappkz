@@ -7,6 +7,7 @@ import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import sharp from "sharp";
 import { sendOrderNotification, sendTextMessage, sendTemplateMessage, getWabaConfig, getWabaConfigRaw, saveWabaConfig, getMessageLog, getMessageStats, getOnboardingConfig, saveOnboardingConfig, sendOnboardingStoreCreated } from "./whatsapp";
 import { sendBroadcastEmail } from "./email";
 
@@ -15,8 +16,12 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "./db";
 
 const uploadDir = path.join(process.cwd(), "uploads");
+const thumbDir = path.join(uploadDir, "thumbs");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
+}
+if (!fs.existsSync(thumbDir)) {
+  fs.mkdirSync(thumbDir, { recursive: true });
 }
 
 const upload = multer({
@@ -141,7 +146,45 @@ export async function registerRoutes(
     }
   });
 
-  app.use("/uploads", (req, res, next) => {
+  app.use("/uploads/thumbs", (req, res) => {
+    const filename = path.basename(req.path);
+    const thumbFilePath = path.join(thumbDir, filename);
+
+    if (fs.existsSync(thumbFilePath)) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      return res.sendFile(thumbFilePath);
+    }
+
+    const webpName = filename.replace(/\.(jpg|jpeg|png|gif|bmp)$/i, ".webp");
+    const webpThumbPath = path.join(thumbDir, webpName);
+    if (webpName !== filename && fs.existsSync(webpThumbPath)) {
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      return res.sendFile(webpThumbPath);
+    }
+
+    const originalPath = path.join(uploadDir, filename);
+    const webpOriginal = path.join(uploadDir, filename.replace(/\.(jpg|jpeg|png|gif|bmp)$/i, ".webp"));
+    const sourceFile = fs.existsSync(originalPath) ? originalPath : (fs.existsSync(webpOriginal) ? webpOriginal : null);
+
+    if (sourceFile) {
+      sharp(sourceFile)
+        .resize(400, 400, { fit: "inside", withoutEnlargement: true })
+        .webp({ quality: 70 })
+        .toFile(webpThumbPath)
+        .then(() => {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          res.sendFile(webpThumbPath);
+        })
+        .catch(() => {
+          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          res.sendFile(sourceFile);
+        });
+    } else {
+      res.status(404).send("Not found");
+    }
+  });
+
+  app.use("/uploads", (req, res) => {
     const filePath = path.join(uploadDir, path.basename(req.path));
     if (fs.existsSync(filePath)) {
       res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
@@ -166,7 +209,37 @@ export async function registerRoutes(
         }
       }
       const files = req.files as Express.Multer.File[];
-      const urls = files.map((f) => `/uploads/${f.filename}`);
+      const urls: string[] = [];
+
+      for (const f of files) {
+        const originalPath = path.join(uploadDir, f.filename);
+        const ext = path.extname(f.filename);
+        const baseName = path.basename(f.filename, ext);
+        const optimizedName = `${baseName}.webp`;
+        const optimizedPath = path.join(uploadDir, optimizedName);
+        const thumbPath = path.join(thumbDir, optimizedName);
+
+        try {
+          await sharp(originalPath)
+            .resize(1200, 1200, { fit: "inside", withoutEnlargement: true })
+            .webp({ quality: 82 })
+            .toFile(optimizedPath);
+
+          await sharp(originalPath)
+            .resize(400, 400, { fit: "inside", withoutEnlargement: true })
+            .webp({ quality: 70 })
+            .toFile(thumbPath);
+
+          if (originalPath !== optimizedPath) {
+            fs.unlinkSync(originalPath);
+          }
+
+          urls.push(`/uploads/${optimizedName}`);
+        } catch (sharpErr) {
+          urls.push(`/uploads/${f.filename}`);
+        }
+      }
+
       res.json({ urls });
     } catch (e: any) {
       res.status(500).json({ message: e.message });

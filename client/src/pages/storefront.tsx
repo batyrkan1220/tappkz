@@ -20,6 +20,14 @@ import { getBusinessLabels } from "@shared/schema";
 import type { Store, Product, Category, StoreTheme, StoreSettings } from "@shared/schema";
 import { useStorefrontTitle } from "@/hooks/use-document-title";
 
+function getThumbUrl(url: string): string {
+  if (url.startsWith("/uploads/")) {
+    const filename = url.replace("/uploads/", "");
+    return `/uploads/thumbs/${filename}`;
+  }
+  return url;
+}
+
 interface CartItem {
   product: Product;
   quantity: number;
@@ -365,7 +373,7 @@ export default function StorefrontPage() {
                           <div key={item.product.id} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-${item.product.id}`}>
                             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
                               {item.product.imageUrls?.[0] ? (
-                                <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
+                                <img src={getThumbUrl(item.product.imageUrls[0])} alt="" className="h-full w-full object-cover" />
                               ) : (
                                 <div className="flex h-full items-center justify-center">
                                   <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
@@ -564,7 +572,7 @@ export default function StorefrontPage() {
                 >
                   <div className="relative aspect-square overflow-hidden bg-muted">
                     {p.imageUrls?.[0] ? (
-                      <img src={p.imageUrls[0]} alt={p.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <img src={getThumbUrl(p.imageUrls[0])} alt={p.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
@@ -671,7 +679,7 @@ export default function StorefrontPage() {
                     <div key={item.product.id} className="flex items-center gap-3 rounded-xl bg-muted/40 p-3" data-testid={`cart-item-bottom-${item.product.id}`}>
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
                         {item.product.imageUrls?.[0] ? (
-                          <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
+                          <img src={getThumbUrl(item.product.imageUrls[0])} alt="" className="h-full w-full object-cover" />
                         ) : (
                           <div className="flex h-full items-center justify-center">
                             <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
@@ -1070,7 +1078,7 @@ export default function StorefrontPage() {
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {item.product.imageUrls?.[0] ? (
-                            <img src={item.product.imageUrls[0]} alt="" className="h-full w-full object-cover" />
+                            <img src={getThumbUrl(item.product.imageUrls[0])} alt="" className="h-full w-full object-cover" />
                           ) : (
                             <div className="flex h-full items-center justify-center">
                               <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/40" />

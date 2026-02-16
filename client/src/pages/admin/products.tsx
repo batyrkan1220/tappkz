@@ -27,6 +27,14 @@ function formatPrice(price: number) {
   return new Intl.NumberFormat("ru-KZ").format(price) + " ₸";
 }
 
+function getThumbUrl(url: string): string {
+  if (url.startsWith("/uploads/")) {
+    const filename = url.replace("/uploads/", "");
+    return `/uploads/thumbs/${filename}`;
+  }
+  return url;
+}
+
 type ProductAttributes = Record<string, any>;
 
 interface ProductForm {
@@ -702,7 +710,7 @@ export default function ProductsPage() {
               <Card key={p.id} className={`flex items-center gap-3 p-3 transition-opacity ${!p.isActive ? "opacity-60" : ""}`} data-testid={`card-product-${p.id}`}>
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">
                   {p.imageUrls?.[0] ? (
-                    <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
+                    <img src={getThumbUrl(p.imageUrls[0])} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
                   ) : (
                     <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
                   )}
@@ -767,7 +775,7 @@ export default function ProductsPage() {
               <Card key={p.id} className={`group overflow-hidden transition-opacity ${!p.isActive ? "opacity-60" : ""}`} data-testid={`card-product-${p.id}`}>
                 <div className="relative aspect-square bg-muted">
                   {p.imageUrls?.[0] ? (
-                    <img src={p.imageUrls[0]} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
+                    <img src={getThumbUrl(p.imageUrls[0])} alt={p.name} className="h-full w-full object-cover" loading="lazy" />
                   ) : (
                     <div className="flex h-full items-center justify-center">
                       <ImageIcon className="h-8 w-8 text-muted-foreground/20" />
