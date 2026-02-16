@@ -157,3 +157,9 @@ Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) column
 - Invoice page: shows delivery method and fee
 - API routes: GET/PUT /api/my-store/delivery
 - WhatsApp order notifications include delivery method and fee
+- Storefront enhancements (take.app style): announcement banner, social link cards (WhatsApp/Telegram/Instagram), category chips with images
+- store_settings: announcementText, showAnnouncement, telegramUrl, showSocialCards, showCategoryChips columns
+- categories table: description and imageUrl columns for category icons/photos
+- Admin settings page: announcement section with toggle, Telegram URL field, social cards toggle, category chips toggle
+- Admin categories page: description and image upload fields for categories
+- Storefront: social pills under store info, announcement banner with Megaphone icon, category chips show images when available

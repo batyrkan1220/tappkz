@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, FolderOpen } from "lucide-react";
+import { Plus, Pencil, Trash2, FolderOpen, Upload, X, ImageIcon } from "lucide-react";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Category, Store } from "@shared/schema";
@@ -22,7 +23,11 @@ export default function CategoriesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCat, setEditCat] = useState<Category | null>(null);
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: store } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: categories, isLoading } = useQuery<Category[]>({ queryKey: ["/api/my-store/categories"] });
@@ -30,6 +35,8 @@ export default function CategoriesPage() {
   const openCreate = () => {
     setEditCat(null);
     setName("");
+    setDescription("");
+    setImageUrl("");
     setIsActive(true);
     setDialogOpen(true);
   };
@@ -37,13 +44,34 @@ export default function CategoriesPage() {
   const openEdit = (c: Category) => {
     setEditCat(c);
     setName(c.name);
+    setDescription((c as any).description || "");
+    setImageUrl((c as any).imageUrl || "");
     setIsActive(c.isActive);
     setDialogOpen(true);
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
+      if (!res.ok) throw new Error("Ошибка загрузки");
+      const data = await res.json();
+      setImageUrl(data.url);
+    } catch {
+      toast({ title: "Ошибка загрузки", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const body = { name, isActive, storeId: store!.id, sortOrder: editCat?.sortOrder ?? 0 };
+      const body: any = { name, isActive, storeId: store!.id, sortOrder: editCat?.sortOrder ?? 0, description: description || null, imageUrl: imageUrl || null };
       if (editCat) {
         await apiRequest("PATCH", `/api/my-store/categories/${editCat.id}`, body);
       } else {
@@ -110,14 +138,21 @@ export default function CategoriesPage() {
         <div className="space-y-2">
           {(categories || []).map((c) => (
             <Card key={c.id} className="flex items-center gap-3 p-3" data-testid={`card-category-${c.id}`}>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/30">
-                <FolderOpen className="h-4 w-4 text-purple-600" />
-              </div>
+              {(c as any).imageUrl ? (
+                <img src={`/uploads/thumbs/${((c as any).imageUrl as string).replace("/uploads/", "")}`} alt={c.name} className="h-10 w-10 rounded-lg object-cover" />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/30">
+                  <FolderOpen className="h-4 w-4 text-purple-600" />
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-semibold" data-testid={`text-category-name-${c.id}`}>{c.name}</p>
                   {!c.isActive && <Badge variant="secondary">Скрыта</Badge>}
                 </div>
+                {(c as any).description && (
+                  <p className="text-xs text-muted-foreground truncate">{(c as any).description}</p>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <Button size="icon" variant="ghost" onClick={() => openEdit(c)} data-testid={`button-edit-category-${c.id}`}>
@@ -141,6 +176,38 @@ export default function CategoriesPage() {
             <div>
               <Label className="font-semibold">Название *</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-category-name" />
+            </div>
+            <div>
+              <Label className="font-semibold">Описание</Label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Краткое описание категории"
+                data-testid="input-category-description"
+              />
+            </div>
+            <div>
+              <Label className="font-semibold">Иконка / фото</Label>
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
+              {imageUrl ? (
+                <div className="mt-2 flex items-center gap-3">
+                  <img src={imageUrl} alt="category" className="h-16 w-16 rounded-lg object-cover" />
+                  <Button size="icon" variant="ghost" onClick={() => setImageUrl("")} data-testid="button-remove-category-image">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="mt-2 w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  data-testid="button-upload-category-image"
+                >
+                  {uploading ? "Загрузка..." : <><ImageIcon className="mr-2 h-4 w-4" /> Загрузить фото</>}
+                </Button>
+              )}
+              <p className="mt-1 text-xs text-muted-foreground">Отображается в чипсе категории на витрине</p>
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={isActive} onCheckedChange={setIsActive} data-testid="switch-category-active" />

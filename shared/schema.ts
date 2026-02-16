@@ -100,12 +100,19 @@ export const storeSettings = pgTable("store_settings", {
   yandexDeliveryEnabled: boolean("yandex_delivery_enabled").notNull().default(false),
   pickupLat: text("pickup_lat"),
   pickupLon: text("pickup_lon"),
+  announcementText: text("announcement_text"),
+  showAnnouncement: boolean("show_announcement").notNull().default(false),
+  telegramUrl: text("telegram_url"),
+  showSocialCards: boolean("show_social_cards").notNull().default(true),
+  showCategoryChips: boolean("show_category_chips").notNull().default(true),
 });
 
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
   sortOrder: integer("sort_order").notNull().default(0),
   isActive: boolean("is_active").notNull().default(true),
 }, (table) => [

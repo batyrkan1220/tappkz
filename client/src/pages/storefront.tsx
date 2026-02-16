@@ -11,9 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Menu, X, ShoppingBag, ChevronDown, ChevronUp, Truck, Store as StoreIcon, Megaphone } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
-import { SiWhatsapp, SiInstagram } from "react-icons/si";
+import { SiWhatsapp, SiInstagram, SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { PhoneInput } from "@/components/phone-input";
 import { getBusinessLabels } from "@shared/schema";
@@ -469,8 +469,62 @@ export default function StorefrontPage() {
               {store.description}
             </p>
           )}
+
+          {settings?.showSocialCards && (settings?.instagramUrl || settings?.telegramUrl || store.whatsappPhone) && (
+            <div className="mt-3 flex items-center gap-2">
+              {store.whatsappPhone && (
+                <a
+                  href={`https://wa.me/${store.whatsappPhone.replace(/[^0-9]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-full bg-[#25D366]/10 px-3 py-1.5 text-xs font-medium text-[#25D366] hover-elevate"
+                  data-testid="link-social-whatsapp"
+                >
+                  <SiWhatsapp className="h-3.5 w-3.5" />
+                  WhatsApp
+                </a>
+              )}
+              {settings?.telegramUrl && (
+                <a
+                  href={settings.telegramUrl.startsWith("http") ? settings.telegramUrl : `https://t.me/${settings.telegramUrl.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-full bg-[#229ED9]/10 px-3 py-1.5 text-xs font-medium text-[#229ED9] hover-elevate"
+                  data-testid="link-social-telegram"
+                >
+                  <SiTelegram className="h-3.5 w-3.5" />
+                  Telegram
+                </a>
+              )}
+              {settings?.instagramUrl && (
+                <a
+                  href={settings.instagramUrl.startsWith("http") ? settings.instagramUrl : `https://instagram.com/${settings.instagramUrl.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-full bg-[#E4405F]/10 px-3 py-1.5 text-xs font-medium text-[#E4405F] hover-elevate"
+                  data-testid="link-social-instagram"
+                >
+                  <SiInstagram className="h-3.5 w-3.5" />
+                  Instagram
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {settings?.showAnnouncement && settings?.announcementText && (
+        <div className="mx-auto mt-3 max-w-lg px-4">
+          <div
+            className="flex items-start gap-2 rounded-xl px-3.5 py-2.5 text-xs"
+            style={{ backgroundColor: `${primaryColor}10`, color: primaryColor }}
+            data-testid="banner-announcement"
+          >
+            <Megaphone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="font-medium leading-relaxed">{settings.announcementText}</span>
+          </div>
+        </div>
+      )}
 
       <div className="mx-auto mt-4 max-w-lg border-b border-border/30">
         <div className="flex">
@@ -519,11 +573,11 @@ export default function StorefrontPage() {
           </div>
         )}
 
-        {activeTab === "overview" && categories.length > 0 && (
+        {activeTab === "overview" && categories.length > 0 && settings?.showCategoryChips !== false && (
           <div className="mb-4 -mx-4 px-4 overflow-x-auto" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
             <div className="flex gap-2 pb-1 w-max">
               <button
-                className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                className={`shrink-0 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === null ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
                 style={activeCategory === null ? { backgroundColor: primaryColor } : {}}
                 onClick={() => setActiveCategory(null)}
                 data-testid="button-category-all"
@@ -533,11 +587,14 @@ export default function StorefrontPage() {
               {categories.map((c) => (
                 <button
                   key={c.id}
-                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
+                  className={`shrink-0 flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === c.id ? "text-white shadow-sm" : "bg-muted text-foreground"}`}
                   style={activeCategory === c.id ? { backgroundColor: primaryColor } : {}}
                   onClick={() => setActiveCategory(c.id)}
                   data-testid={`button-category-${c.id}`}
                 >
+                  {(c as any).imageUrl && (
+                    <img src={getThumbUrl((c as any).imageUrl)} alt="" className="h-5 w-5 rounded-full object-cover" />
+                  )}
                   {c.name}
                 </button>
               ))}
@@ -932,13 +989,24 @@ export default function StorefrontPage() {
               )}
               {settings?.instagramUrl && (
                 <a
-                  href={`https://instagram.com/${settings.instagramUrl.replace("@", "")}`}
+                  href={settings.instagramUrl.startsWith("http") ? settings.instagramUrl : `https://instagram.com/${settings.instagramUrl.replace("@", "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm text-muted-foreground px-3"
                 >
                   <SiInstagram className="h-4 w-4 shrink-0" />
                   <span>{settings.instagramUrl}</span>
+                </a>
+              )}
+              {settings?.telegramUrl && (
+                <a
+                  href={settings.telegramUrl.startsWith("http") ? settings.telegramUrl : `https://t.me/${settings.telegramUrl.replace("@", "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-muted-foreground px-3"
+                >
+                  <SiTelegram className="h-4 w-4 shrink-0" />
+                  <span>Telegram</span>
                 </a>
               )}
               {store.whatsappPhone && (

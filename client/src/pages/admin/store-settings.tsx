@@ -12,7 +12,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3 } from "lucide-react";
+import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, Share2 } from "lucide-react";
+import { SiTelegram, SiInstagram, SiWhatsapp } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
 
@@ -33,6 +34,11 @@ export default function StoreSettingsPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [facebookPixelId, setFacebookPixelId] = useState("");
   const [tiktokPixelId, setTiktokPixelId] = useState("");
+  const [announcementText, setAnnouncementText] = useState("");
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
+  const [telegramUrl, setTelegramUrl] = useState("");
+  const [showSocialCards, setShowSocialCards] = useState(true);
+  const [showCategoryChips, setShowCategoryChips] = useState(true);
   const [slugStatus, setSlugStatus] = useState<{ available: boolean; reason: string | null } | null>(null);
   const [slugChecking, setSlugChecking] = useState(false);
   const slugTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -81,6 +87,11 @@ export default function StoreSettingsPage() {
       setPhoneNumber(settings.phoneNumber || "");
       setFacebookPixelId(settings.facebookPixelId || "");
       setTiktokPixelId(settings.tiktokPixelId || "");
+      setAnnouncementText(settings.announcementText || "");
+      setShowAnnouncement(settings.showAnnouncement ?? false);
+      setTelegramUrl(settings.telegramUrl || "");
+      setShowSocialCards(settings.showSocialCards ?? true);
+      setShowCategoryChips(settings.showCategoryChips ?? true);
     }
   }, [store, settings]);
 
@@ -98,6 +109,11 @@ export default function StoreSettingsPage() {
         phoneNumber: phoneNumber || null,
         facebookPixelId: facebookPixelId || null,
         tiktokPixelId: tiktokPixelId || null,
+        announcementText: announcementText || null,
+        showAnnouncement,
+        telegramUrl: telegramUrl || null,
+        showSocialCards,
+        showCategoryChips,
       });
     },
     onSuccess: () => {
@@ -164,16 +180,55 @@ export default function StoreSettingsPage() {
         </div>
 
         <div className="border-t pt-4">
-          <h3 className="mb-3 font-extrabold tracking-tight">Контакты</h3>
+          <h3 className="mb-3 font-extrabold tracking-tight">Контакты и соц. сети</h3>
           <div className="space-y-3">
             <div>
-              <Label className="font-semibold">Instagram</Label>
-              <Input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="@username" data-testid="input-store-instagram" />
+              <Label className="font-semibold flex items-center gap-1.5"><SiInstagram className="h-3.5 w-3.5" /> Instagram</Label>
+              <Input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="@username или ссылка" data-testid="input-store-instagram" />
+            </div>
+            <div>
+              <Label className="font-semibold flex items-center gap-1.5"><SiTelegram className="h-3.5 w-3.5" /> Telegram</Label>
+              <Input value={telegramUrl} onChange={(e) => setTelegramUrl(e.target.value)} placeholder="https://t.me/your_channel" data-testid="input-store-telegram" />
+              <p className="mt-1 text-xs text-muted-foreground">Ссылка на канал или группу</p>
             </div>
             <div>
               <Label className="font-semibold">Телефон для связи</Label>
               <PhoneInput value={phoneNumber} onValueChange={setPhoneNumber} data-testid="input-store-phone" />
             </div>
+            <div className="flex items-center justify-between gap-2 pt-2">
+              <div>
+                <p className="font-semibold">Показывать соц. сети на витрине</p>
+                <p className="text-sm text-muted-foreground">WhatsApp, Telegram, Instagram — карточки со ссылками</p>
+              </div>
+              <Switch checked={showSocialCards} onCheckedChange={setShowSocialCards} data-testid="switch-show-social-cards" />
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Megaphone className="h-4 w-4 text-muted-foreground" />
+            <h3 className="font-extrabold tracking-tight">Объявление</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-3">Текстовое объявление отображается на витрине магазина вверху</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="font-semibold">Показывать объявление</p>
+              </div>
+              <Switch checked={showAnnouncement} onCheckedChange={setShowAnnouncement} data-testid="switch-show-announcement" />
+            </div>
+            {showAnnouncement && (
+              <div>
+                <Label className="font-semibold">Текст объявления</Label>
+                <Textarea
+                  value={announcementText}
+                  onChange={(e) => setAnnouncementText(e.target.value)}
+                  placeholder="Например: Работаем с 10:00 до 22:00. Доставка бесплатная от 5000 ₸!"
+                  data-testid="input-announcement-text"
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -198,6 +253,13 @@ export default function StoreSettingsPage() {
               <p className="text-sm text-muted-foreground">Покупатель сможет оставить пожелания к заказу</p>
             </div>
             <Switch checked={checkoutCommentEnabled} onCheckedChange={setCheckoutCommentEnabled} data-testid="switch-checkout-comment" />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="font-semibold">Иконки категорий на витрине</p>
+              <p className="text-sm text-muted-foreground">Горизонтальная полоса с иконками категорий</p>
+            </div>
+            <Switch checked={showCategoryChips} onCheckedChange={setShowCategoryChips} data-testid="switch-show-category-chips" />
           </div>
         </div>
 

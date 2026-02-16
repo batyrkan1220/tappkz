@@ -68,6 +68,8 @@ const createCategorySchema = z.object({
   name: z.string().min(1).max(100),
   isActive: z.boolean().optional().default(true),
   sortOrder: z.coerce.number().int().optional().default(0),
+  description: z.string().max(500).nullable().optional(),
+  imageUrl: z.string().max(500).nullable().optional(),
 });
 
 const updateCategorySchema = createCategorySchema.partial();
@@ -95,6 +97,11 @@ const settingsSchema = z.object({
   phoneNumber: z.string().max(30).nullable().optional(),
   facebookPixelId: z.string().max(50).regex(/^[0-9]*$/, "Только цифры").nullable().optional(),
   tiktokPixelId: z.string().max(50).regex(/^[A-Za-z0-9_]*$/, "Только латинские буквы и цифры").nullable().optional(),
+  announcementText: z.string().max(500).nullable().optional(),
+  showAnnouncement: z.boolean().optional(),
+  telegramUrl: z.string().max(200).nullable().optional(),
+  showSocialCards: z.boolean().optional(),
+  showCategoryChips: z.boolean().optional(),
 });
 
 const whatsappSchema = z.object({
@@ -518,6 +525,11 @@ export async function registerRoutes(
         checkoutCommentEnabled: data.checkoutCommentEnabled ?? existingSettings?.checkoutCommentEnabled ?? false,
         facebookPixelId: data.facebookPixelId !== undefined ? (data.facebookPixelId || null) : (existingSettings?.facebookPixelId || null),
         tiktokPixelId: data.tiktokPixelId !== undefined ? (data.tiktokPixelId || null) : (existingSettings?.tiktokPixelId || null),
+        announcementText: data.announcementText !== undefined ? (data.announcementText || null) : (existingSettings?.announcementText || null),
+        showAnnouncement: data.showAnnouncement ?? existingSettings?.showAnnouncement ?? false,
+        telegramUrl: data.telegramUrl !== undefined ? (data.telegramUrl || null) : (existingSettings?.telegramUrl || null),
+        showSocialCards: data.showSocialCards ?? existingSettings?.showSocialCards ?? true,
+        showCategoryChips: data.showCategoryChips ?? existingSettings?.showCategoryChips ?? true,
         currency: "KZT",
         whatsappTemplate: existingSettings?.whatsappTemplate || "",
       });
@@ -781,7 +793,7 @@ export async function registerRoutes(
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, announcementText: null, showAnnouncement: false, telegramUrl: null, showSocialCards: true, showCategoryChips: true },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
       });
