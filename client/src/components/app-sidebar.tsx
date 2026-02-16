@@ -9,6 +9,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -35,19 +36,52 @@ export function AppSidebar({ store }: { store?: Store | null }) {
     (o) => o.status === "pending" || o.paymentStatus === "unpaid" || o.fulfillmentStatus === "unfulfilled"
   ).length;
 
-  const menuItems = [
+  const overviewItems = [
     { title: "Панель", url: "/admin", icon: LayoutDashboard },
     { title: "Аналитика", url: "/admin/analytics", icon: BarChart3 },
+  ];
+
+  const salesItems = [
     { title: "Заказы", url: "/admin/orders", icon: ClipboardList, badge: pendingCount },
     { title: "Клиенты", url: "/admin/customers", icon: Users },
+  ];
+
+  const catalogItems = [
     { title: labels.itemLabelPlural, url: "/admin/products", icon: Package },
     { title: "Категории", url: "/admin/categories", icon: FolderOpen },
+  ];
+
+  const settingsItems = [
     { title: "Брендирование", url: "/admin/branding", icon: Palette },
     { title: "Доставка", url: "/admin/delivery", icon: Truck },
     { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageCircle },
-    { title: "Подписка", url: "/admin/subscription", icon: Crown },
     { title: "Настройки", url: "/admin/settings", icon: Settings },
   ];
+
+  const renderGroup = (label: string, items: typeof overviewItems) => (
+    <SidebarGroup>
+      <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton asChild isActive={location === item.url} data-testid={`link-sidebar-${item.title}`}>
+                <Link href={item.url}>
+                  <item.icon className="h-4 w-4" />
+                  <span className="font-medium flex-1">{item.title}</span>
+                  {"badge" in item && (item as any).badge > 0 && (
+                    <Badge variant="secondary" className="ml-auto rounded-full text-[10px] px-1.5 py-0 min-w-[20px] text-center font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 no-default-hover-elevate no-default-active-elevate" data-testid="badge-sidebar-orders-count">
+                      {(item as any).badge}
+                    </Badge>
+                  )}
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
 
   return (
     <Sidebar>
@@ -65,28 +99,10 @@ export function AppSidebar({ store }: { store?: Store | null }) {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Управление</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url} data-testid={`link-sidebar-${item.title}`}>
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span className="font-medium flex-1">{item.title}</span>
-                      {"badge" in item && (item as any).badge > 0 && (
-                        <Badge variant="secondary" className="ml-auto rounded-full text-[10px] px-1.5 py-0 min-w-[20px] text-center font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 no-default-hover-elevate no-default-active-elevate" data-testid="badge-sidebar-orders-count">
-                          {(item as any).badge}
-                        </Badge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {renderGroup("Обзор", overviewItems)}
+        {renderGroup("Продажи", salesItems)}
+        {renderGroup("Каталог", catalogItems)}
+        {renderGroup("Настройки", settingsItems)}
         {user?.isSuperAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Администрирование</SidebarGroupLabel>
@@ -105,21 +121,34 @@ export function AppSidebar({ store }: { store?: Store | null }) {
           </SidebarGroup>
         )}
         {store && (
-          <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Магазин</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild data-testid="link-sidebar-storefront">
-                    <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4" />
-                      <span className="font-medium">Открыть магазин</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+          <>
+            <SidebarSeparator />
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild data-testid="link-sidebar-storefront">
+                      <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="font-medium">Открыть магазин</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={location === "/admin/subscription"} data-testid="link-sidebar-subscription">
+                      <Link href="/admin/subscription">
+                        <Crown className="h-4 w-4" />
+                        <span className="font-medium">Подписка</span>
+                        <Badge variant="secondary" className="ml-auto text-[10px] no-default-hover-elevate no-default-active-elevate">
+                          {store.plan?.toUpperCase()}
+                        </Badge>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
         )}
       </SidebarContent>
       <SidebarFooter className="p-4">
