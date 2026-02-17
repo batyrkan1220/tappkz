@@ -405,6 +405,126 @@ function AnimatedPhoneMockup() {
   );
 }
 
+const DEMO_ORDERS = [
+  {
+    id: "#285",
+    customer: "Айгуль М.",
+    phone: "+7 701 ***-**-90",
+    items: [
+      "1x Торт Наполеон — 6 500 ₸",
+      "1x Чизкейк клубника — 1 800 ₸",
+      "1x Торт ягодный — 3 900 ₸",
+    ],
+    total: "12 200 ₸",
+    status: "Новый",
+    statusColor: "bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20",
+    activeStatus: 0,
+  },
+  {
+    id: "#412",
+    customer: "Марат К.",
+    phone: "+7 747 ***-**-15",
+    items: [
+      "2x Бургер классик — 3 800 ₸",
+      "1x Картофель фри — 900 ₸",
+      "2x Кола 0.5л — 600 ₸",
+    ],
+    total: "5 300 ₸",
+    status: "Готовится",
+    statusColor: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/30",
+    activeStatus: 1,
+  },
+  {
+    id: "#518",
+    customer: "Динара С.",
+    phone: "+7 702 ***-**-33",
+    items: [
+      "1x Платье летнее (M) — 18 500 ₸",
+      "1x Сумка кожаная — 12 000 ₸",
+    ],
+    total: "30 500 ₸",
+    status: "Оплачен",
+    statusColor: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800/30",
+    activeStatus: 2,
+  },
+  {
+    id: "#673",
+    customer: "Алия Н.",
+    phone: "+7 705 ***-**-28",
+    items: [
+      "1x Маникюр классический — 5 000 ₸",
+      "1x Педикюр — 6 000 ₸",
+      "1x Покрытие гель-лак — 3 500 ₸",
+    ],
+    total: "14 500 ₸",
+    status: "Подтверждён",
+    statusColor: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800/30",
+    activeStatus: 1,
+  },
+];
+
+const ORDER_STATUSES = [
+  { label: "Ожидает", className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+  { label: "Оплачен", className: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+  { label: "Доставлен", className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
+];
+
+function AnimatedOrderCard() {
+  const [orderIdx, setOrderIdx] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setOrderIdx((prev) => (prev + 1) % DEMO_ORDERS.length);
+        setIsTransitioning(false);
+      }, 300);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, []);
+
+  const order = DEMO_ORDERS[orderIdx];
+
+  return (
+    <Card className="p-6 lg:p-8 bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60" data-testid="card-feature-orders">
+      <div className="space-y-4">
+        <div
+          className={`flex items-start gap-3 rounded-xl bg-[#25D366]/[0.06] dark:bg-[#25D366]/[0.08] border border-[#25D366]/15 p-4 transition-all duration-300 ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}
+        >
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#25D366]/15">
+            <SiWhatsapp className="h-5 w-5 text-[#25D366]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold" data-testid="text-order-number">Новый заказ {order.id}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{order.customer} · {order.phone}</p>
+            <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
+              {order.items.map((item, i) => (
+                <p key={i}>{item}</p>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <p className="text-sm font-bold">Итого: {order.total}</p>
+              <Badge variant="secondary" className={`${order.statusColor} text-[10px]`}>{order.status}</Badge>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {ORDER_STATUSES.map((s, i) => (
+            <Badge
+              key={s.label}
+              variant="secondary"
+              className={`${s.className} transition-all duration-300 ${order.activeStatus === i ? "ring-2 ring-offset-1 ring-foreground/20" : ""}`}
+            >
+              {s.label}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 type TariffData = Record<string, { price: number; limit: number; orderLimit: number; imageLimit: number; name: string; features: string[] }>;
 
 export default function LandingPage() {
@@ -598,33 +718,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
               </div>
-              <Card className="p-6 lg:p-8 bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60" data-testid="card-feature-orders">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 rounded-xl bg-[#25D366]/[0.06] dark:bg-[#25D366]/[0.08] border border-[#25D366]/15 p-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#25D366]/15">
-                      <SiWhatsapp className="h-5 w-5 text-[#25D366]" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold" data-testid="text-order-number">Новый заказ #285</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">Айгуль М. · +7 701 ***-**-90</p>
-                      <div className="mt-2.5 space-y-1 text-xs text-muted-foreground">
-                        <p>1x Торт Наполеон — 6 500 ₸</p>
-                        <p>1x Чизкейк клубника — 1 800 ₸</p>
-                        <p>1x Торт ягодный — 3 900 ₸</p>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold">Итого: 12 200 ₸</p>
-                        <Badge variant="secondary" className="bg-[#25D366]/15 text-[#25D366] border-[#25D366]/20 text-[10px]">Новый</Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Ожидает</Badge>
-                    <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Оплачен</Badge>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Доставлен</Badge>
-                  </div>
-                </div>
-              </Card>
+              <AnimatedOrderCard />
             </div>
 
             <div className="grid items-center gap-10 lg:grid-cols-2">
