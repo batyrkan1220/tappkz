@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Search, FileText, ChevronDown, ChevronUp, Bell, BellOff, Volume2, AlertCircle, ExternalLink } from "lucide-react";
 import { LimitAlert, useUsageData } from "@/components/upgrade-banner";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import type { Order } from "@shared/schema";
+import type { Order, Store } from "@shared/schema";
 
 type OrderItem = {
   productId: number;
@@ -132,6 +132,9 @@ export default function OrdersPage() {
   const { data: orders = [], isLoading } = useQuery<Order[]>({
     queryKey: ["/api/my-store/orders"],
     refetchInterval: 15000,
+  });
+  const { data: store } = useQuery<Store>({
+    queryKey: ["/api/my-store"],
   });
   const { data: usage } = useUsageData();
 
@@ -393,7 +396,7 @@ export default function OrdersPage() {
                         {formatDate(order.createdAt)}
                       </td>
                       <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                        <a href={`/invoice/${order.id}`} target="_blank" rel="noopener noreferrer">
+                        <a href={store?.slug ? `/invoice/${store.slug}/${order.orderNumber}` : `/invoice/${order.id}`} target="_blank" rel="noopener noreferrer">
                           <Button size="icon" variant="ghost" data-testid={`button-invoice-${order.id}`} title="Посмотреть чек">
                             <FileText className="h-4 w-4" />
                           </Button>
@@ -625,7 +628,7 @@ function OrderDetailPanel({
 
       <div className="flex items-center gap-2">
         <Button size="sm" variant="outline" asChild data-testid="link-view-invoice">
-          <a href={`/invoice/${order.id}`} target="_blank" rel="noopener noreferrer">
+          <a href={store?.slug ? `/invoice/${store.slug}/${order.orderNumber}` : `/invoice/${order.id}`} target="_blank" rel="noopener noreferrer">
             <FileText className="h-4 w-4 mr-1" />
             Счёт
           </a>

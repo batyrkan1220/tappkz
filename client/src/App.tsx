@@ -120,6 +120,7 @@ function Router() {
       <Route path="/superadmin/whatsapp" component={() => <SuperAdminRoute component={SuperAdminWhatsApp} />} />
       <Route path="/superadmin/tracking" component={() => <SuperAdminRoute component={SuperAdminTrackingPixels} />} />
       <Route path="/superadmin/email" component={() => <SuperAdminRoute component={SuperAdminEmail} />} />
+      <Route path="/invoice/:slug/:orderNumber" component={InvoicePage} />
       <Route path="/invoice/:id" component={InvoicePage} />
       <Route path="/:slug" component={StorefrontPage} />
       <Route component={NotFound} />

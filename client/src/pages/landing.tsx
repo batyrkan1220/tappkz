@@ -357,7 +357,7 @@ function AnimatedPhoneMockup() {
                     <p className="font-bold mt-1 pt-1 border-t" style={{ borderColor: "#b5d8a0" }}>Итого: 12 200 ₸</p>
                     <p className="mt-1">Имя: Айгуль</p>
                     <p>Тел: +7 701 456 78 90</p>
-                    <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: tapp.kz/invoice/285</p>
+                    <p className="mt-1 underline" style={{ color: "#1a73e8" }}>Чек: tapp.kz/invoice/myshop/25</p>
                     <div className="flex items-center justify-end gap-0.5 mt-1">
                       <span className="text-[6px]" style={{ color: "#999" }}>12:34</span>
                       <Check className="h-2 w-2" style={{ color: "#53bdeb" }} />

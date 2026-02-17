@@ -34,11 +34,23 @@ function formatDate(dateStr: string) {
 }
 
 export default function InvoicePage() {
-  const params = useParams<{ id: string }>();
-  useDocumentTitle(`Заказ #${params.id}`);
+  const params = useParams<{ id?: string; slug?: string; orderNumber?: string }>();
+
+  const isSlugFormat = !!params.slug && !!params.orderNumber;
+  const apiUrl = isSlugFormat
+    ? `/api/orders/${params.slug}/${params.orderNumber}`
+    : `/api/orders/${params.id}`;
+  const displayNum = isSlugFormat ? params.orderNumber : params.id;
+
+  useDocumentTitle(`Заказ #${displayNum}`);
 
   const { data, isLoading, error } = useQuery<{ order: Order; storeName: string; storeSlug: string }>({
-    queryKey: ["/api/orders", params.id],
+    queryKey: isSlugFormat ? ["/api/orders", params.slug, params.orderNumber] : ["/api/orders", params.id],
+    queryFn: async () => {
+      const res = await fetch(apiUrl);
+      if (!res.ok) throw new Error("Not found");
+      return res.json();
+    },
   });
 
   if (isLoading) {

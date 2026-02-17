@@ -346,7 +346,7 @@ export default function StorefrontPage() {
       });
 
       const order = await orderRes.json();
-      const invoiceUrl = `${window.location.origin}/invoice/${order.id}`;
+      const invoiceUrl = `${window.location.origin}/invoice/${params.slug}/${order.orderNumber}`;
 
       const itemsText = cart
         .map((i) => {

@@ -1030,6 +1030,24 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/orders/:slug/:orderNumber", async (req, res) => {
+    try {
+      const { slug, orderNumber } = req.params;
+      const num = parseInt(orderNumber);
+      if (isNaN(num)) return res.status(400).json({ message: "Invalid order number" });
+
+      const store = await storage.getStoreBySlug(slug);
+      if (!store) return res.status(404).json({ message: "Store not found" });
+
+      const order = await storage.getOrderByStoreAndNumber(store.id, num);
+      if (!order) return res.status(404).json({ message: "Order not found" });
+
+      res.json({ order, storeName: store.name, storeSlug: store.slug });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
   const createCustomerSchema = z.object({
     name: z.string().min(1).max(200),
     phone: z.string().max(30).nullable().optional(),
