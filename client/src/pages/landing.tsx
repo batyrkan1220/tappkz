@@ -21,6 +21,9 @@ import {
   Plus,
   Phone,
   Check,
+  Percent,
+  Truck,
+  Users,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { TappLogo } from "@/components/tapp-logo";
@@ -425,8 +428,9 @@ export default function LandingPage() {
         features: free.features.length > 0 ? free.features : [
           "50 заказов в месяц",
           "20 изображений",
-          "Без комиссий",
+          "Скидки на товары",
           "WhatsApp заказы",
+          "База клиентов",
         ],
         highlight: false,
         cta: "Начать бесплатно",
@@ -441,6 +445,7 @@ export default function LandingPage() {
         features: biz.features.length > 0 ? biz.features : [
           "Безлимитные заказы",
           "Безлимитные изображения",
+          "Зоны и стоимость доставки",
           "Кастомный домен",
           "Убрать логотип Tapp",
           "Расширенная аналитика",
@@ -534,7 +539,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mx-auto mt-6 max-w-lg text-lg text-muted-foreground leading-relaxed" data-testid="text-hero-subtitle">
-              Принимайте заказы, управляйте продажами и растите бизнес — всё через WhatsApp
+              Каталог, скидки, доставка, клиенты и заказы через WhatsApp — запустите продажи за 5 минут
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -564,10 +569,10 @@ export default function LandingPage() {
           <div className="text-center mb-20">
             <Badge variant="secondary" className="mb-4 rounded-full font-semibold" data-testid="badge-features-label">Возможности</Badge>
             <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-features-heading">
-              Упростите заказы через WhatsApp
+              Всё для вашего бизнеса в одном месте
             </h2>
             <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Меньше ошибок, быстрее сделки, больше продаж
+              Заказы, скидки, доставка, клиенты и аналитика — без программирования
             </p>
           </div>
 
@@ -579,13 +584,13 @@ export default function LandingPage() {
                   <span className="text-xs font-semibold text-[#25D366]">WhatsApp</span>
                 </div>
                 <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-orders">
-                  Чистые заказы без путаницы
+                  Заказы и доставка без путаницы
                 </h3>
                 <p className="mt-4 text-muted-foreground leading-relaxed">
-                  Клиенты собирают корзину, указывают контакты и отправляют готовый заказ прямо в ваш WhatsApp. Никаких потерянных сообщений.
+                  Клиенты собирают корзину, указывают адрес доставки и отправляют готовый заказ в WhatsApp. Вы управляете статусами, доставкой и оплатой в одном месте.
                 </p>
                 <ul className="mt-6 space-y-3">
-                  {["Автоматическое формирование заказа", "Имя, телефон, адрес в одном сообщении", "Сумма и список товаров сразу видны", "Инвойс/чек для каждого заказа"].map((item, i) => (
+                  {["Автоматическое формирование заказа", "Статусы: новый, в обработке, доставлен", "Настройка зон и стоимости доставки", "Инвойс/чек для каждого заказа"].map((item, i) => (
                     <li key={item} className="flex items-center gap-2.5 text-sm" data-testid={`text-order-feature-${i}`}>
                       <CheckCircle2 className="h-4 w-4 text-[#25D366] shrink-0" />
                       <span>{item}</span>
@@ -650,13 +655,13 @@ export default function LandingPage() {
                   <span className="text-xs font-semibold text-primary">Каталог</span>
                 </div>
                 <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-catalog">
-                  Красивое меню за минуты
+                  Каталог со скидками и акциями
                 </h3>
                 <p className="mt-4 text-muted-foreground leading-relaxed">
-                  Добавьте блюда, загрузите фото, настройте цвета и логотип. Ваше меню готово — поделитесь ссылкой в Instagram, WhatsApp или на визитке.
+                  Добавьте товары с фото, настройте скидки и акции, выберите тему оформления. Поделитесь ссылкой в Instagram, WhatsApp или на визитке.
                 </p>
                 <ul className="mt-6 space-y-3">
-                  {["Категории и каталог блюд с фото", "Логотип, баннер, фирменные цвета", "Адаптивный мобильный дизайн", "Ссылка-визитка для Instagram Bio"].map((item, i) => (
+                  {["Скидки на товары и перечёркнутые цены", "Логотип, баннер, темы оформления", "Категории с фото и описанием", "Ссылка-визитка для Instagram и соцсетей"].map((item, i) => (
                     <li key={item} className="flex items-center gap-2.5 text-sm" data-testid={`text-catalog-feature-${i}`}>
                       <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                       <span>{item}</span>
@@ -673,13 +678,13 @@ export default function LandingPage() {
                   <span className="text-xs font-semibold text-chart-3">Аналитика</span>
                 </div>
                 <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-manage">
-                  Управляйте заказами онлайн
+                  Клиенты и аналитика
                 </h3>
                 <p className="mt-4 text-muted-foreground leading-relaxed">
-                  Отслеживайте статусы заказов, контролируйте оплату и доставку. Вся клиентская база и аналитика в одном месте.
+                  Ведите базу клиентов с историей покупок, отслеживайте повторные заказы и анализируйте продажи в реальном времени.
                 </p>
                 <ul className="mt-6 space-y-3">
-                  {["Статусы: новый, подтверждён, выполнен", "Контроль оплаты и доставки", "База клиентов с историей покупок", "Графики продаж и аналитика"].map((item, i) => (
+                  {["Автоматическая база клиентов", "История покупок каждого клиента", "Графики продаж и просмотров", "Кастомизация темы магазина"].map((item, i) => (
                     <li key={item} className="flex items-center gap-2.5 text-sm" data-testid={`text-manage-feature-${i}`}>
                       <CheckCircle2 className="h-4 w-4 text-chart-3 shrink-0" />
                       <span>{item}</span>
@@ -723,6 +728,123 @@ export default function LandingPage() {
                 </div>
               </Card>
             </div>
+
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              <Card className="p-6 lg:p-8 lg:order-first order-last bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60" data-testid="card-feature-discounts">
+                <div className="space-y-3">
+                  <div className="rounded-xl border p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0"><img src={mockNapoleon} alt="" className="h-full w-full object-cover" /></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold">Торт Наполеон</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-sm font-bold text-primary">6 500 ₸</span>
+                          <span className="text-xs text-muted-foreground line-through">7 800 ₸</span>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-[10px] shrink-0">-17%</Badge>
+                    </div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0"><img src={mockTruffles} alt="" className="h-full w-full object-cover" /></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold">Трюфели набор</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-sm font-bold text-primary">7 400 ₸</span>
+                          <span className="text-xs text-muted-foreground line-through">8 900 ₸</span>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-[10px] shrink-0">-17%</Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-muted overflow-hidden shrink-0"><img src={mockCheesecake} alt="" className="h-full w-full object-cover" /></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold">Чизкейк клубника</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-sm font-bold text-primary">1 800 ₸</span>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 text-[10px] shrink-0">В наличии</Badge>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-red-500/10 dark:bg-red-500/15 px-3 py-1 mb-5">
+                  <Percent className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+                  <span className="text-xs font-semibold text-red-600 dark:text-red-400">Скидки</span>
+                </div>
+                <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-discounts">
+                  Скидки и акции для роста продаж
+                </h3>
+                <p className="mt-4 text-muted-foreground leading-relaxed">
+                  Устанавливайте скидки на отдельные товары, показывайте старую и новую цену. Клиенты видят выгоду — вы получаете больше заказов.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {["Перечёркнутые цены и процент скидки", "Скидки на отдельные товары", "Автоматический расчёт процента", "Акции видны в витрине магазина"].map((item, i) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm" data-testid={`text-discount-feature-${i}`}>
+                      <CheckCircle2 className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 dark:bg-blue-500/15 px-3 py-1 mb-5">
+                  <Truck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">Доставка</span>
+                </div>
+                <h3 className="text-2xl font-extrabold tracking-tight md:text-3xl" data-testid="text-feature-delivery">
+                  Гибкая настройка доставки
+                </h3>
+                <p className="mt-4 text-muted-foreground leading-relaxed">
+                  Настройте зоны доставки, фиксированную стоимость или бесплатную доставку. Клиенты выбирают удобный вариант при оформлении.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {["Зоны доставки с разной стоимостью", "Бесплатная доставка от суммы", "Самовывоз как опция", "Адрес доставки в заказе"].map((item, i) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm" data-testid={`text-delivery-feature-${i}`}>
+                      <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <Card className="p-6 lg:p-8 bg-gradient-to-br from-card to-card/80 dark:from-card dark:to-card/60" data-testid="card-feature-delivery">
+                <div className="space-y-3">
+                  <div className="rounded-xl border p-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3">Варианты доставки</p>
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                            <Truck className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">Курьером</p>
+                            <p className="text-[11px] text-muted-foreground">30-60 мин</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-bold text-primary">1 500 ₸</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">Самовывоз</p>
+                            <p className="text-[11px] text-muted-foreground">ул. Абая 150</p>
+                          </div>
+                        </div>
+                        <span className="text-sm font-bold text-green-600 dark:text-green-400">Бесплатно</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
@@ -733,9 +855,9 @@ export default function LandingPage() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: Smartphone, title: "26 типов бизнеса", desc: "Еда, торговля, услуги — платформа адаптируется", tid: "business-types" },
-              { icon: Clock, title: "5 минут", desc: "Время от регистрации до готового магазина", tid: "setup-time" },
-              { icon: Globe, title: "Ссылка-визитка", desc: "Поделитесь в Instagram, WhatsApp, визитке", tid: "share-link" },
-              { icon: BarChart3, title: "Аналитика", desc: "Просмотры, заказы, выручка в реальном времени", tid: "analytics" },
+              { icon: Percent, title: "Скидки и акции", desc: "Перечёркнутые цены, проценты, привлечение клиентов", tid: "discounts" },
+              { icon: Truck, title: "Доставка", desc: "Зоны, стоимость, самовывоз — гибкие настройки", tid: "delivery" },
+              { icon: Users, title: "База клиентов", desc: "Автоматический учёт клиентов и их покупок", tid: "customers" },
             ].map((item) => (
               <div key={item.title} className="text-center" data-testid={`stat-${item.tid}`}>
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 dark:bg-primary/15">
