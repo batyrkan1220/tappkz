@@ -7,11 +7,21 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight, ArrowLeft, Check, CheckCircle2, XCircle, Loader2, ShoppingBag, Download } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { PhoneInput } from "@/components/phone-input";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
+import { UtensilsCrossed, ShoppingBasket, Shirt, Smartphone, Sparkles, Pill, Flower2, CakeSlice, Gem, PawPrint, Baby, Home, Car, Dumbbell, BookOpen, HardHat, MoreHorizontal } from "lucide-react";
+
+const BUSINESS_TYPE_ICONS: Record<string, any> = {
+  restaurant: UtensilsCrossed, grocery: ShoppingBasket, fashion: Shirt,
+  electronics: Smartphone, beauty: Sparkles, pharmacy: Pill,
+  flowers: Flower2, bakery: CakeSlice, jewelry: Gem,
+  pets: PawPrint, kids: Baby, home: Home,
+  auto: Car, sport: Dumbbell, books: BookOpen,
+  construction: HardHat, other: MoreHorizontal,
+};
 
 export default function CreateStorePage() {
   useDocumentTitle("Создание магазина");
@@ -87,11 +97,6 @@ export default function CreateStorePage() {
     }
   };
 
-  const typeOptions: { key: BusinessTypeKey; icon: typeof ShoppingBag; desc: string }[] = [
-    { key: "ecommerce", icon: ShoppingBag, desc: "Одежда, электроника, продукты и другие физические товары" },
-    { key: "digital", icon: Download, desc: "Курсы, шаблоны, файлы и другие цифровые товары" },
-  ];
-
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/3 dark:from-primary/5 dark:via-background dark:to-primary/3" />
@@ -101,7 +106,7 @@ export default function CreateStorePage() {
         <div className="text-center">
           <TappLogo size={56} className="mx-auto mb-3 rounded-2xl" />
           <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-create-store-title">
-            {step === 1 ? "Выберите тип магазина" : "Создайте ваш магазин"}
+            {step === 1 ? "Выберите тип бизнеса" : "Создайте ваш магазин"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground" data-testid="text-create-store-subtitle">
             {step === 1 ? "Это поможет настроить платформу под ваш бизнес" : "Заполните информацию для начала работы"}
@@ -116,27 +121,24 @@ export default function CreateStorePage() {
 
         {step === 1 && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              {typeOptions.map((t) => {
-                const isSelected = businessType === t.key;
-                const Icon = t.icon;
+            <div className="grid grid-cols-3 gap-2 max-h-[360px] overflow-y-auto pr-1">
+              {(Object.keys(BUSINESS_TYPES) as BusinessTypeKey[]).map((key) => {
+                const isSelected = businessType === key;
+                const Icon = BUSINESS_TYPE_ICONS[key] || MoreHorizontal;
                 return (
                   <button
-                    key={t.key}
-                    onClick={() => setBusinessType(t.key)}
-                    className={`flex flex-col items-center gap-3 rounded-md border-2 p-5 text-center transition-colors ${
+                    key={key}
+                    onClick={() => setBusinessType(key)}
+                    className={`flex flex-col items-center gap-1.5 rounded-md border-2 p-3 text-center transition-colors ${
                       isSelected ? "border-primary bg-primary/10 dark:bg-primary/5" : "border-border hover-elevate"
                     }`}
-                    data-testid={`button-type-${t.key}`}
+                    data-testid={`button-type-${key}`}
                   >
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${isSelected ? "bg-primary/20" : "bg-muted"}`}>
-                      <Icon className={`h-6 w-6 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${isSelected ? "bg-primary/20" : "bg-muted"}`}>
+                      <Icon className={`h-4 w-4 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm">{BUSINESS_TYPES[t.key].label}</p>
-                      <p className="mt-1 text-xs text-muted-foreground leading-tight">{t.desc}</p>
-                    </div>
-                    {isSelected && <Check className="h-4 w-4 text-primary" />}
+                    <p className="font-medium text-xs leading-tight">{BUSINESS_TYPES[key].label}</p>
+                    {isSelected && <Check className="h-3.5 w-3.5 text-primary" />}
                   </button>
                 );
               })}

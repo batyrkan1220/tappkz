@@ -12,7 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { ArrowLeft, Plus, Trash2, ImageIcon, Upload, ChevronDown, ChevronUp, Download, Package } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ImageIcon, Upload, ChevronDown, ChevronUp } from "lucide-react";
 import { Link, useParams, useLocation } from "wouter";
 import type { Product, Category, Store, ProductVariantGroup } from "@shared/schema";
 
@@ -248,7 +248,6 @@ export default function ProductFormPage() {
     const errs: Record<string, string> = {};
     if (!form.name.trim()) errs.name = "Обязательное поле";
     if (!form.price || isNaN(parseInt(form.price)) || parseInt(form.price) < 0) errs.price = "Введите корректную цену";
-    if (form.productType === "digital" && !form.downloadUrl.trim()) errs.downloadUrl = "Укажите ссылку для скачивания";
     return errs;
   };
 
@@ -331,40 +330,6 @@ export default function ProductFormPage() {
             </div>
 
             <div>
-              <Label data-testid="label-product-type">Тип продукта</Label>
-              <Select value={form.productType} onValueChange={(v: "physical" | "digital") => setForm({ ...form, productType: v })}>
-                <SelectTrigger data-testid="select-product-type">
-                  <SelectValue placeholder="Тип продукта" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="physical">
-                    <span className="flex items-center gap-2"><Package className="h-4 w-4" /> Физический товар</span>
-                  </SelectItem>
-                  <SelectItem value="digital">
-                    <span className="flex items-center gap-2"><Download className="h-4 w-4" /> Цифровой товар</span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {form.productType === "digital" && (
-              <div className={`rounded-lg border p-4 space-y-3 ${errors.downloadUrl ? "border-destructive" : ""}`}>
-                <Label className="text-sm font-semibold" data-testid="label-digital-section">Цифровой товар</Label>
-                <div>
-                  <Label className={`text-xs ${errors.downloadUrl ? "text-destructive" : "text-muted-foreground"}`}>Ссылка для скачивания *</Label>
-                  <Input
-                    placeholder="https://example.com/file.zip"
-                    value={form.downloadUrl}
-                    onChange={(e) => { setForm({ ...form, downloadUrl: e.target.value }); if (errors.downloadUrl) setErrors((prev) => { const n = { ...prev }; delete n.downloadUrl; return n; }); }}
-                    className={errors.downloadUrl ? "border-destructive" : ""}
-                    data-testid="input-download-url"
-                  />
-                  {errors.downloadUrl ? <p className="text-xs text-destructive mt-1" data-testid="error-download-url">{errors.downloadUrl}</p> : <p className="text-xs text-muted-foreground mt-1">Покупатель получит эту ссылку после оплаты</p>}
-                </div>
-              </div>
-            )}
-
-            <div>
               <Label data-testid="label-category">Категория</Label>
               <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? "" : v })}>
                 <SelectTrigger data-testid="select-category">
@@ -381,28 +346,26 @@ export default function ProductFormPage() {
               </Select>
             </div>
 
-            {form.productType === "physical" && (
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label data-testid="label-sku">Артикул</Label>
-                  <Input
-                    placeholder="SKU"
-                    value={form.sku}
-                    onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                    data-testid="input-sku"
-                  />
-                </div>
-                <div>
-                  <Label data-testid="label-weight">Вес</Label>
-                  <Input
-                    placeholder="напр. 500г"
-                    value={form.attributes.weight || ""}
-                    onChange={(e) => setForm({ ...form, attributes: { ...form.attributes, weight: e.target.value } })}
-                    data-testid="input-weight-main"
-                  />
-                </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label data-testid="label-sku">Артикул</Label>
+                <Input
+                  placeholder="SKU"
+                  value={form.sku}
+                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                  data-testid="input-sku"
+                />
               </div>
-            )}
+              <div>
+                <Label data-testid="label-weight">Вес</Label>
+                <Input
+                  placeholder="напр. 500г"
+                  value={form.attributes.weight || ""}
+                  onChange={(e) => setForm({ ...form, attributes: { ...form.attributes, weight: e.target.value } })}
+                  data-testid="input-weight-main"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="rounded-lg border p-4 space-y-4">

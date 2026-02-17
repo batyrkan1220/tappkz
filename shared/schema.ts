@@ -6,29 +6,43 @@ import { z } from "zod";
 export * from "./models/auth";
 
 export const BUSINESS_TYPES = {
-  ecommerce: { label: "Физические товары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  digital: { label: "Цифровые товары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  restaurant: { label: "Ресторан / Кафе", group: "ecommerce", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Категория" },
+  grocery: { label: "Продукты питания", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  fashion: { label: "Одежда и обувь", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  electronics: { label: "Электроника", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  beauty: { label: "Красота и здоровье", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  pharmacy: { label: "Аптека", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  flowers: { label: "Цветы и подарки", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  bakery: { label: "Пекарня / Кондитерская", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  jewelry: { label: "Ювелирные изделия", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  pets: { label: "Зоотовары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  kids: { label: "Детские товары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  home: { label: "Дом и сад", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  auto: { label: "Автотовары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  sport: { label: "Спорт и отдых", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  books: { label: "Книги и канцтовары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  construction: { label: "Стройматериалы", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  other: { label: "Другое", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
 } as const;
 
 export type BusinessTypeKey = keyof typeof BUSINESS_TYPES;
 
 const LEGACY_TYPE_MAP: Record<string, BusinessTypeKey> = {
-  restaurant: "ecommerce", cafe: "ecommerce", home_food: "ecommerce", bakery: "ecommerce",
-  catering: "ecommerce", hotel_restaurant: "ecommerce", grocery: "ecommerce",
-  fashion: "ecommerce", pharmacy: "ecommerce", electronics: "ecommerce",
-  popup: "ecommerce", personal_shopping: "ecommerce", jewelry: "ecommerce", b2b: "ecommerce",
-  salon: "ecommerce", laundry: "ecommerce", professional: "ecommerce", pets: "ecommerce",
-  hotel: "ecommerce", education: "digital", printing: "ecommerce", rental: "ecommerce",
-  travel: "ecommerce", ticketing: "digital",
+  ecommerce: "other", digital: "other",
+  cafe: "restaurant", home_food: "restaurant", catering: "restaurant", hotel_restaurant: "restaurant",
+  salon: "beauty", laundry: "other", professional: "other",
+  popup: "other", personal_shopping: "fashion", b2b: "other",
+  hotel: "other", education: "other", printing: "other", rental: "other",
+  travel: "other", ticketing: "other",
 };
 
 export function getBusinessLabels(businessType: string | null | undefined) {
-  if (!businessType) return BUSINESS_TYPES.ecommerce;
+  if (!businessType) return BUSINESS_TYPES.other;
   const bt = businessType as BusinessTypeKey;
   if (BUSINESS_TYPES[bt]) return BUSINESS_TYPES[bt];
   const mapped = LEGACY_TYPE_MAP[businessType];
   if (mapped) return BUSINESS_TYPES[mapped];
-  return BUSINESS_TYPES.ecommerce;
+  return BUSINESS_TYPES.other;
 }
 
 export const stores = pgTable("stores", {
