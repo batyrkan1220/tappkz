@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { PhoneInput } from "@/components/phone-input";
+import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, Plus, Trash2, Search } from "lucide-react";
@@ -264,7 +264,7 @@ export default function StoreSettingsPage() {
               <div>
                 <Label className="font-semibold">WhatsApp номер</Label>
                 <p className="text-xs text-muted-foreground mb-1">Клиенты будут отправлять заказы на этот номер</p>
-                <PhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-whatsapp-phone" />
+                <InternationalPhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-whatsapp-phone" />
               </div>
               <div>
                 <Label className="font-semibold">Номера заказов</Label>
@@ -272,7 +272,7 @@ export default function StoreSettingsPage() {
                 {orderPhones.map((phone, index) => (
                   <div key={index} className="flex items-center gap-2 mb-2">
                     <div className="flex-1">
-                      <PhoneInput
+                      <InternationalPhoneInput
                         value={phone}
                         onValueChange={(val) => updateOrderPhone(index, val)}
                         data-testid={`input-order-phone-${index}`}
@@ -355,7 +355,7 @@ export default function StoreSettingsPage() {
               </div>
               <div>
                 <Label className="font-semibold">Телефон для связи</Label>
-                <PhoneInput value={phoneNumber} onValueChange={setPhoneNumber} data-testid="input-store-phone" />
+                <InternationalPhoneInput value={phoneNumber} onValueChange={setPhoneNumber} data-testid="input-store-phone" />
               </div>
               <div className="flex items-center justify-between gap-2 pt-2">
                 <div>

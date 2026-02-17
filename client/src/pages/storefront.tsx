@@ -15,7 +15,7 @@ import { ShoppingCart, Plus, Minus, Trash2, ImageIcon, MapPin, Phone, Search, Me
 import { TappLogo } from "@/components/tapp-logo";
 import { SiWhatsapp, SiInstagram, SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
-import { PhoneInput } from "@/components/phone-input";
+import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { getBusinessLabels } from "@shared/schema";
 import type { Store, Product, Category, StoreTheme, StoreSettings, ProductVariantGroup } from "@shared/schema";
 import { useStorefrontTitle } from "@/hooks/use-document-title";
@@ -1375,7 +1375,7 @@ export default function StorefrontPage() {
                 </div>
                 <div>
                   <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Телефон</Label>
-                  <PhoneInput
+                  <InternationalPhoneInput
                     value={customerPhone}
                     onValueChange={setCustomerPhone}
                     data-testid="input-checkout-phone"

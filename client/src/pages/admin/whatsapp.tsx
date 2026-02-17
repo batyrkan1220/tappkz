@@ -10,7 +10,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { SiWhatsapp } from "react-icons/si";
 import { MessageCircle } from "lucide-react";
-import { PhoneInput } from "@/components/phone-input";
+import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
 
@@ -82,7 +82,7 @@ export default function WhatsAppPage() {
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-green-600 text-white">
               <SiWhatsapp className="h-4 w-4" />
             </div>
-            <PhoneInput
+            <InternationalPhoneInput
               value={phone}
               onValueChange={setPhone}
               data-testid="input-whatsapp-phone"

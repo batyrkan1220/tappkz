@@ -9,7 +9,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRight, ArrowLeft, Check, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
-import { PhoneInput } from "@/components/phone-input";
+import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
 import { UtensilsCrossed, ShoppingBasket, Shirt, Smartphone, Sparkles, Pill, Flower2, CakeSlice, Gem, PawPrint, Baby, Home, Car, Dumbbell, BookOpen, HardHat, MoreHorizontal } from "lucide-react";
@@ -190,7 +190,7 @@ export default function CreateStorePage() {
             </div>
             <div>
               <Label className="font-semibold">Номер WhatsApp *</Label>
-              <PhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-create-store-phone" />
+              <InternationalPhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-create-store-phone" />
             </div>
             <div>
               <Label className="font-semibold">Город</Label>

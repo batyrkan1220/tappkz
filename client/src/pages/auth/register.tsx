@@ -11,7 +11,7 @@ import { TappLogo } from "@/components/tapp-logo";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 import { Link } from "wouter";
-import { InternationalPhoneInput, COUNTRIES } from "@/components/international-phone-input";
+import { InternationalPhoneInput } from "@/components/international-phone-input";
 
 const benefits = [
   "Бесплатный магазин за 5 минут",
@@ -29,12 +29,8 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [countryCode, setCountryCode] = useState("KZ");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  const selectedCountry = COUNTRIES.find((c) => c.code === countryCode) || COUNTRIES[0];
-  const fullPhone = phoneNumber ? selectedCountry.dial.replace("+", "") + phoneNumber : "";
 
   const registerMutation = useMutation({
     mutationFn: async () => {
@@ -42,7 +38,7 @@ export default function RegisterPage() {
         email,
         password,
         firstName: firstName || undefined,
-        phone: fullPhone || undefined,
+        phone: phoneNumber || undefined,
       });
       return res.json();
     },
@@ -106,11 +102,7 @@ export default function RegisterPage() {
               <div className="mt-1.5">
                 <InternationalPhoneInput
                   value={phoneNumber}
-                  countryCode={countryCode}
-                  onValueChange={(digits, code) => {
-                    setPhoneNumber(digits);
-                    setCountryCode(code);
-                  }}
+                  onValueChange={setPhoneNumber}
                   data-testid="input-register-phone"
                 />
               </div>

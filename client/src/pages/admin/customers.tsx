@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Plus, Trash2, Pencil, ShoppingBag, TrendingUp } from "lucide-react";
-import { PhoneInput } from "@/components/phone-input";
+import { InternationalPhoneInput } from "@/components/international-phone-input";
 import {
   Dialog,
   DialogContent,
@@ -419,7 +419,7 @@ function CustomerForm({
       </div>
       <div className="space-y-2">
         <Label>Телефон</Label>
-        <PhoneInput
+        <InternationalPhoneInput
           value={phone}
           onValueChange={setPhone}
           data-testid="input-customer-phone"
