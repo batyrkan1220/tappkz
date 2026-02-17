@@ -10,14 +10,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, MessageCircle, Plus, Trash2, Search } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, Plus, Trash2, Search } from "lucide-react";
 import { SiTelegram, SiInstagram } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
 
 const sections = [
   { id: "profile", label: "Профиль", icon: StoreIcon },
-  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
   { id: "store-info", label: "Магазин", icon: StoreIcon },
   { id: "contacts", label: "Контакты", icon: Globe },
   { id: "storefront", label: "Витрина", icon: Eye },
@@ -258,23 +257,14 @@ export default function StoreSettingsPage() {
                   data-testid="input-store-address"
                 />
               </div>
-            </div>
-          </Card>
-        );
-
-      case "whatsapp":
-        return (
-          <Card className="p-5" data-testid="card-whatsapp">
-            <h3 className="font-extrabold tracking-tight mb-1">Номер WhatsApp</h3>
-            <p className="text-sm text-muted-foreground mb-4">Клиенты будут отправлять сообщения заказов на этот номер.</p>
-            <div className="space-y-4">
               <div>
-                <Label className="font-semibold">Основной номер</Label>
+                <Label className="font-semibold">WhatsApp номер</Label>
+                <p className="text-xs text-muted-foreground mb-1">Клиенты будут отправлять заказы на этот номер</p>
                 <PhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-whatsapp-phone" />
               </div>
               <div>
                 <Label className="font-semibold">Номера заказов</Label>
-                <p className="text-xs text-muted-foreground mb-2">Распределяйте заказы WhatsApp на разные номера по круговой системе.</p>
+                <p className="text-xs text-muted-foreground mb-2">Распределяйте заказы на разные номера по круговой системе</p>
                 {orderPhones.map((phone, index) => (
                   <div key={index} className="flex items-center gap-2 mb-2">
                     <div className="flex-1">
