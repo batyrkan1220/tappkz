@@ -25,7 +25,7 @@ import {
   Truck,
   Users,
 } from "lucide-react";
-import { SiWhatsapp, SiInstagram } from "react-icons/si";
+import { SiWhatsapp } from "react-icons/si";
 import { TappLogo } from "@/components/tapp-logo";
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -43,14 +43,6 @@ import mockTiramisu from "@/assets/images/mock-tiramisu.png";
 import mockCinnamonRoll from "@/assets/images/mock-cinnamon-roll.png";
 import mockBanner from "@/assets/images/mock-confectionery-banner.png";
 import mockLogo from "@/assets/images/mock-sweetbaker-logo.png";
-import mockRestBanner from "@/assets/images/mock-restaurant-banner.png";
-import mockPlov from "@/assets/images/mock-food-plov.png";
-import mockShashlik from "@/assets/images/mock-food-shashlik.png";
-import mockLagman from "@/assets/images/mock-food-lagman.png";
-import mockSerum from "@/assets/images/mock-product-serum.jpg";
-import mockCream from "@/assets/images/mock-product-cream.jpg";
-import mockFoundation from "@/assets/images/mock-product-foundation.jpg";
-import mockStoreBanner from "@/assets/images/mock-store-banner.jpg";
 
 const MOCK_CATEGORIES = ["Все", "Торты", "Пирожные", "Выпечка", "Конфеты", "Десерты"];
 
@@ -408,177 +400,6 @@ function AnimatedPhoneMockup() {
           {step === "fill-form" && "Вводит имя и телефон"}
           {showWhatsapp && "Заказ отправлен в WhatsApp!"}
         </p>
-      </div>
-    </div>
-  );
-}
-
-const INSTA_PROFILES = [
-  {
-    name: "Sweet Baker",
-    category: "Кондитерская",
-    slug: "sweetbaker_almaty",
-    link: "tapp.kz/sweetbaker",
-    posts: "1 234",
-    followers: "5 678",
-    following: "312",
-    bio: "Домашние торты и десерты",
-    bioLink: "Заказать тут",
-    avatar: mockLogo,
-    grid: [mockNapoleon, mockMacarons, mockEclair, mockMedovik, mockCheesecake, mockCroissant],
-  },
-  {
-    name: "Dastarkhan",
-    category: "Ресторан",
-    slug: "dastarkhan_kz",
-    link: "tapp.kz/dastarkhan",
-    posts: "876",
-    followers: "12.4K",
-    following: "198",
-    bio: "Восточная кухня с доставкой",
-    bioLink: "Меню и заказ",
-    avatar: mockRestBanner,
-    grid: [mockPlov, mockShashlik, mockLagman, mockPlov, mockShashlik, mockLagman],
-  },
-  {
-    name: "Glow Beauty",
-    category: "Косметика",
-    slug: "glow_beauty_kz",
-    link: "tapp.kz/glowbeauty",
-    posts: "543",
-    followers: "8 901",
-    following: "245",
-    bio: "Натуральная косметика",
-    bioLink: "Каталог",
-    avatar: mockStoreBanner,
-    grid: [mockSerum, mockCream, mockFoundation, mockSerum, mockCream, mockFoundation],
-  },
-];
-
-function InstagramPhoneMockup() {
-  const [profileIdx, setProfileIdx] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setProfileIdx((prev) => (prev + 1) % INSTA_PROFILES.length);
-        setIsTransitioning(false);
-      }, 400);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, []);
-
-  const profile = INSTA_PROFILES[profileIdx];
-
-  return (
-    <div className="relative" data-testid="mockup-instagram">
-      <div className="absolute -inset-6 bg-gradient-to-br from-purple-400/20 via-pink-300/15 to-orange-300/20 dark:from-purple-500/10 dark:via-pink-400/8 dark:to-orange-400/10 rounded-[4rem] blur-3xl" />
-      <div className="relative mx-auto w-[280px] rounded-[3.2rem] bg-gradient-to-b from-zinc-400 via-zinc-600 to-zinc-400 dark:from-zinc-400 dark:via-zinc-600 dark:to-zinc-400 p-[3px] shadow-2xl" style={{ boxShadow: "0 30px 70px -15px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.3)" }}>
-        <div className="absolute -right-[2px] top-[120px] w-[3px] h-[35px] rounded-r-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400" />
-        <div className="absolute -right-[2px] top-[170px] w-[3px] h-[35px] rounded-r-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400" />
-        <div className="absolute -left-[2px] top-[100px] w-[3px] h-[20px] rounded-l-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400" />
-        <div className="absolute -left-[2px] top-[145px] w-[3px] h-[50px] rounded-l-sm bg-gradient-to-b from-zinc-400 via-zinc-500 to-zinc-400" />
-        <div className="rounded-[3rem] bg-black p-[3px]">
-          <div className="rounded-[2.8rem] overflow-hidden bg-white dark:bg-zinc-900 relative" style={{ height: "540px" }}>
-            <div className="absolute top-[12px] left-1/2 -translate-x-1/2 h-[28px] w-[105px] bg-black rounded-full z-20 flex items-center justify-end pr-[18px]">
-              <div className="h-[10px] w-[10px] rounded-full" style={{ background: "radial-gradient(circle at 35% 35%, #2a2a3e 0%, #0a0a12 50%, #1a1a2e 100%)", boxShadow: "inset 0 1px 2px rgba(255,255,255,0.1), 0 0 3px rgba(50,50,80,0.3)" }} />
-            </div>
-            <div className="absolute bottom-[8px] left-1/2 -translate-x-1/2 h-[4px] w-[100px] bg-foreground/20 rounded-full z-20" />
-
-            <div className={`transition-all duration-400 ${isTransitioning ? "opacity-0 scale-[0.97]" : "opacity-100 scale-100"}`}>
-              <div className="flex items-center justify-between px-4 pt-[48px] pb-2">
-                <div className="flex items-center gap-1">
-                  <ArrowRight className="h-3.5 w-3.5 text-foreground rotate-180" />
-                </div>
-                <span className="text-[11px] font-bold tracking-tight">{profile.slug}</span>
-                <div className="flex items-center gap-2">
-                  <Bell className="h-3.5 w-3.5 text-foreground" />
-                  <div className="w-[3px] h-[3px] rounded-full bg-foreground" />
-                  <div className="w-[3px] h-[3px] rounded-full bg-foreground" />
-                  <div className="w-[3px] h-[3px] rounded-full bg-foreground" />
-                </div>
-              </div>
-
-              <div className="px-4 flex items-center gap-3">
-                <div className="relative shrink-0">
-                  <div className="h-16 w-16 rounded-full p-[2px]" style={{ background: "linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)" }}>
-                    <div className="h-full w-full rounded-full border-2 border-white dark:border-zinc-900 overflow-hidden bg-muted">
-                      <img src={profile.avatar} alt="" className="h-full w-full object-cover" />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 flex items-center justify-around text-center">
-                  <div>
-                    <p className="text-[11px] font-bold">{profile.posts}</p>
-                    <p className="text-[8px] text-muted-foreground">Posts</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold">{profile.followers}</p>
-                    <p className="text-[8px] text-muted-foreground">Followers</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold">{profile.following}</p>
-                    <p className="text-[8px] text-muted-foreground">Following</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-4 mt-2">
-                <p className="text-[10px] font-bold">{profile.name}</p>
-                <p className="text-[9px] text-muted-foreground">{profile.category}</p>
-                <p className="text-[9px] mt-0.5">{profile.bio}</p>
-                <p className="text-[9px] mt-0.5 text-muted-foreground">{profile.bioLink}</p>
-                <p className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">{profile.link}</p>
-              </div>
-
-              <div className="px-4 mt-2.5 flex gap-1.5">
-                <div className="flex-1 rounded-lg py-1.5 text-center text-[9px] font-semibold text-white" style={{ backgroundColor: "#0095F6" }}>Follow</div>
-                <div className="flex-1 rounded-lg py-1.5 text-center text-[9px] font-semibold bg-muted text-foreground">Message</div>
-              </div>
-
-              <div className="mt-3 border-t border-border/30">
-                <div className="flex">
-                  <div className="flex-1 text-center py-2 border-b-2 border-foreground">
-                    <div className="grid grid-cols-3 h-1 w-4 gap-[1px] mx-auto">
-                      {Array.from({ length: 9 }).map((_, i) => (
-                        <div key={i} className="bg-foreground rounded-[0.5px]" />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex-1 text-center py-2">
-                    <div className="h-1 w-4 mx-auto flex items-center justify-center">
-                      <Users className="h-3 w-3 text-muted-foreground" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-[1px]">
-                {profile.grid.map((img, i) => (
-                  <div key={i} className="aspect-square bg-muted overflow-hidden">
-                    <img src={img} alt="" className="h-full w-full object-cover" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="absolute bottom-16 -left-4 sm:left-auto sm:-right-4 z-10">
-        <div className={`rounded-xl border border-primary/20 bg-card shadow-xl px-3 py-2.5 max-w-[200px] transition-all duration-400 ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
-          <p className="text-[9px] text-muted-foreground font-medium mb-1">Ссылка в профиле</p>
-          <p className="text-[11px] font-bold text-primary">{profile.link}</p>
-        </div>
-        <div className="absolute top-1/2 -translate-y-1/2 right-full mr-0 sm:right-auto sm:left-full sm:ml-0 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[6px] border-l-card sm:border-l-0 sm:border-r-0 sm:rotate-180 hidden sm:block" />
-      </div>
-
-      <div className="flex justify-center gap-1.5 mt-4">
-        {INSTA_PROFILES.map((_, i) => (
-          <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === profileIdx ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/25"}`} />
-        ))}
       </div>
     </div>
   );
@@ -1140,44 +961,6 @@ export default function LandingPage() {
                 <p className="mt-1 text-sm text-muted-foreground">{item.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-5" style={{ background: "linear-gradient(135deg, rgba(240,148,51,0.1), rgba(220,39,67,0.1), rgba(188,24,136,0.1))" }}>
-                <SiInstagram className="h-3.5 w-3.5" style={{ color: "#E1306C" }} />
-                <span className="text-xs font-semibold" style={{ color: "#E1306C" }}>Instagram</span>
-              </div>
-              <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-feature-instagram">
-                Ссылка на магазин в Instagram
-              </h2>
-              <p className="mt-4 text-muted-foreground leading-relaxed max-w-lg">
-                Разместите ссылку на ваш магазин в шапке Instagram-профиля. Подписчики переходят по ссылке, выбирают товары и отправляют заказ через WhatsApp.
-              </p>
-              <ul className="mt-6 space-y-3">
-                {["Короткая ссылка tapp.kz/ваш-магазин", "Мгновенный переход к каталогу", "Работает из любой соцсети", "Клиенты заказывают без звонков"].map((item, i) => (
-                  <li key={item} className="flex items-center gap-2.5 text-sm" data-testid={`text-instagram-feature-${i}`}>
-                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8">
-                <a href="/register">
-                  <Button className="rounded-full font-semibold" data-testid="button-instagram-cta">
-                    Создать магазин
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </a>
-              </div>
-            </div>
-            <div className="flex justify-center">
-              <InstagramPhoneMockup />
-            </div>
           </div>
         </div>
       </section>
