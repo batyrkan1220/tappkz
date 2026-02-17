@@ -1,5 +1,5 @@
 import {
-  stores, storeThemes, storeSettings, categories, products, storeEvents, orders, customers, platformSettings, discounts, bookings,
+  stores, storeThemes, storeSettings, categories, products, storeEvents, orders, customers, platformSettings, discounts,
   type Store, type InsertStore,
   type StoreTheme, type InsertStoreTheme,
   type StoreSettings, type InsertStoreSettings,
@@ -9,7 +9,6 @@ import {
   type Order, type InsertOrder,
   type Customer, type InsertCustomer,
   type Discount, type InsertDiscount,
-  type Booking, type InsertBooking,
   PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS,
 } from "@shared/schema";
 import { users, type User } from "@shared/models/auth";
@@ -131,11 +130,6 @@ export interface IStorage {
   getDiscountByCode(storeId: number, code: string): Promise<Discount | undefined>;
   getActiveDiscounts(storeId: number): Promise<Discount[]>;
 
-  getBookings(storeId: number, filters?: { startDate?: string; endDate?: string; status?: string }): Promise<Booking[]>;
-  getBooking(id: number, storeId: number): Promise<Booking | undefined>;
-  createBooking(data: InsertBooking): Promise<Booking>;
-  updateBooking(id: number, storeId: number, data: Partial<InsertBooking>): Promise<Booking | undefined>;
-  deleteBooking(id: number, storeId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -728,32 +722,6 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(discounts).where(and(eq(discounts.storeId, storeId), eq(discounts.isActive, true)));
   }
 
-  async getBookings(storeId: number, filters?: { startDate?: string; endDate?: string; status?: string }): Promise<Booking[]> {
-    const conditions = [eq(bookings.storeId, storeId)];
-    if (filters?.startDate) conditions.push(gte(bookings.bookingDate, filters.startDate));
-    if (filters?.endDate) conditions.push(lte(bookings.bookingDate, filters.endDate));
-    if (filters?.status) conditions.push(eq(bookings.status, filters.status));
-    return db.select().from(bookings).where(and(...conditions)).orderBy(asc(bookings.bookingDate), asc(bookings.startTime));
-  }
-
-  async getBooking(id: number, storeId: number): Promise<Booking | undefined> {
-    const [booking] = await db.select().from(bookings).where(and(eq(bookings.id, id), eq(bookings.storeId, storeId)));
-    return booking;
-  }
-
-  async createBooking(data: InsertBooking): Promise<Booking> {
-    const [booking] = await db.insert(bookings).values(data).returning();
-    return booking;
-  }
-
-  async updateBooking(id: number, storeId: number, data: Partial<InsertBooking>): Promise<Booking | undefined> {
-    const [booking] = await db.update(bookings).set(data).where(and(eq(bookings.id, id), eq(bookings.storeId, storeId))).returning();
-    return booking;
-  }
-
-  async deleteBooking(id: number, storeId: number): Promise<void> {
-    await db.delete(bookings).where(and(eq(bookings.id, id), eq(bookings.storeId, storeId)));
-  }
 }
 
 export const storage = new DatabaseStorage();

@@ -138,8 +138,6 @@ export const products = pgTable("products", {
   unit: varchar("unit", { length: 30 }),
   productType: varchar("product_type", { length: 20 }).notNull().default("physical"),
   downloadUrl: text("download_url"),
-  bookingType: varchar("booking_type", { length: 20 }),
-  bookingDurationMinutes: integer("booking_duration_minutes"),
   attributes: jsonb("attributes").notNull().default({}),
   variants: jsonb("variants").notNull().default([]),
 }, (table) => [
@@ -191,29 +189,6 @@ export const customers = pgTable("customers", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("idx_customers_store").on(table.storeId),
-]);
-
-export const bookings = pgTable("bookings", {
-  id: serial("id").primaryKey(),
-  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
-  productId: integer("product_id").references(() => products.id, { onDelete: "set null" }),
-  orderId: integer("order_id").references(() => orders.id, { onDelete: "set null" }),
-  customerId: integer("customer_id").references(() => customers.id, { onDelete: "set null" }),
-  customerName: text("customer_name").notNull(),
-  customerPhone: varchar("customer_phone", { length: 30 }),
-  customerEmail: varchar("customer_email", { length: 200 }),
-  bookingDate: text("booking_date").notNull(),
-  startTime: varchar("start_time", { length: 5 }),
-  endTime: varchar("end_time", { length: 5 }),
-  endDate: text("end_date"),
-  status: varchar("status", { length: 20 }).notNull().default("pending"),
-  notes: text("notes"),
-  total: integer("total").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (table) => [
-  index("idx_bookings_store").on(table.storeId),
-  index("idx_bookings_date").on(table.bookingDate),
-  index("idx_bookings_status").on(table.status),
 ]);
 
 export const storeEvents = pgTable("store_events", {
@@ -353,7 +328,6 @@ export const insertStoreSettingsSchema = createInsertSchema(storeSettings).omit(
 export const insertStoreEventSchema = createInsertSchema(storeEvents).omit({ id: true, createdAt: true });
 export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true, createdAt: true });
-export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true, createdAt: true });
 
 export type Store = typeof stores.$inferSelect;
 export type InsertStore = z.infer<typeof insertStoreSchema>;
@@ -371,9 +345,6 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Customer = typeof customers.$inferSelect;
 export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
-export type Booking = typeof bookings.$inferSelect;
-export type InsertBooking = z.infer<typeof insertBookingSchema>;
-
 export interface ProductVariantOption {
   id: string;
   label: string;
