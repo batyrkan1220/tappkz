@@ -337,16 +337,18 @@ export default function StoreSettingsPage() {
               </div>
               <div>
                 <Label className="font-semibold">Город</Label>
-                <Select value={city} onValueChange={setCity}>
-                  <SelectTrigger data-testid="input-store-city">
-                    <SelectValue placeholder="Выберите город" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {KAZAKHSTAN_CITIES.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  list="city-suggestions-settings"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Например: Алматы, Астана, Москва"
+                  data-testid="input-store-city"
+                />
+                <datalist id="city-suggestions-settings">
+                  {KAZAKHSTAN_CITIES.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
               </div>
               <div>
                 <Label className="font-semibold">Описание</Label>

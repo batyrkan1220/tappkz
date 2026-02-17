@@ -12,7 +12,7 @@ import { TappLogo } from "@/components/tapp-logo";
 import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 const KAZAKHSTAN_CITIES = [
   "Алматы", "Астана", "Шымкент", "Караганда", "Актобе", "Тараз", "Павлодар",
@@ -206,16 +206,18 @@ export default function CreateStorePage() {
             </div>
             <div>
               <Label className="font-semibold">Город</Label>
-              <Select value={city} onValueChange={setCity}>
-                <SelectTrigger data-testid="input-create-store-city">
-                  <SelectValue placeholder="Выберите город" />
-                </SelectTrigger>
-                <SelectContent>
-                  {KAZAKHSTAN_CITIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                list="city-suggestions"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Например: Алматы, Астана, Москва"
+                data-testid="input-create-store-city"
+              />
+              <datalist id="city-suggestions">
+                {KAZAKHSTAN_CITIES.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </div>
             <div>
               <Label className="font-semibold">Описание</Label>
