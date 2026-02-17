@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +10,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, MessageCircle, MapPin, Plus, Trash2, Search } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, MessageCircle, Plus, Trash2, Search } from "lucide-react";
 import { SiTelegram, SiInstagram } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
@@ -26,7 +25,6 @@ const sections = [
   { id: "checkout", label: "Оформление", icon: ShoppingCart },
   { id: "seo", label: "SEO и мета-теги", icon: Search },
   { id: "pixels", label: "Аналитика", icon: BarChart3 },
-  { id: "plan", label: "Тариф", icon: Crown },
 ] as const;
 
 type SectionId = typeof sections[number]["id"];
@@ -591,27 +589,6 @@ export default function StoreSettingsPage() {
           </Card>
         );
 
-      case "plan":
-        return (
-          <Card className="p-5" data-testid="card-plan-info">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/30">
-                  <Crown className="h-5 w-5 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold tracking-tight" data-testid="text-plan-name">Тариф: {store?.plan?.toUpperCase()}</h3>
-                  <p className="text-sm text-muted-foreground">Управление подпиской</p>
-                </div>
-              </div>
-              <Link href="/admin/subscription">
-                <Button variant="outline" className="rounded-full font-semibold" data-testid="button-go-subscription">
-                  Подробнее
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        );
     }
   };
 
