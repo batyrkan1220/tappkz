@@ -228,6 +228,10 @@ export default function StoreSettingsPage() {
                 <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-store-name" />
               </div>
               <div>
+                <Label className="font-semibold">Описание</Label>
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Расскажите о вашем бизнесе" data-testid="input-store-description" />
+              </div>
+              <div>
                 <Label className="font-semibold">Ссылка магазина</Label>
                 <p className="text-xs text-muted-foreground mb-1">Изменение этого приведёт к нарушению существующего QR кода и общих ссылок.</p>
                 <div className="flex items-center">
@@ -269,38 +273,6 @@ export default function StoreSettingsPage() {
                 <InternationalPhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-whatsapp-phone" />
               </div>
               <div>
-                <Label className="font-semibold">Номера заказов</Label>
-                <p className="text-xs text-muted-foreground mb-2">Распределяйте заказы на разные номера по круговой системе</p>
-                {orderPhones.map((phone, index) => (
-                  <div key={index} className="flex items-center gap-2 mb-2">
-                    <div className="flex-1">
-                      <InternationalPhoneInput
-                        value={phone}
-                        onValueChange={(val) => updateOrderPhone(index, val)}
-                        data-testid={`input-order-phone-${index}`}
-                      />
-                    </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => removeOrderPhone(index)}
-                      data-testid={`button-remove-order-phone-${index}`}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={addOrderPhone}
-                  data-testid="button-add-order-phone"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Добавить номер
-                </Button>
-              </div>
-              <div>
                 <Label className="font-semibold">Тип магазина</Label>
                 <Select value={businessType} onValueChange={setBusinessType} data-testid="select-business-type">
                   <SelectTrigger data-testid="select-trigger-business-type">
@@ -328,21 +300,6 @@ export default function StoreSettingsPage() {
                     <option key={c} value={c} />
                   ))}
                 </datalist>
-              </div>
-              <div>
-                <Label className="font-semibold">Email</Label>
-                <p className="text-xs text-muted-foreground mb-1">Клиенты будут получать письма с этого адреса</p>
-                <Input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="store@example.com"
-                  type="email"
-                  data-testid="input-store-email"
-                />
-              </div>
-              <div>
-                <Label className="font-semibold">Описание</Label>
-                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Расскажите о вашем бизнесе" data-testid="input-store-description" />
               </div>
             </div>
           </Card>
