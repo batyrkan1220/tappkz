@@ -67,10 +67,51 @@ export default function StorefrontPage() {
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [variantValidationError, setVariantValidationError] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{id?: number; title: string; valueType: string; value: number; type: string} | null>(null);
+  const [discountError, setDiscountError] = useState("");
+  const [validatingDiscount, setValidatingDiscount] = useState(false);
 
   const { data, isLoading, error } = useQuery<StoreData>({
     queryKey: ["/api/storefront", params.slug],
   });
+
+  const { data: autoDiscounts = [] } = useQuery<Array<{id: number; title: string; type: string; valueType: string; value: number; appliesTo: string; minRequirement: string; minValue: number | null}>>({
+    queryKey: ["/api/storefront", params.slug, "discounts"],
+    enabled: !!params.slug,
+  });
+
+  useEffect(() => {
+    if (appliedDiscount && appliedDiscount.type === "code") return;
+    
+    if (autoDiscounts.length === 0 || cartSubtotal <= 0) {
+      if (appliedDiscount && appliedDiscount.type !== "code") {
+        setAppliedDiscount(null);
+      }
+      return;
+    }
+    
+    const eligible = autoDiscounts
+      .filter((d) => {
+        if (d.minRequirement === "amount" && d.minValue && cartSubtotal < d.minValue) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const calcA = a.valueType === "percentage" ? cartSubtotal * a.value / 100 : a.value;
+        const calcB = b.valueType === "percentage" ? cartSubtotal * b.value / 100 : b.value;
+        return calcB - calcA;
+      });
+    
+    const best = eligible[0] || null;
+    
+    if (best) {
+      if (!appliedDiscount || appliedDiscount.id !== best.id) {
+        setAppliedDiscount(best);
+      }
+    } else if (appliedDiscount && appliedDiscount.type !== "code") {
+      setAppliedDiscount(null);
+    }
+  }, [autoDiscounts, cartSubtotal]);
 
   const [visitTracked, setVisitTracked] = useState(false);
   if (data && !visitTracked) {
@@ -169,7 +210,15 @@ export default function StorefrontPage() {
     return fee;
   }, [deliveryMethod, settings, cartSubtotal]);
 
-  const cartTotal = cartSubtotal + computedDeliveryFee;
+  const discountAmount = useMemo(() => {
+    if (!appliedDiscount) return 0;
+    if (appliedDiscount.type === "free_delivery") return computedDeliveryFee;
+    if (appliedDiscount.valueType === "percentage") return Math.round(cartSubtotal * appliedDiscount.value / 100);
+    if (appliedDiscount.valueType === "fixed") return Math.min(appliedDiscount.value, cartSubtotal);
+    return 0;
+  }, [appliedDiscount, cartSubtotal, computedDeliveryFee]);
+
+  const cartTotal = cartSubtotal + computedDeliveryFee - discountAmount;
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const addToCart = (product: Product, variantTitle?: string | null, variantPrice?: number | null) => {
@@ -208,6 +257,22 @@ export default function StorefrontPage() {
     setCart((prev) => prev.filter((i) => !(i.product.id === productId && (i.variantTitle || null) === (variantTitle || null))));
   };
 
+  const validateDiscountCode = async () => {
+    if (!discountCode.trim() || !params.slug) return;
+    setValidatingDiscount(true);
+    setDiscountError("");
+    try {
+      const res = await apiRequest("POST", `/api/storefront/${params.slug}/validate-discount`, { code: discountCode });
+      const data = await res.json();
+      setAppliedDiscount(data.discount);
+      setDiscountError("");
+    } catch (e: any) {
+      setDiscountError(e.message?.includes("404") ? "Промокод не найден" : e.message?.replace(/^\d+:\s*/, "").replace(/^"/, "").replace(/"$/, "") || "Неверный промокод");
+      setAppliedDiscount(null);
+    }
+    setValidatingDiscount(false);
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCheckout = async () => {
@@ -233,6 +298,8 @@ export default function StorefrontPage() {
         paymentMethod: "whatsapp",
         deliveryMethod: deliveryMethod || null,
         deliveryFee: computedDeliveryFee,
+        discountCode: appliedDiscount?.type === "code" ? discountCode.toUpperCase() : undefined,
+        discountId: appliedDiscount?.id,
       });
 
       const order = await orderRes.json();
@@ -254,6 +321,9 @@ export default function StorefrontPage() {
       if (computedDeliveryFee > 0) {
         msg += `Подытог: *${new Intl.NumberFormat("ru-KZ").format(cartSubtotal)} ₸*\n`;
         msg += `Доставка: *${formatPrice(computedDeliveryFee)}*\n`;
+      }
+      if (discountAmount > 0) {
+        msg += `Скидка: *-${new Intl.NumberFormat("ru-KZ").format(discountAmount)} ₸* (${appliedDiscount?.title})\n`;
       }
       msg += `Итого: *${totalFormatted} ₸*\n\n`;
       if (deliveryMethod) msg += `Получение: *${deliveryLabels[deliveryMethod] || deliveryMethod}*\n`;
@@ -279,6 +349,8 @@ export default function StorefrontPage() {
       setCustomerAddress("");
       setCustomerComment("");
       setDeliveryMethod(null);
+      setAppliedDiscount(null);
+      setDiscountCode("");
       setOrderConfirmation({ orderNumber: order.orderNumber, invoiceUrl, whatsappUrl, whatsappPhone: phone, orderMessage: msg, whatsappClicked: false });
       setTroubleshootOpen(null);
     } catch (e: any) {
@@ -1369,6 +1441,34 @@ export default function StorefrontPage() {
                     />
                   </div>
                 )}
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Промокод</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={discountCode}
+                      onChange={(e) => { setDiscountCode(e.target.value.toUpperCase()); setDiscountError(""); }}
+                      placeholder="Введите промокод"
+                      className="rounded-xl font-mono flex-1"
+                      data-testid="input-discount-code"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={validateDiscountCode}
+                      disabled={!discountCode.trim() || validatingDiscount}
+                      className="rounded-xl shrink-0"
+                      data-testid="button-apply-discount"
+                    >
+                      {validatingDiscount ? "..." : "Применить"}
+                    </Button>
+                  </div>
+                  {discountError && <p className="text-xs text-red-500 mt-1" data-testid="text-discount-error">{discountError}</p>}
+                  {appliedDiscount && (
+                    <div className="flex items-center justify-between mt-1.5 rounded-lg bg-green-50 dark:bg-green-950/20 px-3 py-2">
+                      <span className="text-xs font-medium text-green-700 dark:text-green-400" data-testid="text-discount-applied">{appliedDiscount.title}</span>
+                      <button onClick={() => { setAppliedDiscount(null); setDiscountCode(""); }} className="text-xs text-muted-foreground" data-testid="button-remove-discount">Убрать</button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="rounded-xl bg-muted/50 p-4">
@@ -1400,6 +1500,12 @@ export default function StorefrontPage() {
                   <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
                     <span>Доставка</span>
                     <span>{formatPrice(computedDeliveryFee)}</span>
+                  </div>
+                )}
+                {discountAmount > 0 && (
+                  <div className="mt-2 flex items-center justify-between text-sm">
+                    <span className="text-green-600 dark:text-green-400">Скидка ({appliedDiscount?.title})</span>
+                    <span className="text-green-600 dark:text-green-400 font-medium">-{formatPrice(discountAmount)}</span>
                   </div>
                 )}
                 <div className="mt-3 flex items-center justify-between border-t border-border/50 pt-3">

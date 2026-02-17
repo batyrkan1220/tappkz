@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupSession, registerAuthRoutes, isAuthenticated, isSuperAdminMiddleware } from "./auth";
-import { PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS, PLAN_PRICES, PLAN_NAMES, PLAN_FEATURES, BUSINESS_TYPES, emailBroadcasts } from "@shared/schema";
+import { PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS, PLAN_PRICES, PLAN_NAMES, PLAN_FEATURES, BUSINESS_TYPES, emailBroadcasts, insertDiscountSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -852,6 +852,10 @@ export async function registerRoutes(
     paymentMethod: z.string().max(30).nullable().optional(),
     deliveryMethod: z.enum(["pickup", "delivery"]).nullable().optional(),
     deliveryFee: z.number().int().min(0).optional().default(0),
+    discountCode: z.string().optional(),
+    discountId: z.number().optional(),
+    discountAmount: z.number().optional(),
+    discountTitle: z.string().optional(),
   });
 
   app.post("/api/storefront/:slug/order", async (req, res) => {
@@ -870,7 +874,68 @@ export async function registerRoutes(
 
       const subtotal = data.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const deliveryFee = data.deliveryFee || 0;
-      const total = subtotal + deliveryFee;
+
+      let discountAmount = 0;
+      let discountTitle: string | null = null;
+      let discountCode: string | null = null;
+
+      if (data.discountCode) {
+        const discount = await storage.getDiscountByCode(store.id, data.discountCode.toUpperCase());
+        if (discount) {
+          const now = new Date();
+          const isValid = discount.isActive && 
+            (!discount.startDate || now >= discount.startDate) && 
+            (!discount.endDate || now <= discount.endDate) &&
+            (!discount.maxTotalUses || discount.currentUses < discount.maxTotalUses);
+          
+          if (isValid) {
+            if (discount.minRequirement === "amount" && discount.minValue && subtotal < discount.minValue) {
+            } else if (discount.appliesTo === "products" && discount.targetProductIds) {
+              const targetIds = discount.targetProductIds as number[];
+              const eligibleSubtotal = data.items
+                .filter((item: any) => targetIds.includes(item.productId))
+                .reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+              if (eligibleSubtotal > 0) {
+                if (discount.valueType === "percentage") {
+                  discountAmount = Math.round(eligibleSubtotal * discount.value / 100);
+                } else if (discount.valueType === "fixed") {
+                  discountAmount = Math.min(discount.value, eligibleSubtotal);
+                }
+                discountTitle = discount.title;
+                discountCode = discount.code;
+                await storage.incrementDiscountUses(discount.id);
+              }
+            } else {
+              if (discount.valueType === "percentage") {
+                discountAmount = Math.round(subtotal * discount.value / 100);
+              } else if (discount.valueType === "fixed") {
+                discountAmount = Math.min(discount.value, subtotal);
+              }
+              discountTitle = discount.title;
+              discountCode = discount.code;
+              await storage.incrementDiscountUses(discount.id);
+            }
+          }
+        }
+      } else if (data.discountId) {
+        const discount = await storage.getDiscount(Number(data.discountId), store.id);
+        if (discount && discount.isActive) {
+          if (discount.type === "free_delivery") {
+            discountAmount = deliveryFee;
+            discountTitle = discount.title;
+          } else {
+            if (discount.valueType === "percentage") {
+              discountAmount = Math.round(subtotal * discount.value / 100);
+            } else if (discount.valueType === "fixed") {
+              discountAmount = Math.min(discount.value, subtotal);
+            }
+            discountTitle = discount.title;
+          }
+          await storage.incrementDiscountUses(discount.id);
+        }
+      }
+
+      const total = subtotal + deliveryFee - discountAmount;
       const orderNumber = await storage.getNextOrderNumber(store.id);
 
       const order = await storage.createOrder({
@@ -887,6 +952,9 @@ export async function registerRoutes(
         status: "pending",
         deliveryMethod: data.deliveryMethod || null,
         deliveryFee,
+        discountTitle,
+        discountAmount,
+        discountCode,
       });
 
       await storage.upsertCustomerFromOrder(store.id, data.customerName, data.customerPhone, subtotal).catch((err) => {
@@ -1041,6 +1109,113 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Invalid event data" });
       }
       res.status(500).json({ message: e.message });
+    }
+  });
+
+  app.get("/api/my-store/discounts", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const discounts = await storage.getDiscounts(store.id);
+      res.json(discounts);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.get("/api/my-store/discounts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const discount = await storage.getDiscount(Number(req.params.id), store.id);
+      if (!discount) return res.status(404).json({ error: "Скидка не найдена" });
+      res.json(discount);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/my-store/discounts", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      
+      const data = { ...req.body, storeId: store.id };
+      if (data.startDate) data.startDate = new Date(data.startDate);
+      if (data.endDate) data.endDate = new Date(data.endDate);
+      if (data.type === "code" && data.code) {
+        data.code = data.code.toUpperCase().trim();
+        const existing = await storage.getDiscountByCode(store.id, data.code);
+        if (existing) return res.status(400).json({ error: "Промокод уже существует" });
+      }
+      
+      const discount = await storage.createDiscount(data);
+      res.json(discount);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.patch("/api/my-store/discounts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const updateData = { ...req.body };
+      if (updateData.startDate) updateData.startDate = new Date(updateData.startDate);
+      if (updateData.endDate) updateData.endDate = new Date(updateData.endDate);
+      else if (updateData.endDate === "") updateData.endDate = null;
+      const discount = await storage.updateDiscount(Number(req.params.id), store.id, updateData);
+      if (!discount) return res.status(404).json({ error: "Скидка не найдена" });
+      res.json(discount);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/my-store/discounts/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      await storage.deleteDiscount(Number(req.params.id), store.id);
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.get("/api/storefront/:slug/discounts", async (req, res) => {
+    try {
+      const store = await storage.getStoreBySlug(req.params.slug);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const activeDiscounts = await storage.getActiveDiscounts(store.id);
+      const now = new Date();
+      const eligible = activeDiscounts
+        .filter((d) => ["order_amount", "automatic", "free_delivery"].includes(d.type))
+        .filter((d) => !d.startDate || now >= d.startDate)
+        .filter((d) => !d.endDate || now <= d.endDate)
+        .filter((d) => !d.maxTotalUses || d.currentUses < d.maxTotalUses)
+        .map((d) => ({ id: d.id, title: d.title, type: d.type, valueType: d.valueType, value: d.value, appliesTo: d.appliesTo, minRequirement: d.minRequirement, minValue: d.minValue }));
+      res.json(eligible);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/storefront/:slug/validate-discount", async (req, res) => {
+    try {
+      const store = await storage.getStoreBySlug(req.params.slug);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const { code } = req.body;
+      if (!code) return res.status(400).json({ error: "Код скидки не указан" });
+      const discount = await storage.getDiscountByCode(store.id, code.toUpperCase());
+      if (!discount) return res.status(404).json({ error: "Промокод не найден" });
+      const now = new Date();
+      if (discount.startDate && now < discount.startDate) return res.status(400).json({ error: "Промокод еще не активен" });
+      if (discount.endDate && now > discount.endDate) return res.status(400).json({ error: "Промокод истек" });
+      if (discount.maxTotalUses && discount.currentUses >= discount.maxTotalUses) return res.status(400).json({ error: "Промокод исчерпан" });
+      res.json({ discount: { id: discount.id, title: discount.title, valueType: discount.valueType, value: discount.value, appliesTo: discount.appliesTo, targetProductIds: discount.targetProductIds, targetCategoryIds: discount.targetCategoryIds, minRequirement: discount.minRequirement, minValue: discount.minValue, type: discount.type } });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
     }
   });
 

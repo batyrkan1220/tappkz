@@ -1,178 +1,39 @@
 # Tapp (tapp.kz) - WhatsApp Storefront Platform
 
 ## Overview
-Multi-tenant SaaS platform for global SMBs to create branded mobile storefronts with WhatsApp order checkout. UI is in Russian (RU). Rebranded from TakeSale to Tapp.
+Tapp is a multi-tenant SaaS platform designed for Small and Medium Businesses (SMBs) globally. It enables businesses to quickly create branded mobile storefronts, facilitating product display and order placement directly through WhatsApp. The platform is localized for Russian-speaking users (UI in Russian). The primary goal is to provide a streamlined e-commerce solution leveraging the widespread use of WhatsApp for order communication and management.
 
-## Architecture
-- **Frontend**: React + Vite + Tailwind CSS + shadcn/ui + wouter routing
-- **Backend**: Express.js + Drizzle ORM + PostgreSQL
-- **Auth**: Email/password with bcrypt + express-session (PostgreSQL session store)
-- **File uploads**: Multer → local /uploads directory
-- **Validation**: Zod schemas on all API endpoints
+## User Preferences
+I prefer clear and concise communication. When making changes, prioritize iterative development and ask for confirmation before implementing major architectural shifts or significant feature additions. Ensure all UI elements are in Russian.
 
-## Key Routes
-### Public
-- `/` - Landing page (logged out) / Admin dashboard (logged in)
-- `/login` - Login page (email/password)
-- `/register` - Registration page
-- `/:slug` - Public storefront for a store (e.g. tapp.kz/mystore)
-- `/invoice/:id` - Public invoice/order receipt page
+## System Architecture
+The platform follows a modern web application architecture:
+- **Frontend**: Built with React, Vite, Tailwind CSS, shadcn/ui for UI components, and wouter for routing. The storefront design is inspired by `take.app` with a centered logo header, a hamburger sidebar featuring search and categories, a 2-column product grid, and a prominent primary-color cart bar. Dynamic terminology (e.g., "Товары", "Меню", "Услуги") based on business type is applied across the UI.
+- **Backend**: Utilizes Express.js as the server framework, Drizzle ORM for database interaction, and PostgreSQL for data storage.
+- **Authentication**: Custom email/password authentication using bcrypt for hashing and `express-session` with a PostgreSQL session store.
+- **File Uploads**: Implemented via Multer, storing files locally in the `/uploads` directory.
+- **Data Validation**: Comprehensive Zod schemas are applied to all API endpoints to ensure data integrity.
+- **Product Management**: Products support a flexible attribute system using JSONB columns for business-type-specific data (e.g., F&B, E-commerce, Service). This allows for dynamic product forms and storefront displays. A product variants system enables managing multiple options (size, color) with custom pricing and images.
+- **Business Type Customization**: Stores select a business type during registration (26 types across 3 groups), which dynamically adjusts UI terminology and available attributes.
+- **Onboarding**: A guided onboarding flow assists new merchants in setting up their store, emphasizing category and product creation.
+- **Super Admin Panel**: A dedicated interface for platform administrators to manage stores, users, orders, and platform-wide analytics. It includes tools for plan management, user role assignment, and event logging.
+- **Discount System**: Supports six types of discounts (code, order_amount, automatic, bundle, buy_x_get_y, free_delivery) with comprehensive administration and storefront application.
+- **Theme Customization**: Merchants can customize their storefront's secondary color, button/card/font styles, and banner overlay.
+- **Analytics**: Admin panels include dashboards with charts for page views, sales, and orders.
+- **Order Management**: Comprehensive order lifecycle management, including status, payment, and fulfillment controls.
+- **Customer Management**: Automatic customer creation from orders with manual CRUD capabilities.
+- **Delivery System**: Supports two methods: pickup and own courier, with configurable settings for address, fees, and free delivery thresholds.
+- **SEO**: Implements base meta tags, dynamic server-side meta injection for storefronts, client-side title management, and generates `robots.txt` and `sitemap.xml`.
+- **Performance**: Optimizations include React.lazy() for code splitting, gzip compression, database indexing, image lazy loading, and intelligent caching strategies.
 
-### Admin (authenticated)
-- `/admin` - Dashboard with analytics
-- `/admin/products` - Product CRUD
-- `/admin/categories` - Category CRUD
-- `/admin/branding` - Logo, banner, colors
-- `/admin/whatsapp` - Phone number + message template
-- `/admin/analytics` - Analytics with charts (Page views, Sales, Orders) and tab reports
-- `/admin/orders` - Orders management with status/payment/fulfillment controls
-- `/admin/customers` - Customer management (auto-created from orders, manual CRUD)
-- `/admin/subscription` - Subscription/plan management with comparison
-- `/admin/settings` - Store info, contacts, display settings
-
-### Auth API
-- `POST /api/auth/register` - Register (email, password, firstName?)
-- `POST /api/auth/login` - Login (email, password)
-- `POST /api/auth/logout` - Logout (destroys session)
-- `GET /api/auth/user` - Get current user (auth required)
-
-### API
-- `POST /api/stores` - Create store (validated)
-- `GET /api/my-store` - Get current user's store
-- `GET/POST/PATCH/DELETE /api/my-store/products` - Products CRUD (validated)
-- `GET/POST/PATCH/DELETE /api/my-store/categories` - Categories CRUD (validated)
-- `GET/PUT /api/my-store/theme` - Store theme/branding (validated)
-- `GET/PUT /api/my-store/settings` - Store settings (validated)
-- `PUT /api/my-store/whatsapp` - WhatsApp settings (validated)
-- `GET /api/my-store/analytics` - Store analytics
-- `GET /api/tariffs` - Public tariff/plan data (reads from platform_settings with constant fallbacks)
-- `GET /api/storefront/:slug` - Public store data
-- `GET /api/my-store/analytics/detailed` - Detailed analytics with daily data (auth)
-- `GET /api/my-store/orders` - List all orders for store (auth)
-- `PATCH /api/my-store/orders/:id` - Update order status/payment/fulfillment/note (auth)
-- `GET/POST/PATCH/DELETE /api/my-store/customers` - Customers CRUD (auth)
-- `POST /api/storefront/:slug/order` - Create order (validated)
-- `GET /api/orders/:id` - Get order by ID (public)
-- `POST /api/storefront/:slug/event` - Track events (validated)
-- `POST /api/upload` - Image upload (auth required)
-
-## Database Tables
-users, sessions, stores, store_themes, store_settings, categories, products, orders, customers, store_events, platform_settings
-
-## Demo Store
-Demo store arai-beauty is automatically deleted on startup via seed.ts
-
-## Product Attributes System
-Products have `sku` (varchar), `unit` (varchar), and `attributes` (JSONB) columns for business-type-specific data.
-- **FnB fields**: portionSize, calories, cookingTime, ingredients, allergens, isSpicy, isVegetarian, isHalal
-- **Ecommerce fields**: brand, weight, material, sizes, colors, dimensions, warrantyMonths; pharmacy: dosage, activeIngredient, prescriptionRequired; digital: fileFormat, deliveryMethod; B2B: minOrderQty, wholesalePrice
-- **Service fields**: durationMinutes, priceType, serviceLocation, bookingRequired; education: format, lessonsCount, certificate; travel/ticketing: location, daysCount, maxParticipants; hotel: maxGuests; rental: depositAmount, rentalPeriod
-- Unit options vary by business group (fnb/ecommerce/service)
-- Product form shows collapsible type-specific section
-- Storefront product detail shows attribute badges
-
-## Plans
-- Free: 30 products
-- Pro: 300 products  
-- Business: 2000 products
-
-## Business Types
-- Store registration includes business type selection (26 types in 3 groups: F&B, E-commerce, Service)
-- Business type determines UI terminology: "Товары"/"Меню"/"Услуги" in sidebar, products page, dashboard
-- Defined in shared/schema.ts BUSINESS_TYPES constant with getBusinessLabels() helper
-- useBusinessLabels() hook for frontend components
-
-## Onboarding Flow
-- Dashboard shows onboarding card when store has 0 categories or 0 products
-- Step 1: Create category (required first)
-- Step 2: Add products (unlocked after categories exist)
-- Products page blocks adding items without categories, shows warning with link to categories page
-
-## Super Admin Panel
-- Accessible at /superadmin/* routes (only for users with isSuperAdmin=true)
-- Dashboard: platform-wide analytics with trend charts (orders, revenue, stores, users over time), period selector (7d/30d/90d)
-- Stores page: view all stores with stats, search by name/slug/owner/city, change plans, toggle active/inactive
-- Store detail page: /superadmin/stores/:id - full store overview with info, design, top products, tabs for orders/customers/products
-- Orders page: view ALL platform orders with search by name/phone/number, filter by status/payment
-- Users page: view all users, grant/revoke SuperAdmin role
-- Events page: platform-wide activity log with event type filter (visits, cart, checkout)
-- API routes: GET /api/superadmin/analytics, GET /api/superadmin/trends, GET /api/superadmin/stores, GET /api/superadmin/stores/:id, GET /api/superadmin/orders, GET /api/superadmin/events, PATCH /api/superadmin/stores/:id/plan, PATCH /api/superadmin/stores/:id/active, GET /api/superadmin/users, PATCH /api/superadmin/users/:id/superadmin
-- isSuperAdmin field on users table, isSuperAdminMiddleware in server/auth.ts
-- SuperAdmin link visible in merchant sidebar for admin users
-- Super Admin login redirects to /superadmin, regular users to /
-
-## Recent Changes
-- Storefront redesign (take.app style): centered logo header, hamburger sidebar with search/categories, 2-column product grid, primary-color cart bar
-- Sidebar: no logo, search bar, business-type category label, expandable categories list
-- Tab "Обзор" renamed to business-type label (Товары/Меню/Услуги)
-- Checkout fields: by default only Name + Phone; Address and Comment are optional, controlled via admin settings (checkoutAddressEnabled, checkoutCommentEnabled in store_settings table)
-- Enhanced SuperAdmin panel with trend charts, orders page, store detail view, events log, search/filters
-- Replaced Replit Auth (OIDC) with local email/password authentication (bcrypt + express-session)
-- Added /login and /register pages with Russian UI
-- Auth module: server/auth.ts (setupSession, registerAuthRoutes, isAuthenticated)
-- Users table: added password_hash, is_super_admin columns
-- Added business type selection to store registration (2-step flow: pick type → fill details)
-- Dynamic admin terminology based on business type (sidebar, products page, dashboard, categories)
-- Added onboarding guide to dashboard with step-by-step instructions
-- Products page enforces category-first creation with warning card
-- Removed demo page links from landing page, added mobile login button
-- Added theme customization: secondary color, button/card/font styles, banner overlay
-- Storefront uses merchant's own branding in nav instead of TakeSale logo
-- Added analytics page at /admin/analytics: line charts for page views/sales/orders
-- Added admin customers page at /admin/customers
-- Added admin orders page at /admin/orders
-- Added order/invoice system with WhatsApp integration
-- Kaspi payment integration removed (DB schema columns preserved but UI/API cleaned out)
-- Added Zod validation schemas on all API routes
-- Unified color scheme: primary blue across all admin pages, landing page updated with full feature set
-- Plan/tariff management: planStartedAt, planExpiresAt fields in stores table, PLAN_PRICES/PLAN_NAMES constants
-- Super Admin stores page: color-coded active/inactive badges (green/red), plan stripe colors (zinc/blue/purple), MRR summary cards with color dots, improved visual hierarchy
-- Super Admin tariffs page (/superadmin/tariffs): edit plan prices, limits, features; comparison table; stored in platform_settings table
-- API routes: GET /api/superadmin/tariffs, PUT /api/superadmin/tariffs/:plan
-- Database: platform_settings table (key/value jsonb) for configurable platform settings
-- Super Admin store detail: dedicated plan/subscription card with dates, pricing, usage stats
-- Merchant admin settings: enhanced plan card with limits, start/expiry dates, pricing info
-- API auto-sets plan dates when changing plans (start=now, expires=+30d for paid plans, clears for free)
-- 360dialog WhatsApp Business API integration (server/whatsapp.ts): order notifications to store owners, broadcast/newsletter to customers
-- SuperAdmin WhatsApp page (/superadmin/whatsapp): WABA config (API key, sender phone), test messaging, broadcast to all/store customers, message history with stats
-- whatsapp_messages table: logs all sent/failed messages with status, wamid, error tracking
-- API routes: GET/PUT /api/superadmin/waba/config, GET /api/superadmin/waba/messages, POST /api/superadmin/waba/broadcast, POST /api/superadmin/waba/test
-- WABA config stored in platform_settings (key: waba_config), API key redacted in responses
-- Order creation auto-triggers WhatsApp notification to store owner (non-blocking)
-- WhatsApp onboarding system: welcome message on registration (if phone provided), store-created tips, delayed educational tips series
-- Users table: phone field for WhatsApp contact
-- Registration form: optional WhatsApp phone field with description
-- Onboarding config stored in platform_settings (key: onboarding_messages), editable via SuperAdmin
-- API routes: GET/PUT /api/superadmin/waba/onboarding
-- SuperAdmin WhatsApp page: new "Онбординг" tab with welcome/store-created/tips message editors
-- Performance optimizations: React.lazy() code splitting for all pages, gzip compression middleware, DB indexes on key columns (stores.ownerUserId/slug, products/categories/orders/customers.storeId), image lazy loading on storefront, Cache-Control headers for uploads (1yr immutable) and storefront API (30s + stale-while-revalidate)
-- SEO implementation: base meta tags in index.html (title, description, OG, Twitter), server-side dynamic meta injection for storefront pages in production (server/seo.ts + server/static.ts), client-side useDocumentTitle hook on all pages, robots.txt and sitemap.xml endpoints
-- GET /robots.txt - crawler directives, GET /sitemap.xml - dynamic XML sitemap with all active stores
-- useDocumentTitle hook (client/src/hooks/use-document-title.ts) sets page-specific titles across all admin, auth, and storefront pages
-- Delivery system: 2 methods (pickup, own courier) - Yandex Delivery removed (doesn't support Kazakhstan)
-- Admin delivery settings page (/admin/delivery): configure pickup address, courier fee/free threshold/zone
-- store_settings: deliveryEnabled, pickupEnabled, deliveryFee, deliveryFreeThreshold, pickupAddress, deliveryZone (yandex columns preserved in DB but unused)
-- orders table: deliveryMethod, deliveryFee, deliveryStatus columns (yandexClaimId preserved in DB but unused)
-- Storefront checkout: delivery method selection (pickup/courier), dynamic fee calculation, free delivery threshold display
-- Invoice page: shows delivery method and fee
-- API routes: GET/PUT /api/my-store/delivery
-- WhatsApp order notifications include delivery method and fee
-- Storefront enhancements (take.app style): announcement banner, social link cards (WhatsApp/Telegram/Instagram), category chips with images
-- store_settings: announcementText, showAnnouncement, telegramUrl, showSocialCards, showCategoryChips columns
-- categories table: description and imageUrl columns for category icons/photos
-- Admin settings page: announcement section with toggle, Telegram URL field, social cards toggle, category chips toggle
-- Admin categories page: description and image upload fields for categories
-- Storefront: social pills under store info, announcement banner with Megaphone icon, category chips show images when available
-- Category display styles: merchants can choose between chips (horizontal pills), grid (2-column cards with images), or list (vertical with descriptions) via admin settings
-- store_settings: categoryDisplayStyle field (chips/grid/list, default "chips")
-- Admin categories page: drag-to-reorder (HTML5 drag and drop), product counts per category shown
-- API: PUT /api/my-store/categories/reorder - reorder categories by passing array of IDs
-- Product variants system: `variants` JSONB column on products table stores array of variant groups (ProductVariantGroup[])
-- Each variant group has id, name, and options array; each option has id, label, optional price override, imageUrl, sku, isActive
-- Admin product form: VariantsSection component for managing variant groups and options (add/remove groups, add/remove options with label and custom price)
-- Storefront product detail: variant selection UI with pill-style buttons, price updates based on selected variant
-- Cart supports variant-specific items (same product with different variants = separate cart entries)
-- Order items include variantTitle field for tracking selected variant
-- Invoice and admin orders pages display variant info under item names
-- WhatsApp order messages include variant info in parentheses
-- Removed profile page (/admin/profile) - no longer in sidebar, routes, or API
+## External Dependencies
+- **PostgreSQL**: Primary database for all application data and session storage.
+- **Tailwind CSS**: Utility-first CSS framework for styling.
+- **shadcn/ui**: Component library for UI elements.
+- **Vite**: Frontend build tool.
+- **Express.js**: Backend web application framework.
+- **Drizzle ORM**: TypeScript ORM for interacting with PostgreSQL.
+- **bcrypt**: Library for password hashing.
+- **Multer**: Middleware for handling `multipart/form-data`, primarily for file uploads.
+- **Zod**: TypeScript-first schema declaration and validation library.
+- **360dialog WhatsApp Business API**: Integrated for order notifications to store owners, and broadcast/newsletter capabilities to customers. Configurable via SuperAdmin panel.

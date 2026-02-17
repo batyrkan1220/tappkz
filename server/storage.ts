@@ -1,5 +1,5 @@
 import {
-  stores, storeThemes, storeSettings, categories, products, storeEvents, orders, customers, platformSettings,
+  stores, storeThemes, storeSettings, categories, products, storeEvents, orders, customers, platformSettings, discounts,
   type Store, type InsertStore,
   type StoreTheme, type InsertStoreTheme,
   type StoreSettings, type InsertStoreSettings,
@@ -8,6 +8,7 @@ import {
   type StoreEvent, type InsertStoreEvent,
   type Order, type InsertOrder,
   type Customer, type InsertCustomer,
+  type Discount, type InsertDiscount,
   PLAN_LIMITS, PLAN_ORDER_LIMITS, PLAN_IMAGE_LIMITS,
 } from "@shared/schema";
 import { users, type User } from "@shared/models/auth";
@@ -119,6 +120,15 @@ export interface IStorage {
   getPlatformSetting(key: string): Promise<any | null>;
   setPlatformSetting(key: string, value: any): Promise<void>;
   getAllPlatformSettings(): Promise<{ key: string; value: any }[]>;
+
+  getDiscounts(storeId: number): Promise<Discount[]>;
+  getDiscount(id: number, storeId: number): Promise<Discount | undefined>;
+  createDiscount(data: InsertDiscount): Promise<Discount>;
+  updateDiscount(id: number, storeId: number, data: Partial<InsertDiscount>): Promise<Discount | undefined>;
+  deleteDiscount(id: number, storeId: number): Promise<void>;
+  incrementDiscountUses(id: number): Promise<void>;
+  getDiscountByCode(storeId: number, code: string): Promise<Discount | undefined>;
+  getActiveDiscounts(storeId: number): Promise<Discount[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -673,6 +683,42 @@ export class DatabaseStorage implements IStorage {
   async getAllPlatformSettings(): Promise<{ key: string; value: any }[]> {
     const rows = await db.select().from(platformSettings);
     return rows.map(r => ({ key: r.key, value: r.value }));
+  }
+
+  async getDiscounts(storeId: number): Promise<Discount[]> {
+    return db.select().from(discounts).where(eq(discounts.storeId, storeId)).orderBy(desc(discounts.createdAt));
+  }
+
+  async getDiscount(id: number, storeId: number): Promise<Discount | undefined> {
+    const [d] = await db.select().from(discounts).where(and(eq(discounts.id, id), eq(discounts.storeId, storeId)));
+    return d;
+  }
+
+  async createDiscount(data: InsertDiscount): Promise<Discount> {
+    const [d] = await db.insert(discounts).values(data).returning();
+    return d;
+  }
+
+  async updateDiscount(id: number, storeId: number, data: Partial<InsertDiscount>): Promise<Discount | undefined> {
+    const [d] = await db.update(discounts).set(data).where(and(eq(discounts.id, id), eq(discounts.storeId, storeId))).returning();
+    return d;
+  }
+
+  async deleteDiscount(id: number, storeId: number): Promise<void> {
+    await db.delete(discounts).where(and(eq(discounts.id, id), eq(discounts.storeId, storeId)));
+  }
+
+  async incrementDiscountUses(id: number): Promise<void> {
+    await db.update(discounts).set({ currentUses: sql`${discounts.currentUses} + 1` }).where(eq(discounts.id, id));
+  }
+
+  async getDiscountByCode(storeId: number, code: string): Promise<Discount | undefined> {
+    const [d] = await db.select().from(discounts).where(and(eq(discounts.storeId, storeId), eq(discounts.code, code), eq(discounts.isActive, true)));
+    return d;
+  }
+
+  async getActiveDiscounts(storeId: number): Promise<Discount[]> {
+    return db.select().from(discounts).where(and(eq(discounts.storeId, storeId), eq(discounts.isActive, true)));
   }
 }
 

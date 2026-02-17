@@ -149,6 +149,12 @@ export default function InvoicePage() {
                 <span data-testid="text-delivery-fee">{formatPrice(order.deliveryFee)}</span>
               </div>
             )}
+            {order.discountAmount != null && order.discountAmount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-green-600 dark:text-green-400">Скидка{order.discountTitle ? ` (${order.discountTitle})` : ""}</span>
+                <span className="text-green-600 dark:text-green-400" data-testid="text-discount-amount">-{formatPrice(order.discountAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between border-t pt-2 text-base font-bold">
               <span>Итого</span>
               <span data-testid="text-total">{formatPrice(order.total)}</span>
