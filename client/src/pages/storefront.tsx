@@ -81,6 +81,11 @@ export default function StorefrontPage() {
     enabled: !!params.slug,
   });
 
+  const cartSubtotal = cart.reduce((sum, item) => {
+    const price = item.variantPrice || item.product.discountPrice || item.product.price;
+    return sum + price * item.quantity;
+  }, 0);
+
   useEffect(() => {
     if (appliedDiscount && appliedDiscount.type === "code") return;
     
@@ -218,11 +223,6 @@ export default function StorefrontPage() {
     }
     return filtered;
   }, [products, activeCategory, activeTab, searchQuery]);
-
-  const cartSubtotal = cart.reduce((sum, item) => {
-    const price = item.variantPrice || item.product.discountPrice || item.product.price;
-    return sum + price * item.quantity;
-  }, 0);
 
   const hasDeliveryOptions = settings?.deliveryEnabled || settings?.pickupEnabled;
 
