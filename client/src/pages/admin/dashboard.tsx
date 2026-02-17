@@ -104,7 +104,7 @@ export default function Dashboard() {
                   Шаг 1: Создайте {labels.categoryLabel.toLowerCase()}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {labels.group === "fnb" ? "Добавьте разделы меню для организации блюд" : labels.group === "service" ? "Добавьте категории для организации услуг" : "Добавьте категории для организации товаров"}
+                  Добавьте категории для организации товаров
                 </p>
               </div>
               {!hasCategories && (
@@ -126,7 +126,7 @@ export default function Dashboard() {
                   Шаг 2: Добавьте {labels.itemLabel}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {labels.group === "fnb" ? "Добавьте блюда с ценами и фото" : labels.group === "service" ? "Добавьте услуги с ценами и описанием" : "Добавьте товары с ценами и фото"}
+                  Добавьте товары с ценами и фото
                 </p>
               </div>
               {!hasProducts && hasCategories && (

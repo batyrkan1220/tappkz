@@ -37,23 +37,9 @@ function getAttrBadges(product: Product, group: string): string[] {
   const a = (product as any).attributes || {};
   if ((product as any).sku) badges.push(`Арт: ${(product as any).sku}`);
   if ((product as any).unit) badges.push((product as any).unit);
-  if (group === "fnb") {
-    if (a.portionSize) badges.push(a.portionSize);
-    if (a.calories) badges.push(`${a.calories} ккал`);
-    if (a.isSpicy) badges.push("Острое");
-    if (a.isVegetarian) badges.push("Вег");
-    if (a.isHalal) badges.push("Халяль");
-  }
-  if (group === "ecommerce") {
-    if (a.brand) badges.push(a.brand);
-    if (a.weight) badges.push(a.weight);
-    if (a.sizes) badges.push(`Р: ${a.sizes}`);
-  }
-  if (group === "service") {
-    if (a.durationMinutes) badges.push(`${a.durationMinutes} мин`);
-    if (a.priceType === "from") badges.push("от");
-    if (a.bookingRequired) badges.push("Запись");
-  }
+  if (a.brand) badges.push(a.brand);
+  if (a.weight) badges.push(a.weight);
+  if (a.sizes) badges.push(`Р: ${a.sizes}`);
   return badges;
 }
 
@@ -162,7 +148,7 @@ export default function ProductsPage() {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold" data-testid="text-no-categories-title">Сначала создайте категорию</p>
             <p className="text-xs text-muted-foreground">
-              {group === "fnb" ? "Чтобы добавить блюда, сначала создайте разделы меню" : group === "service" ? "Чтобы добавить услуги, сначала создайте категории услуг" : "Чтобы добавить товары, сначала создайте категории"}
+              Чтобы добавить товары, сначала создайте категории
             </p>
           </div>
           <Link href="/admin/categories" data-testid="link-go-categories">

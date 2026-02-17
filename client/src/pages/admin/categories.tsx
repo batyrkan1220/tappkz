@@ -170,7 +170,7 @@ export default function CategoriesPage() {
           </div>
           <div>
             <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-categories-title">Категории</h1>
-            <p className="text-xs text-muted-foreground" data-testid="text-categories-count">{categories?.length ?? 0} {labels.group === "fnb" ? "разделов" : "категорий"}</p>
+            <p className="text-xs text-muted-foreground" data-testid="text-categories-count">{categories?.length ?? 0} категорий</p>
           </div>
         </div>
         <Button onClick={openCreate} className="rounded-full font-semibold" data-testid="button-add-category">
@@ -189,7 +189,7 @@ export default function CategoriesPage() {
           </div>
           <p className="font-extrabold tracking-tight">Нет категорий</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {labels.group === "fnb" ? "Создайте разделы для организации меню" : labels.group === "service" ? "Создайте категории для организации услуг" : "Создайте категории для организации товаров"}
+            Создайте категории для организации товаров
           </p>
         </Card>
       ) : (

@@ -49,14 +49,6 @@ const emptyForm: ProductForm = {
 };
 
 const UNIT_OPTIONS: Record<string, { value: string; label: string }[]> = {
-  fnb: [
-    { value: "порция", label: "Порция" },
-    { value: "шт", label: "Штука" },
-    { value: "г", label: "Граммы (г)" },
-    { value: "кг", label: "Килограммы (кг)" },
-    { value: "мл", label: "Миллилитры (мл)" },
-    { value: "л", label: "Литры (л)" },
-  ],
   ecommerce: [
     { value: "шт", label: "Штука" },
     { value: "г", label: "Граммы (г)" },
@@ -66,14 +58,6 @@ const UNIT_OPTIONS: Record<string, { value: string; label: string }[]> = {
     { value: "м", label: "Метры (м)" },
     { value: "уп", label: "Упаковка" },
     { value: "компл", label: "Комплект" },
-  ],
-  service: [
-    { value: "услуга", label: "Услуга" },
-    { value: "час", label: "Час" },
-    { value: "сеанс", label: "Сеанс" },
-    { value: "занятие", label: "Занятие" },
-    { value: "день", label: "День" },
-    { value: "чел", label: "Человек" },
   ],
 };
 

@@ -6,40 +6,29 @@ import { z } from "zod";
 export * from "./models/auth";
 
 export const BUSINESS_TYPES = {
-  restaurant: { label: "Ресторан", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
-  cafe: { label: "Кафе", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
-  home_food: { label: "Домашняя еда", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
-  bakery: { label: "Пекарня и кондитерская", group: "fnb", itemLabel: "изделие", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
-  catering: { label: "Кейтеринг", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
-  hotel_restaurant: { label: "Ресторан при отеле", group: "fnb", itemLabel: "блюдо", itemLabelPlural: "Меню", categoryLabel: "Раздел меню" },
-  grocery: { label: "Продукты и мясо", group: "fnb", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  ecommerce: { label: "Интернет-магазин", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  fashion: { label: "Одежда и обувь", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  pharmacy: { label: "Аптека и здоровье", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  electronics: { label: "Электроника и телефоны", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
+  ecommerce: { label: "Физические товары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
   digital: { label: "Цифровые товары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  popup: { label: "Pop-up магазин", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  personal_shopping: { label: "Шоппинг-услуги", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  jewelry: { label: "Украшения и аксессуары", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  b2b: { label: "B2B и оптовая торговля", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" },
-  salon: { label: "Салон красоты", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
-  laundry: { label: "Прачечная и химчистка", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
-  professional: { label: "Профессиональные услуги", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
-  pets: { label: "Зоотовары и груминг", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
-  hotel: { label: "Бронирование жилья", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
-  education: { label: "Образование и курсы", group: "service", itemLabel: "курс", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
-  printing: { label: "Типография и печать", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория услуг" },
-  rental: { label: "Аренда", group: "service", itemLabel: "услугу", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
-  travel: { label: "Туризм и путешествия", group: "service", itemLabel: "тур", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
-  ticketing: { label: "Билеты и мероприятия", group: "service", itemLabel: "билет", itemLabelPlural: "Услуги", categoryLabel: "Категория" },
 } as const;
 
 export type BusinessTypeKey = keyof typeof BUSINESS_TYPES;
 
+const LEGACY_TYPE_MAP: Record<string, BusinessTypeKey> = {
+  restaurant: "ecommerce", cafe: "ecommerce", home_food: "ecommerce", bakery: "ecommerce",
+  catering: "ecommerce", hotel_restaurant: "ecommerce", grocery: "ecommerce",
+  fashion: "ecommerce", pharmacy: "ecommerce", electronics: "ecommerce",
+  popup: "ecommerce", personal_shopping: "ecommerce", jewelry: "ecommerce", b2b: "ecommerce",
+  salon: "ecommerce", laundry: "ecommerce", professional: "ecommerce", pets: "ecommerce",
+  hotel: "ecommerce", education: "digital", printing: "ecommerce", rental: "ecommerce",
+  travel: "ecommerce", ticketing: "digital",
+};
+
 export function getBusinessLabels(businessType: string | null | undefined) {
+  if (!businessType) return BUSINESS_TYPES.ecommerce;
   const bt = businessType as BusinessTypeKey;
-  if (bt && BUSINESS_TYPES[bt]) return BUSINESS_TYPES[bt];
-  return { label: "Магазин", group: "ecommerce", itemLabel: "товар", itemLabelPlural: "Товары", categoryLabel: "Категория" };
+  if (BUSINESS_TYPES[bt]) return BUSINESS_TYPES[bt];
+  const mapped = LEGACY_TYPE_MAP[businessType];
+  if (mapped) return BUSINESS_TYPES[mapped];
+  return BUSINESS_TYPES.ecommerce;
 }
 
 export const stores = pgTable("stores", {

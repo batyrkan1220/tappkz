@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,25 +7,16 @@ import { Label } from "@/components/ui/label";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowRight, ArrowLeft, Check, UtensilsCrossed, Store, Briefcase, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, CheckCircle2, XCircle, Loader2, ShoppingBag, Download } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { PhoneInput } from "@/components/phone-input";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
 
-const GROUPS = [
-  { key: "fnb", label: "Еда и напитки", icon: UtensilsCrossed, color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-950/30" },
-  { key: "ecommerce", label: "Торговля", icon: Store, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
-  { key: "service", label: "Услуги", icon: Briefcase, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/30" },
-];
-
-const businessTypeEntries = Object.entries(BUSINESS_TYPES) as [BusinessTypeKey, typeof BUSINESS_TYPES[BusinessTypeKey]][];
-
 export default function CreateStorePage() {
   useDocumentTitle("Создание магазина");
   const { toast } = useToast();
   const [step, setStep] = useState(1);
-  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [businessType, setBusinessType] = useState<BusinessTypeKey | null>(null);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -96,7 +87,10 @@ export default function CreateStorePage() {
     }
   };
 
-  const filteredTypes = businessTypeEntries.filter(([, v]) => v.group === selectedGroup);
+  const typeOptions: { key: BusinessTypeKey; icon: typeof ShoppingBag; desc: string }[] = [
+    { key: "ecommerce", icon: ShoppingBag, desc: "Одежда, электроника, продукты и другие физические товары" },
+    { key: "digital", icon: Download, desc: "Курсы, шаблоны, файлы и другие цифровые товары" },
+  ];
 
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
@@ -107,7 +101,7 @@ export default function CreateStorePage() {
         <div className="text-center">
           <TappLogo size={56} className="mx-auto mb-3 rounded-2xl" />
           <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-create-store-title">
-            {step === 1 ? "Выберите тип бизнеса" : "Создайте ваш магазин"}
+            {step === 1 ? "Выберите тип магазина" : "Создайте ваш магазин"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground" data-testid="text-create-store-subtitle">
             {step === 1 ? "Это поможет настроить платформу под ваш бизнес" : "Заполните информацию для начала работы"}
@@ -122,41 +116,31 @@ export default function CreateStorePage() {
 
         {step === 1 && (
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-2">
-              {GROUPS.map((g) => (
-                <button
-                  key={g.key}
-                  onClick={() => { setSelectedGroup(g.key); setBusinessType(null); }}
-                  className={`flex flex-col items-center gap-2 rounded-md border p-3 text-center transition-colors ${
-                    selectedGroup === g.key ? "border-primary bg-primary/10 dark:bg-primary/5" : "hover-elevate"
-                  }`}
-                  data-testid={`button-group-${g.key}`}
-                >
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${g.bg}`}>
-                    <g.icon className={`h-5 w-5 ${g.color}`} />
-                  </div>
-                  <span className="text-xs font-semibold">{g.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {selectedGroup && (
-              <div className="space-y-1.5 max-h-[280px] overflow-y-auto">
-                {filteredTypes.map(([key, val]) => (
+            <div className="grid grid-cols-2 gap-3">
+              {typeOptions.map((t) => {
+                const isSelected = businessType === t.key;
+                const Icon = t.icon;
+                return (
                   <button
-                    key={key}
-                    onClick={() => setBusinessType(key)}
-                    className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm font-medium transition-colors ${
-                      businessType === key ? "border-primary bg-primary/10 dark:bg-primary/5" : "hover-elevate"
+                    key={t.key}
+                    onClick={() => setBusinessType(t.key)}
+                    className={`flex flex-col items-center gap-3 rounded-md border-2 p-5 text-center transition-colors ${
+                      isSelected ? "border-primary bg-primary/10 dark:bg-primary/5" : "border-border hover-elevate"
                     }`}
-                    data-testid={`button-type-${key}`}
+                    data-testid={`button-type-${t.key}`}
                   >
-                    {businessType === key && <Check className="h-4 w-4 shrink-0 text-primary" />}
-                    <span className={businessType === key ? "" : "ml-7"}>{val.label}</span>
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${isSelected ? "bg-primary/20" : "bg-muted"}`}>
+                      <Icon className={`h-6 w-6 ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{BUSINESS_TYPES[t.key].label}</p>
+                      <p className="mt-1 text-xs text-muted-foreground leading-tight">{t.desc}</p>
+                    </div>
+                    {isSelected && <Check className="h-4 w-4 text-primary" />}
                   </button>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
 
             <Button
               className="w-full rounded-full font-semibold"
