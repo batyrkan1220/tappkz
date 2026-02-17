@@ -11,7 +11,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { PhoneInput } from "@/components/phone-input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye } from "lucide-react";
+import { Settings, Crown, CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, MessageCircle, MapPin, Plus, Trash2 } from "lucide-react";
 import { SiTelegram, SiInstagram } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, StoreSettings } from "@shared/schema";
@@ -24,8 +24,12 @@ export default function StoreSettingsPage() {
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
+  const [whatsappPhone, setWhatsappPhone] = useState("");
+  const [orderPhones, setOrderPhones] = useState<string[]>([]);
   const [showPrices, setShowPrices] = useState(true);
   const [checkoutAddressEnabled, setCheckoutAddressEnabled] = useState(false);
   const [checkoutCommentEnabled, setCheckoutCommentEnabled] = useState(false);
@@ -76,8 +80,12 @@ export default function StoreSettingsPage() {
       setName(store.name);
       setSlug(store.slug);
       originalSlugRef.current = store.slug;
+      setEmail(store.email || "");
+      setAddress(store.address || "");
       setCity(store.city || "");
       setDescription(store.description || "");
+      setWhatsappPhone(store.whatsappPhone || "");
+      setOrderPhones(store.orderPhones || []);
     }
     if (settings) {
       setShowPrices(settings.showPrices);
@@ -96,11 +104,30 @@ export default function StoreSettingsPage() {
     }
   }, [store, settings]);
 
+  const addOrderPhone = () => {
+    setOrderPhones([...orderPhones, ""]);
+  };
+
+  const updateOrderPhone = (index: number, value: string) => {
+    const updated = [...orderPhones];
+    updated[index] = value;
+    setOrderPhones(updated);
+  };
+
+  const removeOrderPhone = (index: number) => {
+    setOrderPhones(orderPhones.filter((_, i) => i !== index));
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const filteredOrderPhones = orderPhones.filter(p => p && p.replace(/\D/g, "").length > 1);
       await apiRequest("PUT", "/api/my-store/settings", {
         name,
         slug,
+        whatsappPhone: whatsappPhone || undefined,
+        email: email || null,
+        address: address || null,
+        orderPhones: filteredOrderPhones,
         city: city || null,
         description: description || null,
         showPrices,
@@ -139,45 +166,44 @@ export default function StoreSettingsPage() {
   }
 
   const canSave = name && slug && !saveMutation.isPending && !slugChecking && !(slugStatus !== null && !slugStatus.available);
+  const hostname = window.location.hostname === "localhost" ? "tapp.kz" : window.location.hostname;
 
   return (
     <div className="space-y-5 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/30">
-            <Settings className="h-5 w-5 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-settings-title">Настройки</h1>
-            <p className="text-xs text-muted-foreground">Управление магазином</p>
-          </div>
-        </div>
+        <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-settings-title">Общие настройки магазина</h1>
         <Button
           onClick={() => saveMutation.mutate()}
           disabled={!canSave}
           className="rounded-full font-semibold"
           data-testid="button-save-settings"
         >
-          {saveMutation.isPending ? "Сохранение..." : "Сохранить все"}
+          {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
         </Button>
       </div>
 
-      <Card className="p-5" data-testid="card-store-info">
-        <div className="flex items-center gap-2 mb-4">
-          <StoreIcon className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-extrabold tracking-tight">Информация о магазине</h3>
-        </div>
+      <Card className="p-5" data-testid="card-profile">
+        <h3 className="font-extrabold tracking-tight mb-4">Профиль</h3>
         <div className="space-y-4">
           <div>
-            <Label className="font-semibold">Название магазина *</Label>
+            <Label className="font-semibold">Имя</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-store-name" />
           </div>
           <div>
-            <Label className="font-semibold">Адрес магазина *</Label>
-            <Input value={slug} onChange={(e) => handleSlugChange(e.target.value)} placeholder="my-shop" data-testid="input-store-slug" />
-            {slug && (
-              <p className="mt-1 text-xs text-muted-foreground break-all">{window.location.origin}/{slug}</p>
-            )}
+            <Label className="font-semibold">Ссылка на магазин</Label>
+            <p className="text-xs text-muted-foreground mb-1">Изменение этого приведёт к нарушению существующего QR кода и общих ссылок.</p>
+            <div className="flex items-center">
+              <div className="flex h-9 items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground select-none whitespace-nowrap">
+                {hostname} /
+              </div>
+              <Input
+                value={slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                placeholder="my-shop"
+                className="rounded-l-none"
+                data-testid="input-store-slug"
+              />
+            </div>
             {slug.length >= 2 && slug !== originalSlugRef.current && (
               <div className="mt-1 flex items-center gap-1.5 text-xs">
                 {slugChecking ? (
@@ -190,6 +216,78 @@ export default function StoreSettingsPage() {
               </div>
             )}
           </div>
+          <div>
+            <Label className="font-semibold">Email</Label>
+            <p className="text-xs text-muted-foreground mb-1">Клиенты будут получать письма с этого адреса</p>
+            <Input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="store@example.com"
+              type="email"
+              data-testid="input-store-email"
+            />
+          </div>
+          <div>
+            <Label className="font-semibold">Адрес</Label>
+            <Input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Введите адрес"
+              data-testid="input-store-address"
+            />
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-5" data-testid="card-whatsapp">
+        <h3 className="font-extrabold tracking-tight mb-1">Номер WhatsApp</h3>
+        <p className="text-sm text-muted-foreground mb-4">Клиенты будут отправлять сообщения заказов на этот номер.</p>
+        <div className="space-y-4">
+          <div>
+            <Label className="font-semibold">Основной номер</Label>
+            <PhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-whatsapp-phone" />
+          </div>
+          <div>
+            <Label className="font-semibold">Номера заказов</Label>
+            <p className="text-xs text-muted-foreground mb-2">Распределяйте заказы WhatsApp на разные номера по круговой системе. Обратите внимание, что вы будете получать только одно сообщение WhatsApp за раз.</p>
+            {orderPhones.map((phone, index) => (
+              <div key={index} className="flex items-center gap-2 mb-2">
+                <div className="flex-1">
+                  <PhoneInput
+                    value={phone}
+                    onValueChange={(val) => updateOrderPhone(index, val)}
+                    data-testid={`input-order-phone-${index}`}
+                  />
+                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => removeOrderPhone(index)}
+                  data-testid={`button-remove-order-phone-${index}`}
+                >
+                  <Trash2 className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={addOrderPhone}
+              data-testid="button-add-order-phone"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Добавить номер
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-5" data-testid="card-store-info">
+        <div className="flex items-center gap-2 mb-4">
+          <StoreIcon className="h-4 w-4 text-muted-foreground" />
+          <h3 className="font-extrabold tracking-tight">Информация о магазине</h3>
+        </div>
+        <div className="space-y-4">
           <div>
             <Label className="font-semibold">Город</Label>
             <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-store-city" />

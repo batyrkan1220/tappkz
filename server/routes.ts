@@ -104,6 +104,10 @@ const themeSchema = z.object({
 const settingsSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/).optional(),
+  whatsappPhone: z.string().min(5).max(20).regex(/^[0-9]+$/).optional(),
+  email: z.string().max(200).nullable().optional(),
+  address: z.string().max(500).nullable().optional(),
+  orderPhones: z.array(z.string().max(20)).optional(),
   city: z.string().max(100).nullable().optional(),
   description: z.string().max(1000).nullable().optional(),
   showPrices: z.boolean().optional(),
@@ -542,6 +546,10 @@ export async function registerRoutes(
       const storeUpdate: Record<string, any> = {};
       if (data.name !== undefined) storeUpdate.name = data.name;
       if (data.slug !== undefined) storeUpdate.slug = data.slug;
+      if (data.whatsappPhone !== undefined) storeUpdate.whatsappPhone = data.whatsappPhone;
+      if (data.email !== undefined) storeUpdate.email = data.email || null;
+      if (data.address !== undefined) storeUpdate.address = data.address || null;
+      if (data.orderPhones !== undefined) storeUpdate.orderPhones = data.orderPhones;
       if (data.city !== undefined) storeUpdate.city = data.city || null;
       if (data.description !== undefined) storeUpdate.description = data.description || null;
       if (Object.keys(storeUpdate).length > 0) {
