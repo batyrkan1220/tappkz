@@ -36,7 +36,7 @@ interface ProductForm {
   imageUrls: string[];
   sku: string;
   unit: string;
-  productType: "physical" | "digital";
+  productType: "physical";
   downloadUrl: string;
   attributes: ProductAttributes;
   variants: ProductVariantGroup[];
@@ -102,8 +102,8 @@ export default function ProductFormPage() {
         imageUrls: editProduct.imageUrls || [],
         sku: (editProduct as any).sku || "",
         unit: (editProduct as any).unit || "",
-        productType: (editProduct as any).productType === "digital" ? "digital" : "physical",
-        downloadUrl: (editProduct as any).downloadUrl || "",
+        productType: "physical",
+        downloadUrl: "",
         attributes: (editProduct as any).attributes || {},
         variants: (editProduct as any).variants || [],
       });
@@ -128,7 +128,7 @@ export default function ProductFormPage() {
         sku: form.sku || null,
         unit: form.unit || null,
         productType: form.productType,
-        downloadUrl: form.productType === "digital" ? (form.downloadUrl || null) : null,
+        downloadUrl: null,
         attributes: form.attributes,
         variants: form.variants,
       };
