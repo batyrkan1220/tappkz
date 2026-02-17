@@ -70,7 +70,7 @@ export default function RegisterPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      window.location.href = "/";
+      window.location.href = "/admin";
     },
     onError: (e: Error) => {
       const msg = e.message.includes("уже зарегистрирован")

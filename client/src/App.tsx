@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient, getQueryFn } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -84,6 +84,7 @@ function HomePage() {
     if (store) {
       return <AdminRoute component={Dashboard} />;
     }
+    return <Redirect to="/admin" />;
   }
   return <LandingPage />;
 }
