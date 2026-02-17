@@ -1,6 +1,6 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient, getQueryFn } from "./lib/queryClient";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
@@ -70,8 +70,20 @@ function SuperAdminRoute({ component: Component }: { component: React.ComponentT
 
 function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { data: store, isLoading: storeLoading } = useQuery<any>({
+    queryKey: ["/api/my-store"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    enabled: isAuthenticated,
+  });
+
   if (isLoading) return null;
+
   if (isAuthenticated) {
+    if (storeLoading) return null;
+    if (!store) {
+      window.location.href = "/register";
+      return null;
+    }
     return <AdminRoute component={Dashboard} />;
   }
   return <LandingPage />;
