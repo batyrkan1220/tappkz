@@ -112,6 +112,7 @@ const settingsSchema = z.object({
   orderPhones: z.array(z.string().max(20)).optional(),
   city: z.string().max(100).nullable().optional(),
   description: z.string().max(1000).nullable().optional(),
+  businessType: z.enum(Object.keys(BUSINESS_TYPES) as [string, ...string[]]).nullable().optional(),
   showPrices: z.boolean().optional(),
   checkoutAddressEnabled: z.boolean().optional(),
   checkoutCommentEnabled: z.boolean().optional(),
@@ -560,6 +561,7 @@ export async function registerRoutes(
       if (data.orderPhones !== undefined) storeUpdate.orderPhones = data.orderPhones;
       if (data.city !== undefined) storeUpdate.city = data.city || null;
       if (data.description !== undefined) storeUpdate.description = data.description || null;
+      if (data.businessType !== undefined) storeUpdate.businessType = data.businessType || null;
       if (Object.keys(storeUpdate).length > 0) {
         await storage.updateStore(store.id, storeUpdate);
       }

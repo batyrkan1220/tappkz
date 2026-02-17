@@ -13,7 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, Plus, Trash2, Search } from "lucide-react";
 import { SiTelegram, SiInstagram } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import type { Store, StoreSettings } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BUSINESS_TYPES, type Store, type StoreSettings } from "@shared/schema";
 
 const sections = [
   { id: "profile", label: "Профиль", icon: StoreIcon },
@@ -62,6 +63,7 @@ export default function StoreSettingsPage() {
   const [showSocialCards, setShowSocialCards] = useState(true);
   const [showCategoryChips, setShowCategoryChips] = useState(true);
   const [categoryDisplayStyle, setCategoryDisplayStyle] = useState("chips");
+  const [businessType, setBusinessType] = useState("ecommerce");
   const [slugStatus, setSlugStatus] = useState<{ available: boolean; reason: string | null } | null>(null);
   const [slugChecking, setSlugChecking] = useState(false);
   const originalSlugRef = useRef("");
@@ -105,6 +107,7 @@ export default function StoreSettingsPage() {
       setDescription(store.description || "");
       setWhatsappPhone(store.whatsappPhone || "");
       setOrderPhones(store.orderPhones || []);
+      setBusinessType(store.businessType || "ecommerce");
     }
     if (settings) {
       setShowPrices(settings.showPrices);
@@ -155,6 +158,7 @@ export default function StoreSettingsPage() {
         orderPhones: filteredOrderPhones,
         city: city || null,
         description: description || null,
+        businessType,
         showPrices,
         checkoutAddressEnabled,
         checkoutCommentEnabled,
@@ -306,6 +310,20 @@ export default function StoreSettingsPage() {
               <h3 className="font-extrabold tracking-tight">Информация о магазине</h3>
             </div>
             <div className="space-y-4">
+              <div>
+                <Label className="font-semibold">Тип магазина</Label>
+                <Select value={businessType} onValueChange={setBusinessType} data-testid="select-business-type">
+                  <SelectTrigger data-testid="select-trigger-business-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(BUSINESS_TYPES).map(([key, bt]) => (
+                      <SelectItem key={key} value={key} data-testid={`select-item-business-type-${key}`}>{bt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-1 text-xs text-muted-foreground">Влияет на терминологию в панели управления</p>
+              </div>
               <div>
                 <Label className="font-semibold">Город</Label>
                 <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-store-city" />
