@@ -49,139 +49,96 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     normalized = normalized.slice(0, 11);
 
     const localDigits = normalized.length > 1 ? normalized.slice(1) : "";
-    const displayValue = formatLocal(localDigits);
+    const displayValue = localDigits.length > 0 ? `+7 ${formatLocal(localDigits)}` : "";
 
     useLayoutEffect(() => {
       const el = innerRef.current;
       if (el && pendingCursor.current !== null) {
-        const pos = Math.min(pendingCursor.current, displayValue.length);
+        const pos = Math.min(pendingCursor.current, (displayValue || "+7 ").length);
         el.setSelectionRange(pos, pos);
         pendingCursor.current = null;
       }
     });
 
-    const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
-        const el = innerRef.current;
-        if (!el) return;
-        const start = el.selectionStart ?? 0;
-        const end = el.selectionEnd ?? 0;
-
-        if (e.key === "Backspace" && start === end) {
-          e.preventDefault();
-
-          if (localDigits.length === 0) return;
-
-          let charPos = start - 1;
-          while (charPos >= 0 && !/\d/.test(displayValue[charPos])) charPos--;
-
-          if (charPos < 0) {
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        let val = e.target.value;
+        if (!val.startsWith("+7")) {
+          const digits = val.replace(/\D/g, "");
+          if (digits.length === 0) {
             onValueChange("");
             pendingCursor.current = 0;
             return;
           }
-
-          let digitIdx = 0;
-          for (let i = 0; i <= charPos; i++) {
-            if (/\d/.test(displayValue[i])) digitIdx++;
-          }
-
-          const newLocal = localDigits.slice(0, digitIdx - 1) + localDigits.slice(digitIdx);
-          if (newLocal.length === 0) {
-            onValueChange("");
-            pendingCursor.current = 0;
-          } else {
-            const newDisplay = formatLocal(newLocal);
-            let newPos = 0;
-            let count = 0;
-            for (let i = 0; i < newDisplay.length; i++) {
-              if (/\d/.test(newDisplay[i])) {
-                count++;
-                if (count === digitIdx - 1) { newPos = i + 1; break; }
-              }
-            }
-            if (digitIdx - 1 === 0) newPos = 1;
-            if (count < digitIdx - 1) newPos = newDisplay.length;
-            pendingCursor.current = newPos;
-            onValueChange("7" + newLocal);
-          }
-          return;
+          val = digits;
+        } else {
+          val = val.slice(2).trim();
         }
-
-        if (e.key === "Delete" && start === end) {
-          e.preventDefault();
-
-          if (localDigits.length === 0) return;
-
-          let charPos = start;
-          while (charPos < displayValue.length && !/\d/.test(displayValue[charPos])) charPos++;
-
-          if (charPos >= displayValue.length) return;
-
-          let digitIdx = 0;
-          for (let i = 0; i <= charPos; i++) {
-            if (/\d/.test(displayValue[i])) digitIdx++;
-          }
-
-          const newLocal = localDigits.slice(0, digitIdx - 1) + localDigits.slice(digitIdx);
-          if (newLocal.length === 0) {
-            onValueChange("");
-            pendingCursor.current = 0;
-          } else {
-            const newDisplay = formatLocal(newLocal);
-            let newPos = 0;
-            let count = 0;
-            for (let i = 0; i < newDisplay.length; i++) {
-              if (/\d/.test(newDisplay[i])) {
-                count++;
-                if (count === digitIdx - 1) { newPos = i + 1; break; }
-              }
-            }
-            if (digitIdx - 1 === 0) newPos = 1;
-            if (count < digitIdx - 1) newPos = newDisplay.length;
-            pendingCursor.current = newPos;
-            onValueChange("7" + newLocal);
-          }
-          return;
-        }
-      },
-      [displayValue, localDigits, onValueChange]
-    );
-
-    const handleChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const inputVal = e.target.value;
-        const raw = inputVal.replace(/\D/g, "").slice(0, 10);
-
+        const raw = val.replace(/\D/g, "").slice(0, 10);
         if (raw.length === 0) {
           onValueChange("");
           pendingCursor.current = 0;
           return;
         }
-
-        const newDisplay = formatLocal(raw);
-        const cursorInInput = e.target.selectionStart ?? inputVal.length;
-
+        const newDisplay = "+7 " + formatLocal(raw);
+        const cursorInInput = e.target.selectionStart ?? e.target.value.length;
         let digitsBeforeCursor = 0;
-        for (let i = 0; i < cursorInInput && i < inputVal.length; i++) {
-          if (/\d/.test(inputVal[i])) digitsBeforeCursor++;
+        for (let i = 0; i < cursorInInput && i < e.target.value.length; i++) {
+          if (/\d/.test(e.target.value[i]) && i >= 2) digitsBeforeCursor++;
         }
-
-        let newPos = 0;
+        let newPos = 3;
         let count = 0;
-        for (let i = 0; i < newDisplay.length; i++) {
+        for (let i = 3; i < newDisplay.length; i++) {
           if (/\d/.test(newDisplay[i])) {
             count++;
             if (count === digitsBeforeCursor) { newPos = i + 1; break; }
           }
         }
         if (count < digitsBeforeCursor) newPos = newDisplay.length;
-
         pendingCursor.current = newPos;
         onValueChange("7" + raw);
       },
       [onValueChange]
     );
+
+    const handleKeyDown = useCallback(
+      (e: React.KeyboardEvent<HTMLInputElement>) => {
+        const el = innerRef.current;
+        if (!el) return;
+        const start = el.selectionStart ?? 0;
+        if (start <= 3 && e.key === "Backspace" && el.selectionEnd === start) {
+          e.preventDefault();
+          return;
+        }
+        if (start < 3) {
+          if (e.key !== "ArrowRight" && e.key !== "ArrowLeft" && e.key !== "Tab" && e.key !== "End" && e.key !== "Home") {
+            e.preventDefault();
+            el.setSelectionRange(3, 3);
+          }
+        }
+      },
+      []
+    );
+
+    const handleFocus = useCallback(() => {
+      const el = innerRef.current;
+      if (!el) return;
+      if (!displayValue) {
+        onValueChange("7");
+        pendingCursor.current = 3;
+      } else {
+        setTimeout(() => {
+          const pos = el.selectionStart ?? 0;
+          if (pos < 3) el.setSelectionRange(3, 3);
+        }, 0);
+      }
+    }, [displayValue, onValueChange]);
+
+    const handleBlur = useCallback(() => {
+      if (localDigits.length === 0) {
+        onValueChange("");
+      }
+    }, [localDigits, onValueChange]);
 
     const setRefs = useCallback(
       (el: HTMLInputElement | null) => {
@@ -193,22 +150,19 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     );
 
     return (
-      <div className="flex">
-        <div className="flex h-9 items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground select-none">
-          +7
-        </div>
-        <Input
-          ref={setRefs}
-          type="tel"
-          inputMode="tel"
-          value={displayValue}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          placeholder="(___) ___-__-__"
-          className={`rounded-l-none ${className || ""}`}
-          {...props}
-        />
-      </div>
+      <Input
+        ref={setRefs}
+        type="tel"
+        inputMode="tel"
+        value={displayValue}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        placeholder="+7 (___) ___-__-__"
+        className={className || ""}
+        {...props}
+      />
     );
   }
 );
