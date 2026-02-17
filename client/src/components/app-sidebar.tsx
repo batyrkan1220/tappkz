@@ -98,8 +98,7 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
 
   const settingsItems: NavItem[] = [
     { title: "Доставка", url: "/admin/delivery", icon: Truck },
-    { title: "SEO", url: "/admin/settings?tab=seo", icon: Search },
-    { title: "Пиксели", url: "/admin/settings?tab=pixels", icon: Activity },
+    { title: "SEO и аналитика", url: "/admin/settings?tab=seo", icon: Search },
     { title: "Подписка", url: "/admin/subscription", icon: Crown, badge: store?.plan?.toUpperCase(), badgeVariant: "label" },
   ];
 

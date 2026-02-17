@@ -9,7 +9,7 @@ import { getQueryFn } from "@/lib/queryClient";
 import { getBusinessLabels, type Store } from "@shared/schema";
 import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 import { useLocation } from "wouter";
-import { LayoutDashboard, Package, FolderOpen, Palette, Settings, ClipboardList, Users, BarChart3, Crown, Truck, Percent, Globe, Eye, Megaphone, ShoppingCart, Search, Activity, Store as StoreIcon } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, Settings, ClipboardList, Users, BarChart3, Crown, Truck, Percent, Globe, Eye, Megaphone, ShoppingCart, Search, Store as StoreIcon } from "lucide-react";
 
 function PageBreadcrumb({ store }: { store: Store }) {
   const [location] = useLocation();
@@ -34,8 +34,7 @@ function PageBreadcrumb({ store }: { store: Store }) {
     "storefront": { title: "Витрина", group: "Магазин", icon: Eye },
     "announcement": { title: "Объявление", group: "Магазин", icon: Megaphone },
     "checkout": { title: "Оформление заказа", group: "Магазин", icon: ShoppingCart },
-    "seo": { title: "SEO", group: "Настройки", icon: Search },
-    "pixels": { title: "Пиксели", group: "Настройки", icon: Activity },
+    "seo": { title: "SEO и аналитика", group: "Настройки", icon: Search },
   };
 
   let page = pages[location];
