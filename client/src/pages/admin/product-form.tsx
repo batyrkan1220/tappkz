@@ -12,7 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { ArrowLeft, Plus, Trash2, ImageIcon, Upload, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ImageIcon, Upload, ChevronDown, ChevronUp, Download, Calendar, Package } from "lucide-react";
 import { Link, useParams, useLocation } from "wouter";
 import type { Product, Category, Store, ProductVariantGroup } from "@shared/schema";
 
@@ -36,13 +36,18 @@ interface ProductForm {
   imageUrls: string[];
   sku: string;
   unit: string;
+  productType: "physical" | "digital" | "booking";
+  downloadUrl: string;
+  bookingType: string;
+  bookingDurationMinutes: string;
   attributes: ProductAttributes;
   variants: ProductVariantGroup[];
 }
 
 const emptyForm: ProductForm = {
   name: "", description: "", price: "", discountPrice: "", categoryId: "",
-  isActive: true, imageUrls: [], sku: "", unit: "", attributes: {}, variants: [],
+  isActive: true, imageUrls: [], sku: "", unit: "", productType: "physical",
+  downloadUrl: "", bookingType: "", bookingDurationMinutes: "", attributes: {}, variants: [],
 };
 
 const UNIT_OPTIONS: Record<string, { value: string; label: string }[]> = {
@@ -114,6 +119,10 @@ export default function ProductFormPage() {
         imageUrls: editProduct.imageUrls || [],
         sku: (editProduct as any).sku || "",
         unit: (editProduct as any).unit || "",
+        productType: (editProduct as any).productType || "physical",
+        downloadUrl: (editProduct as any).downloadUrl || "",
+        bookingType: (editProduct as any).bookingType || "",
+        bookingDurationMinutes: (editProduct as any).bookingDurationMinutes ? String((editProduct as any).bookingDurationMinutes) : "",
         attributes: (editProduct as any).attributes || {},
         variants: (editProduct as any).variants || [],
       });
@@ -125,7 +134,7 @@ export default function ProductFormPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const body = {
+      const body: Record<string, any> = {
         name: form.name,
         description: form.description || null,
         price: parseInt(form.price),
@@ -137,6 +146,10 @@ export default function ProductFormPage() {
         sortOrder: editProduct?.sortOrder ?? 0,
         sku: form.sku || null,
         unit: form.unit || null,
+        productType: form.productType,
+        downloadUrl: form.productType === "digital" ? (form.downloadUrl || null) : null,
+        bookingType: form.productType === "booking" ? (form.bookingType || null) : null,
+        bookingDurationMinutes: form.productType === "booking" && form.bookingDurationMinutes ? parseInt(form.bookingDurationMinutes) : null,
         attributes: form.attributes,
         variants: form.variants,
       };
@@ -331,6 +344,74 @@ export default function ProductFormPage() {
             </div>
 
             <div>
+              <Label data-testid="label-product-type">Тип продукта</Label>
+              <Select value={form.productType} onValueChange={(v: "physical" | "digital" | "booking") => setForm({ ...form, productType: v })}>
+                <SelectTrigger data-testid="select-product-type">
+                  <SelectValue placeholder="Тип продукта" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="physical">
+                    <span className="flex items-center gap-2"><Package className="h-4 w-4" /> Физический товар</span>
+                  </SelectItem>
+                  <SelectItem value="digital">
+                    <span className="flex items-center gap-2"><Download className="h-4 w-4" /> Цифровой товар</span>
+                  </SelectItem>
+                  <SelectItem value="booking">
+                    <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Бронирование</span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {form.productType === "digital" && (
+              <div className="rounded-lg border p-4 space-y-3">
+                <Label className="text-sm font-semibold" data-testid="label-digital-section">Цифровой товар</Label>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Ссылка для скачивания</Label>
+                  <Input
+                    placeholder="https://example.com/file.zip"
+                    value={form.downloadUrl}
+                    onChange={(e) => setForm({ ...form, downloadUrl: e.target.value })}
+                    data-testid="input-download-url"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Покупатель получит эту ссылку после оплаты</p>
+                </div>
+              </div>
+            )}
+
+            {form.productType === "booking" && (
+              <div className="rounded-lg border p-4 space-y-3">
+                <Label className="text-sm font-semibold" data-testid="label-booking-section">Настройки бронирования</Label>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Тип бронирования</Label>
+                  <Select value={form.bookingType} onValueChange={(v) => setForm({ ...form, bookingType: v })}>
+                    <SelectTrigger data-testid="select-booking-type">
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date_only">Только дата</SelectItem>
+                      <SelectItem value="date_time">Дата и время</SelectItem>
+                      <SelectItem value="stay">Проживание (заезд-выезд)</SelectItem>
+                      <SelectItem value="rental">Аренда (период)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {(form.bookingType === "date_time" || form.bookingType === "rental") && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Длительность (минуты)</Label>
+                    <Input
+                      type="number"
+                      placeholder="60"
+                      value={form.bookingDurationMinutes}
+                      onChange={(e) => setForm({ ...form, bookingDurationMinutes: e.target.value })}
+                      data-testid="input-booking-duration"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div>
               <Label data-testid="label-category">Категория</Label>
               <Select value={form.categoryId} onValueChange={(v) => setForm({ ...form, categoryId: v === "none" ? "" : v })}>
                 <SelectTrigger data-testid="select-category">
@@ -347,26 +428,28 @@ export default function ProductFormPage() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label data-testid="label-sku">Артикул</Label>
-                <Input
-                  placeholder="SKU"
-                  value={form.sku}
-                  onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                  data-testid="input-sku"
-                />
+            {form.productType === "physical" && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label data-testid="label-sku">Артикул</Label>
+                  <Input
+                    placeholder="SKU"
+                    value={form.sku}
+                    onChange={(e) => setForm({ ...form, sku: e.target.value })}
+                    data-testid="input-sku"
+                  />
+                </div>
+                <div>
+                  <Label data-testid="label-weight">Вес</Label>
+                  <Input
+                    placeholder="напр. 500г"
+                    value={form.attributes.weight || ""}
+                    onChange={(e) => setForm({ ...form, attributes: { ...form.attributes, weight: e.target.value } })}
+                    data-testid="input-weight-main"
+                  />
+                </div>
               </div>
-              <div>
-                <Label data-testid="label-weight">Вес</Label>
-                <Input
-                  placeholder="напр. 500г"
-                  value={form.attributes.weight || ""}
-                  onChange={(e) => setForm({ ...form, attributes: { ...form.attributes, weight: e.target.value } })}
-                  data-testid="input-weight-main"
-                />
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="rounded-lg border p-4 space-y-4">

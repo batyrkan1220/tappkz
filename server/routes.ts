@@ -74,6 +74,10 @@ const createProductSchema = z.object({
   imageUrls: z.array(z.string()).optional().default([]),
   sku: z.string().max(50).nullable().optional(),
   unit: z.string().max(30).nullable().optional(),
+  productType: z.enum(["physical", "digital", "booking"]).optional().default("physical"),
+  downloadUrl: z.string().max(500).nullable().optional(),
+  bookingType: z.enum(["date_only", "date_time", "stay", "rental"]).nullable().optional(),
+  bookingDurationMinutes: z.coerce.number().int().min(0).nullable().optional(),
   attributes: z.record(z.any()).optional().default({}),
   variants: z.array(variantGroupSchema).optional().default([]),
 });
@@ -1185,6 +1189,74 @@ export async function registerRoutes(
       const store = await storage.getStoreByOwner(req.session.userId);
       if (!store) return res.status(404).json({ error: "Магазин не найден" });
       await storage.deleteDiscount(Number(req.params.id), store.id);
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Bookings API
+  app.get("/api/my-store/bookings", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const { startDate, endDate, status } = req.query;
+      const bs = await storage.getBookings(store.id, {
+        startDate: startDate as string,
+        endDate: endDate as string,
+        status: status as string,
+      });
+      res.json(bs);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/my-store/bookings", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const schema = z.object({
+        productId: z.coerce.number().int().nullable().optional(),
+        customerId: z.coerce.number().int().nullable().optional(),
+        orderId: z.coerce.number().int().nullable().optional(),
+        customerName: z.string().min(1).max(200),
+        customerPhone: z.string().max(30).nullable().optional(),
+        customerEmail: z.string().max(200).nullable().optional(),
+        bookingDate: z.string().min(1),
+        startTime: z.string().max(5).nullable().optional(),
+        endTime: z.string().max(5).nullable().optional(),
+        endDate: z.string().nullable().optional(),
+        status: z.enum(["pending", "confirmed", "completed", "cancelled"]).optional().default("pending"),
+        notes: z.string().max(1000).nullable().optional(),
+        total: z.coerce.number().int().min(0).optional().default(0),
+      });
+      const data = validate(schema, req.body);
+      const booking = await storage.createBooking({ ...data, storeId: store.id });
+      res.json(booking);
+    } catch (e: any) {
+      if (e instanceof z.ZodError) return res.status(400).json({ error: "Некорректные данные", errors: e.errors });
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.patch("/api/my-store/bookings/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      const booking = await storage.updateBooking(Number(req.params.id), store.id, req.body);
+      if (!booking) return res.status(404).json({ error: "Бронирование не найдено" });
+      res.json(booking);
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.delete("/api/my-store/bookings/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const store = await storage.getStoreByOwner(req.session.userId);
+      if (!store) return res.status(404).json({ error: "Магазин не найден" });
+      await storage.deleteBooking(Number(req.params.id), store.id);
       res.json({ success: true });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
