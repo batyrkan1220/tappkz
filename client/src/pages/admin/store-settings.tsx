@@ -28,7 +28,6 @@ const KAZAKHSTAN_CITIES = [
 ];
 
 const sections = [
-  { id: "profile", label: "Профиль", icon: StoreIcon },
   { id: "store-info", label: "Магазин", icon: StoreIcon },
   { id: "contacts", label: "Контакты", icon: Globe },
   { id: "storefront", label: "Витрина", icon: Eye },
@@ -46,7 +45,7 @@ export default function StoreSettingsPage() {
   const { data: store, isLoading: storeLoading } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: settings, isLoading: settingsLoading } = useQuery<StoreSettings>({ queryKey: ["/api/my-store/settings"] });
 
-  const [activeSection, setActiveSection] = useState<SectionId>("profile");
+  const [activeSection, setActiveSection] = useState<SectionId>("store-info");
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [email, setEmail] = useState("");
@@ -216,17 +215,20 @@ export default function StoreSettingsPage() {
 
   const renderSection = () => {
     switch (activeSection) {
-      case "profile":
+      case "store-info":
         return (
-          <Card className="p-5" data-testid="card-profile">
-            <h3 className="font-extrabold tracking-tight mb-4">Профиль</h3>
+          <Card className="p-5" data-testid="card-store-info">
+            <div className="flex items-center gap-2 mb-4">
+              <StoreIcon className="h-4 w-4 text-muted-foreground" />
+              <h3 className="font-extrabold tracking-tight">Магазин</h3>
+            </div>
             <div className="space-y-4">
               <div>
-                <Label className="font-semibold">Имя</Label>
+                <Label className="font-semibold">Имя магазина</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="input-store-name" />
               </div>
               <div>
-                <Label className="font-semibold">Ссылка на магазин</Label>
+                <Label className="font-semibold">Ссылка магазина</Label>
                 <p className="text-xs text-muted-foreground mb-1">Изменение этого приведёт к нарушению существующего QR кода и общих ссылок.</p>
                 <div className="flex items-center">
                   <div className="flex h-9 items-center rounded-l-md border border-r-0 bg-muted px-3 text-sm text-muted-foreground select-none whitespace-nowrap">
@@ -253,18 +255,7 @@ export default function StoreSettingsPage() {
                 )}
               </div>
               <div>
-                <Label className="font-semibold">Email</Label>
-                <p className="text-xs text-muted-foreground mb-1">Клиенты будут получать письма с этого адреса</p>
-                <Input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="store@example.com"
-                  type="email"
-                  data-testid="input-store-email"
-                />
-              </div>
-              <div>
-                <Label className="font-semibold">Адрес</Label>
+                <Label className="font-semibold">Адрес магазина</Label>
                 <Input
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
@@ -309,18 +300,6 @@ export default function StoreSettingsPage() {
                   Добавить номер
                 </Button>
               </div>
-            </div>
-          </Card>
-        );
-
-      case "store-info":
-        return (
-          <Card className="p-5" data-testid="card-store-info">
-            <div className="flex items-center gap-2 mb-4">
-              <StoreIcon className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-extrabold tracking-tight">Информация о магазине</h3>
-            </div>
-            <div className="space-y-4">
               <div>
                 <Label className="font-semibold">Тип магазина</Label>
                 <Select value={businessType} onValueChange={setBusinessType} data-testid="select-business-type">
@@ -349,6 +328,17 @@ export default function StoreSettingsPage() {
                     <option key={c} value={c} />
                   ))}
                 </datalist>
+              </div>
+              <div>
+                <Label className="font-semibold">Email</Label>
+                <p className="text-xs text-muted-foreground mb-1">Клиенты будут получать письма с этого адреса</p>
+                <Input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="store@example.com"
+                  type="email"
+                  data-testid="input-store-email"
+                />
               </div>
               <div>
                 <Label className="font-semibold">Описание</Label>
