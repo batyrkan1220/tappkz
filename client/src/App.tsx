@@ -20,7 +20,6 @@ const Dashboard = lazy(() => import("@/pages/admin/dashboard"));
 const ProductsPage = lazy(() => import("@/pages/admin/products"));
 const CategoriesPage = lazy(() => import("@/pages/admin/categories"));
 const BrandingPage = lazy(() => import("@/pages/admin/branding"));
-const WhatsAppPage = lazy(() => import("@/pages/admin/whatsapp"));
 const StoreSettingsPage = lazy(() => import("@/pages/admin/store-settings"));
 const SubscriptionPage = lazy(() => import("@/pages/admin/subscription"));
 const OrdersPage = lazy(() => import("@/pages/admin/orders"));
@@ -90,7 +89,6 @@ function Router() {
       <Route path="/admin/products/:id" component={() => <AdminRoute component={ProductFormPage} />} />
       <Route path="/admin/categories" component={() => <AdminRoute component={CategoriesPage} />} />
       <Route path="/admin/branding" component={() => <AdminRoute component={BrandingPage} />} />
-      <Route path="/admin/whatsapp" component={() => <AdminRoute component={WhatsAppPage} />} />
 
 
       <Route path="/admin/discounts/new" component={() => <AdminRoute component={DiscountFormPage} />} />

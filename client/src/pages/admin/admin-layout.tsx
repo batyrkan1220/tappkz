@@ -9,7 +9,7 @@ import { getQueryFn } from "@/lib/queryClient";
 import { getBusinessLabels, type Store } from "@shared/schema";
 import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 import { useLocation } from "wouter";
-import { LayoutDashboard, Package, FolderOpen, Palette, MessageCircle, Settings, ClipboardList, Users, BarChart3, Crown, Truck } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, Settings, ClipboardList, Users, BarChart3, Crown, Truck } from "lucide-react";
 
 function PageBreadcrumb({ store }: { store: Store }) {
   const [location] = useLocation();
@@ -24,7 +24,6 @@ function PageBreadcrumb({ store }: { store: Store }) {
     "/admin/categories": { title: "Категории", icon: FolderOpen },
     "/admin/branding": { title: "Брендирование", icon: Palette },
     "/admin/delivery": { title: "Доставка", icon: Truck },
-    "/admin/whatsapp": { title: "WhatsApp", icon: MessageCircle },
     "/admin/subscription": { title: "Подписка", icon: Crown },
     "/admin/settings": { title: "Настройки", icon: Settings },
   };
