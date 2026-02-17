@@ -160,6 +160,9 @@ export const orders = pgTable("orders", {
   deliveryFee: integer("delivery_fee").notNull().default(0),
   deliveryStatus: varchar("delivery_status", { length: 30 }),
   yandexClaimId: text("yandex_claim_id"),
+  discountTitle: text("discount_title"),
+  discountAmount: integer("discount_amount").default(0),
+  discountCode: varchar("discount_code", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("idx_orders_store").on(table.storeId),
@@ -354,6 +357,52 @@ export interface ProductVariantGroup {
 }
 
 export type ProductVariants = ProductVariantGroup[];
+
+export const DISCOUNT_TYPES = {
+  code: { label: "Код скидки", description: "Создайте код скидки и поделитесь им с клиентами" },
+  order_amount: { label: "Скидка на сумму заказа", description: "Примените скидку, если общая сумма товаров превышает указанное значение" },
+  automatic: { label: "Автоматическая скидка", description: "Применить скидку ко всем товарам" },
+  bundle: { label: "Комплектная скидка", description: "Предложите скидку за покупку нескольких товаров" },
+  buy_x_get_y: { label: "Buy X get Y", description: "Предлагайте бесплатные товары при покупке клиентами определенных товаров" },
+  free_delivery: { label: "Бесплатная доставка", description: "Установите условия для бесплатной доставки" },
+} as const;
+
+export type DiscountType = keyof typeof DISCOUNT_TYPES;
+
+export const discounts = pgTable("discounts", {
+  id: serial("id").primaryKey(),
+  storeId: integer("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 30 }).notNull(),
+  title: text("title").notNull(),
+  code: varchar("code", { length: 100 }),
+  isActive: boolean("is_active").notNull().default(true),
+  valueType: varchar("value_type", { length: 20 }).notNull().default("percentage"),
+  value: integer("value").notNull().default(0),
+  appliesTo: varchar("applies_to", { length: 20 }).notNull().default("orders"),
+  targetProductIds: jsonb("target_product_ids").$type<number[]>().default([]),
+  targetCategoryIds: jsonb("target_category_ids").$type<number[]>().default([]),
+  buyProductIds: jsonb("buy_product_ids").$type<number[]>().default([]),
+  getProductIds: jsonb("get_product_ids").$type<number[]>().default([]),
+  minRequirement: varchar("min_requirement", { length: 20 }).notNull().default("none"),
+  minValue: integer("min_value").default(0),
+  maxTotalUses: integer("max_total_uses"),
+  maxPerCustomer: integer("max_per_customer"),
+  maxTotalAmount: integer("max_total_amount"),
+  currentUses: integer("current_uses").notNull().default(0),
+  startDate: timestamp("start_date").defaultNow(),
+  endDate: timestamp("end_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_discounts_store").on(table.storeId),
+]);
+
+export const insertDiscountSchema = createInsertSchema(discounts).omit({ id: true, createdAt: true, currentUses: true });
+export type Discount = typeof discounts.$inferSelect;
+export type InsertDiscount = z.infer<typeof insertDiscountSchema>;
+
+export const discountsRelations = relations(discounts, ({ one }) => ({
+  store: one(stores, { fields: [discounts.storeId], references: [stores.id] }),
+}));
 
 export const PLAN_LIMITS: Record<string, number> = {
   free: 30,
