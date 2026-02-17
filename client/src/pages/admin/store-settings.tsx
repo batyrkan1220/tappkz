@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, XCircle, Loader2, BarChart3, Megaphone, LayoutGrid, List, Circle, Store as StoreIcon, Globe, ShoppingCart, Eye, Plus, Trash2, Search } from "lucide-react";
 import { SiTelegram, SiInstagram } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useSearch } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BUSINESS_TYPES, type Store, type StoreSettings } from "@shared/schema";
 
@@ -42,10 +43,12 @@ type SectionId = typeof sections[number]["id"];
 export default function StoreSettingsPage() {
   useDocumentTitle("Настройки");
   const { toast } = useToast();
+  const searchString = useSearch();
   const { data: store, isLoading: storeLoading } = useQuery<Store>({ queryKey: ["/api/my-store"] });
   const { data: settings, isLoading: settingsLoading } = useQuery<StoreSettings>({ queryKey: ["/api/my-store/settings"] });
 
-  const [activeSection, setActiveSection] = useState<SectionId>("store-info");
+  const tabFromUrl = new URLSearchParams(searchString).get("tab") as SectionId | null;
+  const activeSection: SectionId = tabFromUrl && sections.some(s => s.id === tabFromUrl) ? tabFromUrl : "store-info";
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [email, setEmail] = useState("");
@@ -660,63 +663,32 @@ export default function StoreSettingsPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 p-6">
-      <aside className="lg:w-56 shrink-0">
-        <div className="lg:sticky lg:top-6">
-          <h1 className="text-lg font-extrabold tracking-tight mb-4" data-testid="text-settings-title">Настройки</h1>
-          <nav className="flex flex-row lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0">
-            {sections.map((s) => {
-              const Icon = s.icon;
-              const isActive = activeSection === s.id;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setActiveSection(s.id)}
-                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors text-left ${
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover-elevate"
-                  }`}
-                  data-testid={`nav-${s.id}`}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span className="hidden lg:inline">{s.label}</span>
-                  <span className="lg:hidden">{s.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </aside>
+    <div className="p-6 max-w-2xl space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-extrabold tracking-tight" data-testid="text-settings-title">
+          {sections.find(s => s.id === activeSection)?.label}
+        </h1>
+        <Button
+          onClick={() => saveMutation.mutate()}
+          disabled={!canSave}
+          className="rounded-full font-semibold"
+          data-testid="button-save-settings"
+        >
+          {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
+        </Button>
+      </div>
 
-      <div className="flex-1 min-w-0 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-extrabold tracking-tight">
-            {sections.find(s => s.id === activeSection)?.label}
-          </h2>
-          <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={!canSave}
-            className="rounded-full font-semibold"
-            data-testid="button-save-settings"
-          >
-            {saveMutation.isPending ? "Сохранение..." : "Сохранить"}
-          </Button>
-        </div>
+      {renderSection()}
 
-        {renderSection()}
-
-        <div className="sticky bottom-4 z-10">
-          <Button
-            onClick={() => saveMutation.mutate()}
-            disabled={!canSave}
-            className="w-full rounded-full font-semibold shadow-lg"
-            data-testid="button-save-settings-bottom"
-          >
-            {saveMutation.isPending ? "Сохранение..." : "Сохранить все настройки"}
-          </Button>
-        </div>
+      <div className="sticky bottom-4 z-10">
+        <Button
+          onClick={() => saveMutation.mutate()}
+          disabled={!canSave}
+          className="w-full rounded-full font-semibold shadow-lg"
+          data-testid="button-save-settings-bottom"
+        >
+          {saveMutation.isPending ? "Сохранение..." : "Сохранить все настройки"}
+        </Button>
       </div>
     </div>
   );

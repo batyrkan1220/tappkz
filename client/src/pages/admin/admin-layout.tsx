@@ -9,7 +9,7 @@ import { getQueryFn } from "@/lib/queryClient";
 import { getBusinessLabels, type Store } from "@shared/schema";
 import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 import { useLocation } from "wouter";
-import { LayoutDashboard, Package, FolderOpen, Palette, Settings, ClipboardList, Users, BarChart3, Crown, Truck, Percent } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, Settings, ClipboardList, Users, BarChart3, Crown, Truck, Percent, Globe, Eye, Megaphone, ShoppingCart, Search, Activity, Store as StoreIcon } from "lucide-react";
 
 function PageBreadcrumb({ store }: { store: Store }) {
   const [location] = useLocation();
@@ -23,10 +23,19 @@ function PageBreadcrumb({ store }: { store: Store }) {
     "/admin/discounts": { title: "Скидки", group: "Каталог", icon: Percent },
     "/admin/customers": { title: "Клиенты", group: "Клиенты", icon: Users },
     "/admin/analytics": { title: "Аналитика", group: "Клиенты", icon: BarChart3 },
-    "/admin/settings": { title: "Общие", group: "Магазин", icon: Settings },
-    "/admin/branding": { title: "Оформление", group: "Магазин", icon: Palette },
-    "/admin/delivery": { title: "Доставка", group: "Магазин", icon: Truck },
-    "/admin/subscription": { title: "Подписка", group: "Магазин", icon: Crown },
+    "/admin/branding": { title: "Оформление", group: "Настройки", icon: Palette },
+    "/admin/delivery": { title: "Доставка", group: "Настройки", icon: Truck },
+    "/admin/subscription": { title: "Подписка", group: "Настройки", icon: Crown },
+  };
+
+  const settingsTabs: Record<string, { title: string; icon: typeof LayoutDashboard }> = {
+    "store-info": { title: "Магазин", icon: StoreIcon },
+    "contacts": { title: "Контакты", icon: Globe },
+    "storefront": { title: "Витрина", icon: Eye },
+    "announcement": { title: "Объявление", icon: Megaphone },
+    "checkout": { title: "Оформление заказа", icon: ShoppingCart },
+    "seo": { title: "SEO", icon: Search },
+    "pixels": { title: "Пиксели", icon: Activity },
   };
 
   let page = pages[location];
@@ -34,6 +43,13 @@ function PageBreadcrumb({ store }: { store: Store }) {
     const prefix = Object.keys(pages).find((key) => key !== "/admin" && location.startsWith(key));
     if (prefix) page = pages[prefix];
   }
+
+  if (!page && location.startsWith("/admin/settings")) {
+    const tab = new URLSearchParams(window.location.search).get("tab") || "store-info";
+    const tabInfo = settingsTabs[tab] || settingsTabs["store-info"];
+    page = { title: tabInfo.title, group: "Настройки", icon: tabInfo.icon };
+  }
+
   if (!page) return null;
   const Icon = page.icon;
 

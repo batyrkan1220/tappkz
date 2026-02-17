@@ -29,6 +29,12 @@ import {
   Truck,
   Percent,
   Store,
+  Globe,
+  Eye,
+  Megaphone,
+  ShoppingCart,
+  Search,
+  Activity,
 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { Badge } from "@/components/ui/badge";
@@ -78,23 +84,40 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
   ];
 
   const storeItems: NavItem[] = [
-    { title: "Общие", url: "/admin/settings", icon: Settings },
+    { title: "Магазин", url: "/admin/settings?tab=store-info", icon: Store },
+    { title: "Контакты", url: "/admin/settings?tab=contacts", icon: Globe },
+    { title: "Витрина", url: "/admin/settings?tab=storefront", icon: Eye },
+    { title: "Объявление", url: "/admin/settings?tab=announcement", icon: Megaphone },
+    { title: "Оформление заказа", url: "/admin/settings?tab=checkout", icon: ShoppingCart },
     { title: "Оформление", url: "/admin/branding", icon: Palette },
     { title: "Доставка", url: "/admin/delivery", icon: Truck },
+    { title: "SEO", url: "/admin/settings?tab=seo", icon: Search },
+    { title: "Пиксели", url: "/admin/settings?tab=pixels", icon: Activity },
     { title: "Подписка", url: "/admin/subscription", icon: Crown, badge: store?.plan?.toUpperCase(), badgeVariant: "label" },
   ];
 
   const isActive = (url: string) => {
     if (url === "/admin") return location === "/admin";
+    if (url.includes("?tab=")) {
+      const [path, query] = url.split("?");
+      const tab = new URLSearchParams(query).get("tab");
+      const currentSearch = window.location.search;
+      const currentTab = new URLSearchParams(currentSearch).get("tab");
+      if (location.startsWith(path)) {
+        if (currentTab) return currentTab === tab;
+        return tab === "store-info";
+      }
+      return false;
+    }
     return location.startsWith(url);
   };
 
   const renderItem = (item: NavItem) => (
-    <SidebarMenuItem key={item.title}>
+    <SidebarMenuItem key={item.title + item.url}>
       <SidebarMenuButton
         asChild
         isActive={isActive(item.url)}
-        data-testid={`link-sidebar-${item.url.replace("/admin/", "").replace("/admin", "dashboard")}`}
+        data-testid={`link-sidebar-${item.url.replace("/admin/", "").replace("/admin", "dashboard").replace("?tab=", "-")}`}
       >
         {item.external ? (
           <a href={item.url} target="_blank" rel="noopener noreferrer">
@@ -175,7 +198,7 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
         {renderGroup("Главное", mainItems)}
         {renderGroup("Каталог", catalogItems)}
         {renderGroup("Клиенты", clientItems)}
-        {renderGroup("Магазин", storeItems)}
+        {renderGroup("Настройки", storeItems)}
 
         {user?.isSuperAdmin && (
           <>
