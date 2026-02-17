@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { ArrowLeft, Plus, Trash2, ImageIcon, Upload, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ImageIcon, Upload, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { Link, useParams, useLocation } from "wouter";
 import type { Product, Category, Store, ProductVariantGroup } from "@shared/schema";
 
@@ -151,11 +151,19 @@ export default function ProductFormPage() {
     },
   });
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+
+  const uploadFiles = async (files: FileList | File[]) => {
+    const fileArr = Array.from(files).filter(f => f.type.startsWith("image/"));
+    if (fileArr.length === 0) return;
+    if (form.imageUrls.length + fileArr.length > 5) {
+      toast({ title: "Максимум 5 изображений", variant: "destructive" });
+      return;
+    }
+    setUploading(true);
     const formData = new FormData();
-    Array.from(files).forEach((f) => formData.append("images", f));
+    fileArr.forEach((f) => formData.append("images", f));
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
       if (!res.ok) {
@@ -169,8 +177,35 @@ export default function ProductFormPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/my-store/usage"] });
     } catch (err: any) {
       toast({ title: "Ошибка загрузки", description: err?.message || "", variant: "destructive" });
+    } finally {
+      setUploading(false);
     }
   };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    await uploadFiles(files);
+    e.target.value = "";
+  };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files?.length) {
+      uploadFiles(e.dataTransfer.files);
+    }
+  }, [form.imageUrls.length]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+  }, []);
 
   const removeImage = (idx: number) => {
     setForm((prev) => ({ ...prev, imageUrls: prev.imageUrls.filter((_, i) => i !== idx) }));
@@ -420,17 +455,31 @@ export default function ProductFormPage() {
           <div className="space-y-3">
             <Label data-testid="label-images">Изображения</Label>
             <div
-              className="rounded-lg border-2 border-dashed p-6 text-center hover-elevate cursor-pointer"
+              className={`rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
+                dragOver ? "border-primary bg-primary/5" : "hover-elevate"
+              } ${uploading ? "pointer-events-none opacity-60" : ""}`}
               onClick={() => fileInputRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
               data-testid="area-image-upload"
             >
-              <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Нажмите или перетащите файлы для загрузки
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Файл не должен превышать 10 МБ. Максимум 5 изображений.
-              </p>
+              {uploading ? (
+                <>
+                  <Loader2 className="mx-auto h-8 w-8 text-muted-foreground mb-2 animate-spin" />
+                  <p className="text-sm text-muted-foreground">Загрузка...</p>
+                </>
+              ) : (
+                <>
+                  <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                  <p className="text-sm font-medium">
+                    Перетащите файлы сюда или нажмите, чтобы выбрать
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Макс. 10 МБ на файл. Рекомендуемое соотношение 1:1. До 5 фото.
+                  </p>
+                </>
+              )}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -450,6 +499,7 @@ export default function ProductFormPage() {
                       src={getThumbUrl(url)}
                       alt=""
                       className="aspect-square w-full rounded-lg object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = url; }}
                       data-testid={`img-preview-${idx}`}
                     />
                     <div className="absolute right-1 top-1 flex gap-1" style={{ visibility: "visible" }}>
