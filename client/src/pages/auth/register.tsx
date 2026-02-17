@@ -106,7 +106,7 @@ export default function RegisterPage() {
                   data-testid="input-register-phone"
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">Для уведомлений о заказах и рассылок</p>
+              <p className="text-[11px] text-muted-foreground mt-1">Клиенты будут отправлять заказы на этот номер</p>
             </div>
             <div>
               <Label className="font-semibold text-xs uppercase tracking-wide text-muted-foreground">Email *</Label>
