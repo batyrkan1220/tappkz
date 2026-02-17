@@ -131,10 +131,15 @@ export default function StorefrontPage() {
   useEffect(() => {
     if (!data) return;
     const safeId = (v: string) => v.replace(/[^A-Za-z0-9_]/g, "");
-    const fbId = data.settings?.facebookPixelId ? safeId(data.settings.facebookPixelId) : "";
-    const ttId = data.settings?.tiktokPixelId ? safeId(data.settings.tiktokPixelId) : "";
-    const uniqueFb = fbId.length > 0 ? [fbId] : [];
-    const uniqueTt = ttId.length > 0 ? [ttId] : [];
+    const platformPixels = (data as any).platformPixels || {};
+    const fbIds = new Set<string>();
+    const ttIds = new Set<string>();
+    if (data.settings?.facebookPixelId) fbIds.add(safeId(data.settings.facebookPixelId));
+    if (platformPixels.facebookPixelId) fbIds.add(safeId(platformPixels.facebookPixelId));
+    if (data.settings?.tiktokPixelId) ttIds.add(safeId(data.settings.tiktokPixelId));
+    if (platformPixels.tiktokPixelId) ttIds.add(safeId(platformPixels.tiktokPixelId));
+    const uniqueFb = Array.from(fbIds).filter(id => id.length > 0);
+    const uniqueTt = Array.from(ttIds).filter(id => id.length > 0);
 
     const cleanup: (() => void)[] = [];
 
@@ -151,6 +156,25 @@ export default function StorefrontPage() {
       }
       uniqueFb.forEach((id) => w.fbq("init", id));
       w.fbq("track", "PageView");
+    }
+
+    const gaIds = new Set<string>();
+    if (data.settings?.googleAnalyticsId) gaIds.add(data.settings.googleAnalyticsId.replace(/[^A-Za-z0-9-]/g, ""));
+    if (platformPixels.googleAnalyticsId) gaIds.add(platformPixels.googleAnalyticsId.replace(/[^A-Za-z0-9-]/g, ""));
+    const gaId = Array.from(gaIds).filter(id => id.length > 0)[0] || "";
+    if (gaId && !(window as any).gaInitialized) {
+      const existingGa = document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`);
+      if (!existingGa) {
+        const gaScript = document.createElement("script");
+        gaScript.async = true;
+        gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        document.head.appendChild(gaScript);
+        const gaInline = document.createElement("script");
+        gaInline.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`;
+        document.head.appendChild(gaInline);
+        (window as any).gaInitialized = true;
+        cleanup.push(() => { gaScript.remove(); gaInline.remove(); (window as any).gaInitialized = false; });
+      }
     }
 
     if (uniqueTt.length > 0) {

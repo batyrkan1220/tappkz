@@ -119,6 +119,12 @@ const settingsSchema = z.object({
   phoneNumber: z.string().max(30).nullable().optional(),
   facebookPixelId: z.string().max(50).regex(/^[0-9]*$/, "Только цифры").nullable().optional(),
   tiktokPixelId: z.string().max(50).regex(/^[A-Za-z0-9_]*$/, "Только латинские буквы и цифры").nullable().optional(),
+  googleAnalyticsId: z.string().max(30).regex(/^(G-[A-Za-z0-9]+|UA-[0-9]+-[0-9]+)?$/, "Формат G-XXXXXXX или UA-XXXXXXX-X").nullable().optional(),
+  seoTitle: z.string().max(200).nullable().optional(),
+  seoDescription: z.string().max(500).nullable().optional(),
+  ogImageUrl: z.string().max(1000).nullable().optional(),
+  faviconUrl: z.string().max(1000).nullable().optional(),
+  isPublicListed: z.boolean().optional(),
   announcementText: z.string().max(500).nullable().optional(),
   showAnnouncement: z.boolean().optional(),
   telegramUrl: z.string().max(200).nullable().optional(),
@@ -568,6 +574,12 @@ export async function registerRoutes(
         checkoutCommentEnabled: data.checkoutCommentEnabled ?? existingSettings?.checkoutCommentEnabled ?? false,
         facebookPixelId: data.facebookPixelId !== undefined ? (data.facebookPixelId || null) : (existingSettings?.facebookPixelId || null),
         tiktokPixelId: data.tiktokPixelId !== undefined ? (data.tiktokPixelId || null) : (existingSettings?.tiktokPixelId || null),
+        googleAnalyticsId: data.googleAnalyticsId !== undefined ? (data.googleAnalyticsId || null) : (existingSettings?.googleAnalyticsId || null),
+        seoTitle: data.seoTitle !== undefined ? (data.seoTitle || null) : (existingSettings?.seoTitle || null),
+        seoDescription: data.seoDescription !== undefined ? (data.seoDescription || null) : (existingSettings?.seoDescription || null),
+        ogImageUrl: data.ogImageUrl !== undefined ? (data.ogImageUrl || null) : (existingSettings?.ogImageUrl || null),
+        faviconUrl: data.faviconUrl !== undefined ? (data.faviconUrl || null) : (existingSettings?.faviconUrl || null),
+        isPublicListed: data.isPublicListed ?? existingSettings?.isPublicListed ?? true,
         announcementText: data.announcementText !== undefined ? (data.announcementText || null) : (existingSettings?.announcementText || null),
         showAnnouncement: data.showAnnouncement ?? existingSettings?.showAnnouncement ?? false,
         telegramUrl: data.telegramUrl !== undefined ? (data.telegramUrl || null) : (existingSettings?.telegramUrl || null),
@@ -824,11 +836,12 @@ export async function registerRoutes(
       const store = await storage.getStoreBySlug(req.params.slug);
       if (!store || !store.isActive) return res.status(404).json({ message: "Магазин не найден" });
 
-      const [theme, settings, cats, prods] = await Promise.all([
+      const [theme, settings, cats, prods, platformPixels] = await Promise.all([
         storage.getTheme(store.id),
         storage.getSettings(store.id),
         storage.getCategories(store.id),
         storage.getProducts(store.id),
+        storage.getPlatformSetting("tracking_pixels").catch(() => null),
       ]);
 
       await storage.recordEvent({ storeId: store.id, eventType: "visit" }).catch(() => {});
@@ -837,7 +850,8 @@ export async function registerRoutes(
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, announcementText: null, showAnnouncement: false, telegramUrl: null, showSocialCards: true, showCategoryChips: true, categoryDisplayStyle: "chips" },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, googleAnalyticsId: null, seoTitle: null, seoDescription: null, ogImageUrl: null, faviconUrl: null, isPublicListed: true, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, announcementText: null, showAnnouncement: false, telegramUrl: null, showSocialCards: true, showCategoryChips: true, categoryDisplayStyle: "chips" },
+        platformPixels: platformPixels || { facebookPixelId: "", tiktokPixelId: "", googleAnalyticsId: "" },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
       });
@@ -1525,7 +1539,7 @@ export async function registerRoutes(
   app.get("/api/superadmin/tracking-pixels", isSuperAdminMiddleware, async (_req, res) => {
     try {
       const pixels = await storage.getPlatformSetting("tracking_pixels");
-      res.json(pixels || { facebookPixelId: "", tiktokPixelId: "" });
+      res.json(pixels || { facebookPixelId: "", tiktokPixelId: "", googleAnalyticsId: "" });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }
@@ -1536,6 +1550,7 @@ export async function registerRoutes(
       const schema = z.object({
         facebookPixelId: z.string().max(50).regex(/^[0-9]*$/).optional(),
         tiktokPixelId: z.string().max(50).regex(/^[A-Za-z0-9_]*$/).optional(),
+        googleAnalyticsId: z.string().max(30).regex(/^(G-[A-Za-z0-9]+|UA-[0-9]+-[0-9]+)?$/).optional(),
       });
       const data = validate(schema, req.body);
       await storage.setPlatformSetting("tracking_pixels", data);

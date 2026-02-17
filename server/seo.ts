@@ -66,18 +66,29 @@ function buildStoreJsonLd(store: any, theme: any, products: any[], baseUrl: stri
   return JSON.stringify(ld);
 }
 
-function buildStoreMeta(store: any, theme: any, products: any[], baseUrl: string): string {
+function buildStoreMeta(store: any, theme: any, products: any[], baseUrl: string, settings?: any): string {
   const storeName = escapeHtml(store.name);
   const city = store.city ? ` в ${escapeHtml(store.city)}` : "";
   const activeCount = products.length;
-  const desc = store.description
-    ? escapeHtml(store.description)
-    : `${storeName}${city} — каталог товаров и услуг. Заказ через WhatsApp. ${activeCount} позиций в каталоге.`;
-  const title = `${storeName}${city} — Каталог и заказы через WhatsApp`;
+
+  const title = settings?.seoTitle
+    ? escapeHtml(settings.seoTitle)
+    : `${storeName}${city} — Каталог и заказы через WhatsApp`;
+
+  const desc = settings?.seoDescription
+    ? escapeHtml(settings.seoDescription)
+    : store.description
+      ? escapeHtml(store.description)
+      : `${storeName}${city} — каталог товаров и услуг. Заказ через WhatsApp. ${activeCount} позиций в каталоге.`;
+
   const safeSlug = encodeURIComponent(store.slug);
   const storeUrl = `${sanitizeUrl(baseUrl)}/${safeSlug}`;
-  const rawImageUrl = theme?.logoUrl || theme?.bannerUrl || null;
-  const imageUrl = rawImageUrl ? `${sanitizeUrl(baseUrl)}${sanitizeUrl(rawImageUrl)}` : null;
+
+  const ogImage = settings?.ogImageUrl || null;
+  const rawImageUrl = ogImage || theme?.logoUrl || theme?.bannerUrl || null;
+  const imageUrl = rawImageUrl
+    ? (rawImageUrl.startsWith("http") ? sanitizeUrl(rawImageUrl) : `${sanitizeUrl(baseUrl)}${sanitizeUrl(rawImageUrl)}`)
+    : null;
 
   const tags = [
     `<title>${title}</title>`,
@@ -100,8 +111,20 @@ function buildStoreMeta(store: any, theme: any, products: any[], baseUrl: string
   tags.push(`<meta name="twitter:title" content="${title}" />`);
   tags.push(`<meta name="twitter:description" content="${desc}" />`);
 
+  if (settings?.faviconUrl) {
+    const fav = sanitizeUrl(settings.faviconUrl);
+    tags.push(`<link rel="icon" href="${fav}" />`);
+    tags.push(`<link rel="apple-touch-icon" href="${fav}" />`);
+  }
+
   if (theme?.primaryColor) {
     tags.push(`<meta name="theme-color" content="${escapeHtml(theme.primaryColor)}" />`);
+  }
+
+  if (settings?.googleAnalyticsId) {
+    const gaId = settings.googleAnalyticsId.replace(/[^A-Za-z0-9-]/g, "");
+    tags.push(`<script async src="https://www.googletagmanager.com/gtag/js?id=${gaId}"></script>`);
+    tags.push(`<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');</script>`);
   }
 
   const jsonLd = buildStoreJsonLd(store, theme, products, baseUrl);
@@ -141,13 +164,20 @@ export async function getStoreSeoMeta(slug: string, baseUrl: string): Promise<st
     const store = await storage.getStoreBySlug(slug);
     if (!store || !store.isActive) return null;
 
-    const [theme, products] = await Promise.all([
+    const [theme, products, settings, platformPixels] = await Promise.all([
       storage.getTheme(store.id),
       storage.getProducts(store.id),
+      storage.getSettings(store.id),
+      storage.getPlatformSetting("tracking_pixels").catch(() => null),
     ]);
 
+    const mergedSettings = {
+      ...(settings || {}),
+      googleAnalyticsId: settings?.googleAnalyticsId || (platformPixels as any)?.googleAnalyticsId || null,
+    };
+
     const activeProducts = products.filter((p: any) => p.isActive);
-    return buildStoreMeta(store, theme, activeProducts, baseUrl);
+    return buildStoreMeta(store, theme, activeProducts, baseUrl, mergedSettings);
   } catch {
     return null;
   }

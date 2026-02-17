@@ -8,12 +8,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { BarChart3, Save } from "lucide-react";
-import { SiFacebook, SiTiktok } from "react-icons/si";
+import { SiFacebook, SiTiktok, SiGoogleanalytics } from "react-icons/si";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
 interface TrackingPixels {
   facebookPixelId: string;
   tiktokPixelId: string;
+  googleAnalyticsId: string;
 }
 
 export default function TrackingPixelsPage() {
@@ -26,11 +27,13 @@ export default function TrackingPixelsPage() {
 
   const [facebookPixelId, setFacebookPixelId] = useState("");
   const [tiktokPixelId, setTiktokPixelId] = useState("");
+  const [googleAnalyticsId, setGoogleAnalyticsId] = useState("");
 
   useEffect(() => {
     if (pixels) {
       setFacebookPixelId(pixels.facebookPixelId || "");
       setTiktokPixelId(pixels.tiktokPixelId || "");
+      setGoogleAnalyticsId(pixels.googleAnalyticsId || "");
     }
   }, [pixels]);
 
@@ -39,6 +42,7 @@ export default function TrackingPixelsPage() {
       await apiRequest("PUT", "/api/superadmin/tracking-pixels", {
         facebookPixelId: facebookPixelId || "",
         tiktokPixelId: tiktokPixelId || "",
+        googleAnalyticsId: googleAnalyticsId || "",
       });
     },
     onSuccess: () => {
@@ -105,6 +109,20 @@ export default function TrackingPixelsPage() {
               data-testid="input-platform-tiktok-pixel"
             />
             <p className="mt-1 text-xs text-muted-foreground">Пиксель TikTok для отслеживания конверсий на всей платформе</p>
+          </div>
+
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <SiGoogleanalytics className="h-4 w-4 text-orange-500" />
+              <Label className="font-semibold">Google Analytics ID</Label>
+            </div>
+            <Input
+              value={googleAnalyticsId}
+              onChange={(e) => setGoogleAnalyticsId(e.target.value)}
+              placeholder="G-XXXXXXXXXX"
+              data-testid="input-platform-google-analytics"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Google Analytics (GA4 или Universal) для отслеживания трафика на всей платформе</p>
           </div>
         </div>
 

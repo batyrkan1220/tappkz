@@ -33,6 +33,14 @@ interface StoreDetail {
     currency: string;
     instagramUrl: string | null;
     phoneNumber: string | null;
+    facebookPixelId: string | null;
+    tiktokPixelId: string | null;
+    googleAnalyticsId: string | null;
+    seoTitle: string | null;
+    seoDescription: string | null;
+    ogImageUrl: string | null;
+    faviconUrl: string | null;
+    isPublicListed: boolean;
   } | null;
   theme: {
     primaryColor: string;
@@ -358,7 +366,18 @@ export default function SuperAdminStoreDetail() {
               )}
               <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <Badge variant="secondary">Цены: {settings?.showPrices ? "Показаны" : "Скрыты"}</Badge>
+                <Badge variant="secondary">Каталог: {settings?.isPublicListed !== false ? "Публичный" : "Скрытый"}</Badge>
               </div>
+              {(settings?.googleAnalyticsId || settings?.facebookPixelId || settings?.tiktokPixelId || settings?.seoTitle) && (
+                <div className="mt-3 space-y-1 text-sm">
+                  <p className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">SEO и аналитика</p>
+                  {settings?.seoTitle && <p className="truncate">Title: {settings.seoTitle}</p>}
+                  {settings?.seoDescription && <p className="truncate">Description: {settings.seoDescription.slice(0, 80)}...</p>}
+                  {settings?.googleAnalyticsId && <p>GA: {settings.googleAnalyticsId}</p>}
+                  {settings?.facebookPixelId && <p>FB Pixel: {settings.facebookPixelId}</p>}
+                  {settings?.tiktokPixelId && <p>TT Pixel: {settings.tiktokPixelId}</p>}
+                </div>
+              )}
             </div>
           </Card>
 

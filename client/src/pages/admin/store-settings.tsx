@@ -37,6 +37,12 @@ export default function StoreSettingsPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [facebookPixelId, setFacebookPixelId] = useState("");
   const [tiktokPixelId, setTiktokPixelId] = useState("");
+  const [googleAnalyticsId, setGoogleAnalyticsId] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
+  const [ogImageUrl, setOgImageUrl] = useState("");
+  const [faviconUrl, setFaviconUrl] = useState("");
+  const [isPublicListed, setIsPublicListed] = useState(true);
   const [announcementText, setAnnouncementText] = useState("");
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [telegramUrl, setTelegramUrl] = useState("");
@@ -95,6 +101,12 @@ export default function StoreSettingsPage() {
       setPhoneNumber(settings.phoneNumber || "");
       setFacebookPixelId(settings.facebookPixelId || "");
       setTiktokPixelId(settings.tiktokPixelId || "");
+      setGoogleAnalyticsId(settings.googleAnalyticsId || "");
+      setSeoTitle(settings.seoTitle || "");
+      setSeoDescription(settings.seoDescription || "");
+      setOgImageUrl(settings.ogImageUrl || "");
+      setFaviconUrl(settings.faviconUrl || "");
+      setIsPublicListed(settings.isPublicListed ?? true);
       setAnnouncementText(settings.announcementText || "");
       setShowAnnouncement(settings.showAnnouncement ?? false);
       setTelegramUrl(settings.telegramUrl || "");
@@ -137,6 +149,12 @@ export default function StoreSettingsPage() {
         phoneNumber: phoneNumber || null,
         facebookPixelId: facebookPixelId || null,
         tiktokPixelId: tiktokPixelId || null,
+        googleAnalyticsId: googleAnalyticsId || null,
+        seoTitle: seoTitle || null,
+        seoDescription: seoDescription || null,
+        ogImageUrl: ogImageUrl || null,
+        faviconUrl: faviconUrl || null,
+        isPublicListed,
         announcementText: announcementText || null,
         showAnnouncement,
         telegramUrl: telegramUrl || null,
@@ -446,13 +464,81 @@ export default function StoreSettingsPage() {
         </div>
       </Card>
 
+      <Card className="p-5" data-testid="card-seo">
+        <div className="flex items-center gap-2 mb-4">
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <h3 className="font-extrabold tracking-tight">SEO и мета-теги</h3>
+        </div>
+        <p className="text-sm text-muted-foreground mb-3">Настройте как ваш магазин отображается в поисковиках и при публикации ссылки</p>
+        <div className="space-y-4">
+          <div>
+            <Label className="font-semibold">Заголовок страницы (Title)</Label>
+            <Input
+              value={seoTitle}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              placeholder="Мой магазин — каталог товаров"
+              maxLength={200}
+              data-testid="input-seo-title"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Отображается во вкладке браузера и поисковой выдаче</p>
+          </div>
+          <div>
+            <Label className="font-semibold">Описание (Description)</Label>
+            <Textarea
+              value={seoDescription}
+              onChange={(e) => setSeoDescription(e.target.value)}
+              placeholder="Краткое описание вашего магазина для поисковиков"
+              maxLength={500}
+              data-testid="input-seo-description"
+            />
+          </div>
+          <div>
+            <Label className="font-semibold">OG-изображение (URL)</Label>
+            <Input
+              value={ogImageUrl}
+              onChange={(e) => setOgImageUrl(e.target.value)}
+              placeholder="https://example.com/og-image.jpg"
+              data-testid="input-og-image"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Изображение при публикации ссылки в мессенджерах и соц. сетях (рекомендуется 1200x630)</p>
+          </div>
+          <div>
+            <Label className="font-semibold">Фавиконка (URL)</Label>
+            <Input
+              value={faviconUrl}
+              onChange={(e) => setFaviconUrl(e.target.value)}
+              placeholder="https://example.com/favicon.png"
+              data-testid="input-favicon"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Маленькая иконка во вкладке браузера</p>
+          </div>
+          <div className="flex items-center justify-between gap-2 pt-2">
+            <div>
+              <p className="font-semibold">Видимость в каталоге</p>
+              <p className="text-sm text-muted-foreground">Показывать магазин в публичном каталоге Tapp</p>
+            </div>
+            <Switch checked={isPublicListed} onCheckedChange={setIsPublicListed} data-testid="switch-public-listed" />
+          </div>
+        </div>
+      </Card>
+
       <Card className="p-5" data-testid="card-pixels">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-extrabold tracking-tight">Пиксели аналитики</h3>
+          <h3 className="font-extrabold tracking-tight">Аналитика и пиксели</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-3">Для отслеживания конверсий и ретаргетинга</p>
         <div className="space-y-3">
+          <div>
+            <Label className="font-semibold">Google Analytics ID</Label>
+            <Input
+              value={googleAnalyticsId}
+              onChange={(e) => setGoogleAnalyticsId(e.target.value)}
+              placeholder="G-XXXXXXXXXX"
+              data-testid="input-google-analytics"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Формат: G-XXXXXXX или UA-XXXXXXX-X</p>
+          </div>
           <div>
             <Label className="font-semibold">Facebook Pixel ID</Label>
             <Input
