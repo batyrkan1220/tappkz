@@ -175,7 +175,7 @@ export default function StorefrontPage() {
         gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
         document.head.appendChild(gaScript);
         const gaInline = document.createElement("script");
-        gaInline.innerHTML = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`;
+        gaInline.textContent = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`;
         document.head.appendChild(gaInline);
         (window as any).gaInitialized = true;
         cleanup.push(() => { gaScript.remove(); gaInline.remove(); (window as any).gaInitialized = false; });
