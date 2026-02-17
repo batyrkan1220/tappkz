@@ -9,32 +9,39 @@ import { getQueryFn } from "@/lib/queryClient";
 import { getBusinessLabels, type Store } from "@shared/schema";
 import { usePlatformPixels } from "@/hooks/use-platform-pixels";
 import { useLocation } from "wouter";
-import { LayoutDashboard, Package, FolderOpen, Palette, Settings, ClipboardList, Users, BarChart3, Crown, Truck } from "lucide-react";
+import { LayoutDashboard, Package, FolderOpen, Palette, Settings, ClipboardList, Users, BarChart3, Crown, Truck, Percent } from "lucide-react";
 
 function PageBreadcrumb({ store }: { store: Store }) {
   const [location] = useLocation();
   const labels = getBusinessLabels(store?.businessType);
 
-  const pages: Record<string, { title: string; icon: typeof LayoutDashboard }> = {
-    "/admin": { title: "Панель управления", icon: LayoutDashboard },
-    "/admin/analytics": { title: "Аналитика", icon: BarChart3 },
-    "/admin/orders": { title: "Заказы", icon: ClipboardList },
-    "/admin/customers": { title: "Клиенты", icon: Users },
-    "/admin/products": { title: labels.itemLabelPlural, icon: Package },
-    "/admin/categories": { title: "Категории", icon: FolderOpen },
-    "/admin/branding": { title: "Брендирование", icon: Palette },
-    "/admin/delivery": { title: "Доставка", icon: Truck },
-    "/admin/subscription": { title: "Подписка", icon: Crown },
-    "/admin/settings": { title: "Настройки", icon: Settings },
+  const pages: Record<string, { title: string; group: string; icon: typeof LayoutDashboard }> = {
+    "/admin": { title: "Панель", group: "Главное", icon: LayoutDashboard },
+    "/admin/orders": { title: "Заказы", group: "Главное", icon: ClipboardList },
+    "/admin/products": { title: labels.itemLabelPlural, group: "Каталог", icon: Package },
+    "/admin/categories": { title: "Категории", group: "Каталог", icon: FolderOpen },
+    "/admin/discounts": { title: "Скидки", group: "Каталог", icon: Percent },
+    "/admin/customers": { title: "Клиенты", group: "Клиенты", icon: Users },
+    "/admin/analytics": { title: "Аналитика", group: "Клиенты", icon: BarChart3 },
+    "/admin/settings": { title: "Общие", group: "Магазин", icon: Settings },
+    "/admin/branding": { title: "Оформление", group: "Магазин", icon: Palette },
+    "/admin/delivery": { title: "Доставка", group: "Магазин", icon: Truck },
+    "/admin/subscription": { title: "Подписка", group: "Магазин", icon: Crown },
   };
 
-  const page = pages[location];
+  let page = pages[location];
+  if (!page) {
+    const prefix = Object.keys(pages).find((key) => key !== "/admin" && location.startsWith(key));
+    if (prefix) page = pages[prefix];
+  }
   if (!page) return null;
   const Icon = page.icon;
 
   return (
-    <div className="flex items-center gap-2 text-sm">
-      <Icon className="h-4 w-4 text-muted-foreground" />
+    <div className="flex items-center gap-1.5 text-sm">
+      <span className="text-muted-foreground/60" data-testid="text-breadcrumb-group">{page.group}</span>
+      <span className="text-muted-foreground/40">/</span>
+      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
       <span className="font-medium text-muted-foreground" data-testid="text-breadcrumb">{page.title}</span>
     </div>
   );
