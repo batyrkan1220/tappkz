@@ -676,17 +676,6 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/yandex-maps-key", (req, res) => {
-    const apiKey = process.env.YANDEX_MAPS_API_KEY;
-    if (!apiKey) return res.status(500).json({ message: "Yandex Maps API key not configured" });
-    res.json({ apiKey });
-  });
-
-  app.get("/api/yandex-static-key", (req, res) => {
-    const apiKey = process.env.YANDEX_STATIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ message: "Static API key not configured" });
-    res.json({ apiKey });
-  });
 
   app.put("/api/my-store/whatsapp", isAuthenticated, async (req: any, res) => {
     try {
