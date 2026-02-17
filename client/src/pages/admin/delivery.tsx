@@ -12,6 +12,34 @@ import { Truck, MapPin, Loader2 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { YandexAddressInput } from "@/components/yandex-address-input";
 
+function StaticMapPreview({ lat, lon, testId }: { lat: string; lon: string; testId: string }) {
+  const [mapUrl, setMapUrl] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/yandex-static-key")
+      .then(r => r.json())
+      .then(data => {
+        if (data.apiKey) {
+          setMapUrl(`https://static-maps.yandex.ru/v1?ll=${lon},${lat}&z=16&size=450,200&pt=${lon},${lat},pm2rdm&apikey=${data.apiKey}`);
+        }
+      })
+      .catch(() => {});
+  }, [lat, lon]);
+
+  if (!mapUrl) return null;
+  return (
+    <div className="mt-2 rounded-md overflow-hidden border" data-testid={testId}>
+      <img
+        src={mapUrl}
+        alt="Карта"
+        width="100%"
+        height={200}
+        className="block object-cover"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+      />
+    </div>
+  );
+}
+
 interface DeliverySettings {
   deliveryEnabled: boolean;
   pickupEnabled: boolean;
@@ -129,16 +157,7 @@ export default function DeliveryPage() {
                 data-testid="input-pickup-address"
               />
               {pickupLat && pickupLon && (
-                <div className="mt-2 rounded-md overflow-hidden border" data-testid="map-pickup-preview">
-                  <iframe
-                    src={`https://yandex.ru/map-widget/v1/?ll=${pickupLon},${pickupLat}&z=16&pt=${pickupLon},${pickupLat},pm2rdm&size=400,200`}
-                    width="100%"
-                    height="200"
-                    frameBorder="0"
-                    style={{ display: "block" }}
-                    title="Карта"
-                  />
-                </div>
+                <StaticMapPreview lat={pickupLat} lon={pickupLon} testId="map-pickup-preview" />
               )}
             </div>
           </div>
