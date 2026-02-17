@@ -603,6 +603,7 @@ export async function registerRoutes(
   const deliverySettingsSchema = z.object({
     deliveryEnabled: z.boolean().optional(),
     pickupEnabled: z.boolean().optional(),
+    yandexDeliveryEnabled: z.boolean().optional(),
     deliveryFee: z.coerce.number().int().min(0).nullable().optional(),
     deliveryFreeThreshold: z.coerce.number().int().min(0).nullable().optional(),
     pickupAddress: z.string().max(500).nullable().optional(),
@@ -626,6 +627,7 @@ export async function registerRoutes(
       res.json({
         deliveryEnabled: settings?.deliveryEnabled ?? false,
         pickupEnabled: settings?.pickupEnabled ?? true,
+        yandexDeliveryEnabled: settings?.yandexDeliveryEnabled ?? false,
         deliveryFee: settings?.deliveryFee ?? null,
         deliveryFreeThreshold: settings?.deliveryFreeThreshold ?? null,
         pickupAddress: settings?.pickupAddress ?? null,
@@ -660,6 +662,7 @@ export async function registerRoutes(
         tiktokPixelId: existingSettings?.tiktokPixelId || null,
         deliveryEnabled: data.deliveryEnabled ?? existingSettings?.deliveryEnabled ?? false,
         pickupEnabled: data.pickupEnabled ?? existingSettings?.pickupEnabled ?? true,
+        yandexDeliveryEnabled: data.yandexDeliveryEnabled ?? existingSettings?.yandexDeliveryEnabled ?? false,
         deliveryFee: data.deliveryFee !== undefined ? data.deliveryFee : (existingSettings?.deliveryFee ?? null),
         deliveryFreeThreshold: data.deliveryFreeThreshold !== undefined ? data.deliveryFreeThreshold : (existingSettings?.deliveryFreeThreshold ?? null),
         pickupAddress: data.pickupAddress !== undefined ? data.pickupAddress : (existingSettings?.pickupAddress ?? null),
@@ -865,7 +868,7 @@ export async function registerRoutes(
       res.json({
         store,
         theme: theme || { primaryColor: "#2563eb", secondaryColor: null, logoUrl: null, bannerUrl: null, bannerOverlay: true, buttonStyle: "pill", cardStyle: "bordered", fontStyle: "modern" },
-        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, googleAnalyticsId: null, seoTitle: null, seoDescription: null, ogImageUrl: null, faviconUrl: null, isPublicListed: true, deliveryEnabled: false, pickupEnabled: true, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, announcementText: null, showAnnouncement: false, telegramUrl: null, showSocialCards: true, showCategoryChips: true, categoryDisplayStyle: "chips" },
+        settings: settings || { showPrices: true, whatsappTemplate: "", instagramUrl: null, phoneNumber: null, checkoutAddressEnabled: false, checkoutCommentEnabled: false, facebookPixelId: null, tiktokPixelId: null, googleAnalyticsId: null, seoTitle: null, seoDescription: null, ogImageUrl: null, faviconUrl: null, isPublicListed: true, deliveryEnabled: false, pickupEnabled: true, yandexDeliveryEnabled: false, deliveryFee: null, deliveryFreeThreshold: null, pickupAddress: null, deliveryZone: null, announcementText: null, showAnnouncement: false, telegramUrl: null, showSocialCards: true, showCategoryChips: true, categoryDisplayStyle: "chips" },
         platformPixels: platformPixels || { facebookPixelId: "", tiktokPixelId: "", googleAnalyticsId: "" },
         categories: cats.filter((c) => c.isActive),
         products: prods.filter((p) => p.isActive),
@@ -889,7 +892,7 @@ export async function registerRoutes(
       variantTitle: z.string().nullable().optional(),
     })).min(1),
     paymentMethod: z.string().max(30).nullable().optional(),
-    deliveryMethod: z.enum(["pickup", "delivery"]).nullable().optional(),
+    deliveryMethod: z.enum(["pickup", "delivery", "yandex_delivery"]).nullable().optional(),
     deliveryFee: z.number().int().min(0).optional().default(0),
     discountCode: z.string().optional(),
     discountId: z.number().optional(),

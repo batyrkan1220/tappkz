@@ -67,7 +67,7 @@ export default function StorefrontPage() {
   const [addressIntercom, setAddressIntercom] = useState("");
   const [addressComment, setAddressComment] = useState("");
   const [customerComment, setCustomerComment] = useState("");
-  const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | null>(null);
+  const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | "yandex_delivery" | null>(null);
   const [orderConfirmation, setOrderConfirmation] = useState<{ orderNumber: string; invoiceUrl: string; whatsappUrl: string; whatsappPhone: string; orderMessage: string; whatsappClicked: boolean } | null>(null);
   const [troubleshootOpen, setTroubleshootOpen] = useState<string | null>(null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(true);
@@ -234,7 +234,7 @@ export default function StorefrontPage() {
     return filtered;
   }, [products, activeCategory, activeTab, searchQuery]);
 
-  const hasDeliveryOptions = settings?.deliveryEnabled || settings?.pickupEnabled;
+  const hasDeliveryOptions = settings?.deliveryEnabled || settings?.pickupEnabled || settings?.yandexDeliveryEnabled;
 
   const computedDeliveryFee = useMemo(() => {
     if (deliveryMethod !== "delivery" || !settings?.deliveryEnabled) return 0;
@@ -356,7 +356,7 @@ export default function StorefrontPage() {
         })
         .join("\n");
 
-      const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером" };
+      const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером", yandex_delivery: "Яндекс Доставка" };
       const totalFormatted = new Intl.NumberFormat("ru-KZ").format(cartTotal);
 
       let msg = `*#${order.orderNumber}*\n\n`;
@@ -1446,6 +1446,24 @@ export default function StorefrontPage() {
                           </div>
                         </button>
                       )}
+                      {settings?.yandexDeliveryEnabled && (
+                        <button
+                          className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2.5 text-left transition-all ${deliveryMethod === "yandex_delivery" ? "border-current" : "border-border"}`}
+                          style={deliveryMethod === "yandex_delivery" ? { borderColor: primaryColor } : undefined}
+                          onClick={() => setDeliveryMethod("yandex_delivery")}
+                          data-testid="button-delivery-yandex"
+                        >
+                          <div className="h-4 w-4 shrink-0 rounded-sm bg-[#FCE000] flex items-center justify-center">
+                            <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none">
+                              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Яндекс Доставка</p>
+                            <p className="text-[11px] text-muted-foreground">Курьер Яндекс</p>
+                          </div>
+                        </button>
+                      )}
                     </div>
                     {deliveryMethod === "pickup" && settings?.pickupAddress && (
                       <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
@@ -1464,7 +1482,7 @@ export default function StorefrontPage() {
                   </div>
                 )}
 
-                {(settings?.checkoutAddressEnabled || deliveryMethod === "delivery") && (
+                {(settings?.checkoutAddressEnabled || deliveryMethod === "delivery" || deliveryMethod === "yandex_delivery") && (
                   <div className="space-y-2.5">
                     <div>
                       <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Город</Label>
@@ -1626,7 +1644,7 @@ export default function StorefrontPage() {
               <button
                 className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#25D366" }}
-                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting || (hasDeliveryOptions && !deliveryMethod) || (deliveryMethod === "delivery" && !addressStreet)}
+                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting || (hasDeliveryOptions && !deliveryMethod) || ((deliveryMethod === "delivery" || deliveryMethod === "yandex_delivery") && !addressStreet)}
                 onClick={() => { setCheckoutError(""); handleCheckout(); }}
                 data-testid="button-send-whatsapp"
               >

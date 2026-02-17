@@ -13,6 +13,7 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 interface DeliverySettings {
   deliveryEnabled: boolean;
   pickupEnabled: boolean;
+  yandexDeliveryEnabled: boolean;
   deliveryFee: number | null;
   deliveryFreeThreshold: number | null;
   pickupAddress: string | null;
@@ -29,6 +30,7 @@ export default function DeliveryPage() {
 
   const [deliveryEnabled, setDeliveryEnabled] = useState(false);
   const [pickupEnabled, setPickupEnabled] = useState(true);
+  const [yandexDeliveryEnabled, setYandexDeliveryEnabled] = useState(false);
   const [deliveryFee, setDeliveryFee] = useState("");
   const [deliveryFreeThreshold, setDeliveryFreeThreshold] = useState("");
   const [pickupCity, setPickupCity] = useState("");
@@ -70,6 +72,7 @@ export default function DeliveryPage() {
     if (data) {
       setDeliveryEnabled(data.deliveryEnabled);
       setPickupEnabled(data.pickupEnabled);
+      setYandexDeliveryEnabled(data.yandexDeliveryEnabled);
       setDeliveryFee(data.deliveryFee !== null ? String(data.deliveryFee) : "");
       setDeliveryFreeThreshold(data.deliveryFreeThreshold !== null ? String(data.deliveryFreeThreshold) : "");
       const parsed = parseAddress(data.pickupAddress);
@@ -88,6 +91,7 @@ export default function DeliveryPage() {
       await apiRequest("PUT", "/api/my-store/delivery", {
         deliveryEnabled,
         pickupEnabled,
+        yandexDeliveryEnabled,
         deliveryFee: deliveryFee ? parseInt(deliveryFee) : null,
         deliveryFreeThreshold: deliveryFreeThreshold ? parseInt(deliveryFreeThreshold) : null,
         pickupAddress: buildAddress(pickupCity, pickupStreet, pickupApt, pickupFloor, pickupIntercom, pickupComment),
@@ -254,6 +258,45 @@ export default function DeliveryPage() {
                 data-testid="input-delivery-zone"
               />
             </div>
+          </div>
+        )}
+      </Card>
+
+      <Card className="p-5 space-y-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-[#FCE000] flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-sm">Яндекс Доставка</p>
+                <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md font-medium">Ручная</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Вы сами отправляете заказ через Яндекс Доставку</p>
+            </div>
+          </div>
+          <Switch
+            checked={yandexDeliveryEnabled}
+            onCheckedChange={setYandexDeliveryEnabled}
+            data-testid="switch-yandex-delivery-enabled"
+          />
+        </div>
+
+        {yandexDeliveryEnabled && (
+          <div className="pl-[52px] space-y-3">
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-200 space-y-1.5">
+              <p className="font-semibold">Как это работает:</p>
+              <ol className="list-decimal list-inside space-y-1 text-amber-700 dark:text-amber-300">
+                <li>Покупатель выбирает «Яндекс Доставка» при оформлении</li>
+                <li>Покупатель указывает полный адрес доставки</li>
+                <li>Вы получаете заказ с адресом в WhatsApp</li>
+                <li>Вы самостоятельно оформляете доставку через приложение Яндекс</li>
+              </ol>
+            </div>
+            <p className="text-[11px] text-muted-foreground">API интеграция с Яндекс Доставкой будет доступна в ближайшем обновлении</p>
           </div>
         )}
       </Card>

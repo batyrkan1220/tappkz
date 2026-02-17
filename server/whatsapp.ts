@@ -181,7 +181,7 @@ export async function sendOrderNotification(
     return msg;
   }
 
-  const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером" };
+  const deliveryLabels: Record<string, string> = { pickup: "Самовывоз", delivery: "Доставка курьером", yandex_delivery: "Яндекс Доставка" };
   const totalFormatted = new Intl.NumberFormat("ru-RU").format(total) + " ₸";
   let text = `*Новый заказ #${orderNumber}*\n\nПокупатель: ${customerName}`;
   if (items && items.length > 0) {
