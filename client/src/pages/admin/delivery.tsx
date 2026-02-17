@@ -10,36 +10,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Truck, MapPin, Loader2 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
-import { YandexAddressInput } from "@/components/yandex-address-input";
-
-function StaticMapPreview({ lat, lon, testId }: { lat: string; lon: string; testId: string }) {
-  const [mapUrl, setMapUrl] = useState<string | null>(null);
-  useEffect(() => {
-    fetch("/api/yandex-static-key")
-      .then(r => r.json())
-      .then(data => {
-        if (data.apiKey) {
-          setMapUrl(`https://static-maps.yandex.ru/v1?ll=${lon},${lat}&z=16&size=450,200&pt=${lon},${lat},pm2rdm&apikey=${data.apiKey}`);
-        }
-      })
-      .catch(() => {});
-  }, [lat, lon]);
-
-  if (!mapUrl) return null;
-  return (
-    <div className="mt-2 rounded-md overflow-hidden border" data-testid={testId}>
-      <img
-        src={mapUrl}
-        alt="Карта"
-        width="100%"
-        height={200}
-        className="block object-cover"
-        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-      />
-    </div>
-  );
-}
-
 interface DeliverySettings {
   deliveryEnabled: boolean;
   pickupEnabled: boolean;
@@ -47,8 +17,6 @@ interface DeliverySettings {
   deliveryFreeThreshold: number | null;
   pickupAddress: string | null;
   deliveryZone: string | null;
-  pickupLat: string | null;
-  pickupLon: string | null;
 }
 
 export default function DeliveryPage() {
@@ -63,10 +31,40 @@ export default function DeliveryPage() {
   const [pickupEnabled, setPickupEnabled] = useState(true);
   const [deliveryFee, setDeliveryFee] = useState("");
   const [deliveryFreeThreshold, setDeliveryFreeThreshold] = useState("");
-  const [pickupAddress, setPickupAddress] = useState("");
+  const [pickupCity, setPickupCity] = useState("");
+  const [pickupStreet, setPickupStreet] = useState("");
+  const [pickupApt, setPickupApt] = useState("");
+  const [pickupFloor, setPickupFloor] = useState("");
+  const [pickupIntercom, setPickupIntercom] = useState("");
+  const [pickupComment, setPickupComment] = useState("");
   const [deliveryZone, setDeliveryZone] = useState("");
-  const [pickupLat, setPickupLat] = useState<string | null>(null);
-  const [pickupLon, setPickupLon] = useState<string | null>(null);
+
+  const parseAddress = (addr: string | null) => {
+    if (!addr) return { city: "", street: "", apt: "", floor: "", intercom: "", comment: "" };
+    const parts = addr.split(", ");
+    const result = { city: "", street: "", apt: "", floor: "", intercom: "", comment: "" };
+    const extras: string[] = [];
+    for (const p of parts) {
+      if (p.startsWith("кв/офис ")) result.apt = p.replace("кв/офис ", "");
+      else if (p.startsWith("этаж ")) result.floor = p.replace("этаж ", "");
+      else if (p.startsWith("домофон ")) result.intercom = p.replace("домофон ", "");
+      else if (!result.city) result.city = p;
+      else if (!result.street) result.street = p;
+      else extras.push(p);
+    }
+    result.comment = extras.join(", ");
+    return result;
+  };
+
+  const buildAddress = (city: string, street: string, apt: string, floor: string, intercom: string, comment: string) => {
+    return [
+      city, street,
+      apt ? `кв/офис ${apt}` : "",
+      floor ? `этаж ${floor}` : "",
+      intercom ? `домофон ${intercom}` : "",
+      comment,
+    ].filter(Boolean).join(", ") || null;
+  };
 
   useEffect(() => {
     if (data) {
@@ -74,10 +72,14 @@ export default function DeliveryPage() {
       setPickupEnabled(data.pickupEnabled);
       setDeliveryFee(data.deliveryFee !== null ? String(data.deliveryFee) : "");
       setDeliveryFreeThreshold(data.deliveryFreeThreshold !== null ? String(data.deliveryFreeThreshold) : "");
-      setPickupAddress(data.pickupAddress || "");
+      const parsed = parseAddress(data.pickupAddress);
+      setPickupCity(parsed.city);
+      setPickupStreet(parsed.street);
+      setPickupApt(parsed.apt);
+      setPickupFloor(parsed.floor);
+      setPickupIntercom(parsed.intercom);
+      setPickupComment(parsed.comment);
       setDeliveryZone(data.deliveryZone || "");
-      setPickupLat(data.pickupLat || null);
-      setPickupLon(data.pickupLon || null);
     }
   }, [data]);
 
@@ -88,10 +90,8 @@ export default function DeliveryPage() {
         pickupEnabled,
         deliveryFee: deliveryFee ? parseInt(deliveryFee) : null,
         deliveryFreeThreshold: deliveryFreeThreshold ? parseInt(deliveryFreeThreshold) : null,
-        pickupAddress: pickupAddress || null,
+        pickupAddress: buildAddress(pickupCity, pickupStreet, pickupApt, pickupFloor, pickupIntercom, pickupComment),
         deliveryZone: deliveryZone || null,
-        pickupLat: pickupLat || null,
-        pickupLon: pickupLon || null,
       });
     },
     onSuccess: () => {
@@ -142,23 +142,62 @@ export default function DeliveryPage() {
 
         {pickupEnabled && (
           <div className="pl-[52px] space-y-3">
+            <Label className="text-xs font-medium text-muted-foreground block">Адрес самовывоза</Label>
             <div>
-              <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес самовывоза</Label>
-              <YandexAddressInput
-                value={pickupAddress}
-                onChange={setPickupAddress}
-                onGeoResult={(result) => {
-                  if (result) {
-                    setPickupLat(result.lat);
-                    setPickupLon(result.lon);
-                  }
-                }}
-                placeholder="ул. Абая 1, Алматы"
-                data-testid="input-pickup-address"
+              <Label className="text-xs text-muted-foreground mb-1 block">Город</Label>
+              <Input
+                value={pickupCity}
+                onChange={(e) => setPickupCity(e.target.value)}
+                placeholder="Алматы"
+                data-testid="input-pickup-city"
               />
-              {pickupLat && pickupLon && (
-                <StaticMapPreview lat={pickupLat} lon={pickupLon} testId="map-pickup-preview" />
-              )}
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Адрес (улица, дом)</Label>
+              <Input
+                value={pickupStreet}
+                onChange={(e) => setPickupStreet(e.target.value)}
+                placeholder="ул. Абая 1"
+                data-testid="input-pickup-street"
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Кв/Офис</Label>
+                <Input
+                  value={pickupApt}
+                  onChange={(e) => setPickupApt(e.target.value)}
+                  placeholder="10"
+                  data-testid="input-pickup-apt"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Этаж</Label>
+                <Input
+                  value={pickupFloor}
+                  onChange={(e) => setPickupFloor(e.target.value)}
+                  placeholder="3"
+                  data-testid="input-pickup-floor"
+                />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">Домофон</Label>
+                <Input
+                  value={pickupIntercom}
+                  onChange={(e) => setPickupIntercom(e.target.value)}
+                  placeholder="1234"
+                  data-testid="input-pickup-intercom"
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">Комментарий к адресу</Label>
+              <Input
+                value={pickupComment}
+                onChange={(e) => setPickupComment(e.target.value)}
+                placeholder="Ориентир, подъезд и т.д."
+                data-testid="input-pickup-comment"
+              />
             </div>
           </div>
         )}
@@ -208,9 +247,9 @@ export default function DeliveryPage() {
             </div>
             <div>
               <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Зона доставки</Label>
-              <YandexAddressInput
+              <Input
                 value={deliveryZone}
-                onChange={setDeliveryZone}
+                onChange={(e) => setDeliveryZone(e.target.value)}
                 placeholder="Алматы и Алматинская область"
                 data-testid="input-delivery-zone"
               />

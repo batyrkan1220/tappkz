@@ -50,6 +50,12 @@ export default function StoreSettingsPage() {
   const [slug, setSlug] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [storeAddrCity, setStoreAddrCity] = useState("");
+  const [storeAddrStreet, setStoreAddrStreet] = useState("");
+  const [storeAddrApt, setStoreAddrApt] = useState("");
+  const [storeAddrFloor, setStoreAddrFloor] = useState("");
+  const [storeAddrIntercom, setStoreAddrIntercom] = useState("");
+  const [storeAddrComment, setStoreAddrComment] = useState("");
   const [city, setCity] = useState("");
   const [description, setDescription] = useState("");
   const [whatsappPhone, setWhatsappPhone] = useState("");
@@ -106,12 +112,46 @@ export default function StoreSettingsPage() {
     checkSlug(clean);
   };
 
+  const parseAddress = (addr: string | null) => {
+    if (!addr) return { city: "", street: "", apt: "", floor: "", intercom: "", comment: "" };
+    const parts = addr.split(", ");
+    const result = { city: "", street: "", apt: "", floor: "", intercom: "", comment: "" };
+    const extras: string[] = [];
+    for (const p of parts) {
+      if (p.startsWith("кв/офис ")) result.apt = p.replace("кв/офис ", "");
+      else if (p.startsWith("этаж ")) result.floor = p.replace("этаж ", "");
+      else if (p.startsWith("домофон ")) result.intercom = p.replace("домофон ", "");
+      else if (!result.city) result.city = p;
+      else if (!result.street) result.street = p;
+      else extras.push(p);
+    }
+    result.comment = extras.join(", ");
+    return result;
+  };
+
+  const buildAddress = (addrCity: string, street: string, apt: string, floor: string, intercom: string, comment: string) => {
+    return [
+      addrCity, street,
+      apt ? `кв/офис ${apt}` : "",
+      floor ? `этаж ${floor}` : "",
+      intercom ? `домофон ${intercom}` : "",
+      comment,
+    ].filter(Boolean).join(", ") || "";
+  };
+
   useEffect(() => {
     if (store) {
       setName(store.name);
       setSlug(store.slug);
       originalSlugRef.current = store.slug;
       setEmail(store.email || "");
+      const parsed = parseAddress(store.address);
+      setStoreAddrCity(parsed.city);
+      setStoreAddrStreet(parsed.street);
+      setStoreAddrApt(parsed.apt);
+      setStoreAddrFloor(parsed.floor);
+      setStoreAddrIntercom(parsed.intercom);
+      setStoreAddrComment(parsed.comment);
       setAddress(store.address || "");
       setCity(store.city || "");
       setDescription(store.description || "");
@@ -164,7 +204,7 @@ export default function StoreSettingsPage() {
         slug,
         whatsappPhone: whatsappPhone || undefined,
         email: email || null,
-        address: address || null,
+        address: buildAddress(storeAddrCity, storeAddrStreet, storeAddrApt, storeAddrFloor, storeAddrIntercom, storeAddrComment) || null,
         orderPhones: filteredOrderPhones,
         city: city || null,
         description: description || null,
@@ -258,14 +298,64 @@ export default function StoreSettingsPage() {
                   </div>
                 )}
               </div>
-              <div>
+              <div className="space-y-3">
                 <Label className="font-semibold">Адрес магазина</Label>
-                <Input
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Введите адрес"
-                  data-testid="input-store-address"
-                />
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Город</Label>
+                  <Input
+                    value={storeAddrCity}
+                    onChange={(e) => setStoreAddrCity(e.target.value)}
+                    placeholder="Алматы"
+                    data-testid="input-store-address-city"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Адрес (улица, дом)</Label>
+                  <Input
+                    value={storeAddrStreet}
+                    onChange={(e) => setStoreAddrStreet(e.target.value)}
+                    placeholder="ул. Абая 1"
+                    data-testid="input-store-address-street"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Кв/Офис</Label>
+                    <Input
+                      value={storeAddrApt}
+                      onChange={(e) => setStoreAddrApt(e.target.value)}
+                      placeholder="10"
+                      data-testid="input-store-address-apt"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Этаж</Label>
+                    <Input
+                      value={storeAddrFloor}
+                      onChange={(e) => setStoreAddrFloor(e.target.value)}
+                      placeholder="3"
+                      data-testid="input-store-address-floor"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground mb-1 block">Домофон</Label>
+                    <Input
+                      value={storeAddrIntercom}
+                      onChange={(e) => setStoreAddrIntercom(e.target.value)}
+                      placeholder="1234"
+                      data-testid="input-store-address-intercom"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground mb-1 block">Комментарий к адресу</Label>
+                  <Input
+                    value={storeAddrComment}
+                    onChange={(e) => setStoreAddrComment(e.target.value)}
+                    placeholder="Ориентир, подъезд и т.д."
+                    data-testid="input-store-address-comment"
+                  />
+                </div>
               </div>
               <div>
                 <Label className="font-semibold">WhatsApp номер</Label>
