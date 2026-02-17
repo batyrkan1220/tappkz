@@ -948,7 +948,7 @@ export default function LandingPage() {
         <div className="relative mx-auto max-w-6xl px-5">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: Smartphone, title: "26 типов бизнеса", desc: "Еда, торговля, услуги — платформа адаптируется", tid: "business-types" },
+              { icon: Smartphone, title: "17 типов бизнеса", desc: "Рестораны, магазины, аптеки, цветы и другие — платформа адаптируется", tid: "business-types" },
               { icon: Percent, title: "Скидки и акции", desc: "Перечёркнутые цены, проценты, привлечение клиентов", tid: "discounts" },
               { icon: Truck, title: "Доставка", desc: "Зоны, стоимость, самовывоз — гибкие настройки", tid: "delivery" },
               { icon: Users, title: "База клиентов", desc: "Автоматический учёт клиентов и их покупок", tid: "customers" },
