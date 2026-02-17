@@ -1626,7 +1626,7 @@ export default function StorefrontPage() {
               <button
                 className="flex w-full items-center justify-center gap-2.5 rounded-2xl py-3.5 text-white font-semibold text-[15px] shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#25D366" }}
-                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting || (hasDeliveryOptions && !deliveryMethod) || (deliveryMethod === "delivery" && !customerAddress)}
+                disabled={!customerName || !customerPhone || customerPhone.replace(/\D/g, "").length < 11 || isSubmitting || (hasDeliveryOptions && !deliveryMethod) || (deliveryMethod === "delivery" && !addressStreet)}
                 onClick={() => { setCheckoutError(""); handleCheckout(); }}
                 data-testid="button-send-whatsapp"
               >
