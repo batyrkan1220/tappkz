@@ -89,14 +89,14 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
 
   const storeSubItems: NavItem[] = [
     { title: "Общее", url: "/admin/settings?tab=store-info", icon: Store },
+    { title: "Контакты", url: "/admin/settings?tab=contacts", icon: Globe },
     { title: "Витрина", url: "/admin/settings?tab=storefront", icon: Eye },
     { title: "Объявление", url: "/admin/settings?tab=announcement", icon: Megaphone },
     { title: "Оформление заказа", url: "/admin/settings?tab=checkout", icon: ShoppingCart },
-    { title: "Оформление", url: "/admin/branding", icon: Palette },
+    { title: "Дизайн магазина", url: "/admin/branding", icon: Palette },
   ];
 
   const settingsItems: NavItem[] = [
-    { title: "Контакты", url: "/admin/settings?tab=contacts", icon: Globe },
     { title: "Доставка", url: "/admin/delivery", icon: Truck },
     { title: "SEO", url: "/admin/settings?tab=seo", icon: Search },
     { title: "Пиксели", url: "/admin/settings?tab=pixels", icon: Activity },

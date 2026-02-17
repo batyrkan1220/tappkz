@@ -23,14 +23,14 @@ function PageBreadcrumb({ store }: { store: Store }) {
     "/admin/discounts": { title: "Скидки", group: "Каталог", icon: Percent },
     "/admin/customers": { title: "Клиенты", group: "Клиенты", icon: Users },
     "/admin/analytics": { title: "Аналитика", group: "Клиенты", icon: BarChart3 },
-    "/admin/branding": { title: "Оформление", group: "Магазин", icon: Palette },
+    "/admin/branding": { title: "Дизайн магазина", group: "Магазин", icon: Palette },
     "/admin/delivery": { title: "Доставка", group: "Настройки", icon: Truck },
     "/admin/subscription": { title: "Подписка", group: "Настройки", icon: Crown },
   };
 
   const settingsTabs: Record<string, { title: string; group: string; icon: typeof LayoutDashboard }> = {
     "store-info": { title: "Общее", group: "Магазин", icon: StoreIcon },
-    "contacts": { title: "Контакты", group: "Настройки", icon: Globe },
+    "contacts": { title: "Контакты", group: "Магазин", icon: Globe },
     "storefront": { title: "Витрина", group: "Магазин", icon: Eye },
     "announcement": { title: "Объявление", group: "Магазин", icon: Megaphone },
     "checkout": { title: "Оформление заказа", group: "Магазин", icon: ShoppingCart },
