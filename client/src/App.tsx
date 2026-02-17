@@ -80,11 +80,9 @@ function HomePage() {
 
   if (isAuthenticated) {
     if (storeLoading) return null;
-    if (!store) {
-      window.location.href = "/register";
-      return null;
+    if (store) {
+      return <AdminRoute component={Dashboard} />;
     }
-    return <AdminRoute component={Dashboard} />;
   }
   return <LandingPage />;
 }
