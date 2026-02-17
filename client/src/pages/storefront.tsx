@@ -17,7 +17,7 @@ import { SiWhatsapp, SiInstagram, SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { getBusinessLabels } from "@shared/schema";
-import { YandexAddressInput } from "@/components/yandex-address-input";
+
 import type { Store, Product, Category, StoreTheme, StoreSettings, ProductVariantGroup } from "@shared/schema";
 import { useStorefrontTitle } from "@/hooks/use-document-title";
 
@@ -60,7 +60,12 @@ export default function StorefrontPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressStreet, setAddressStreet] = useState("");
+  const [addressApt, setAddressApt] = useState("");
+  const [addressFloor, setAddressFloor] = useState("");
+  const [addressIntercom, setAddressIntercom] = useState("");
+  const [addressComment, setAddressComment] = useState("");
   const [customerComment, setCustomerComment] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState<"pickup" | "delivery" | null>(null);
   const [orderConfirmation, setOrderConfirmation] = useState<{ orderNumber: string; invoiceUrl: string; whatsappUrl: string; whatsappPhone: string; orderMessage: string; whatsappClicked: boolean } | null>(null);
@@ -133,6 +138,10 @@ export default function StorefrontPage() {
 
   const businessLabels = getBusinessLabels(store?.businessType);
   useStorefrontTitle(store?.name, store?.city ?? undefined);
+
+  useEffect(() => {
+    if (store?.city && !addressCity) setAddressCity(store.city);
+  }, [store?.city]);
 
   useEffect(() => {
     if (!data) return;
@@ -314,10 +323,19 @@ export default function StorefrontPage() {
         variantTitle: i.variantTitle || null,
       }));
 
+      const fullAddress = [
+        addressCity,
+        addressStreet,
+        addressApt ? `кв/офис ${addressApt}` : "",
+        addressFloor ? `этаж ${addressFloor}` : "",
+        addressIntercom ? `домофон ${addressIntercom}` : "",
+        addressComment,
+      ].filter(Boolean).join(", ") || null;
+
       const orderRes = await apiRequest("POST", `/api/storefront/${params.slug}/order`, {
         customerName,
         customerPhone,
-        customerAddress: customerAddress || null,
+        customerAddress: fullAddress,
         customerComment: customerComment || null,
         items: orderItems,
         paymentMethod: "whatsapp",
@@ -353,7 +371,7 @@ export default function StorefrontPage() {
       msg += `Итого: *${totalFormatted} ₸*\n\n`;
       if (deliveryMethod) msg += `Получение: *${deliveryLabels[deliveryMethod] || deliveryMethod}*\n`;
       msg += `Покупатель: *${customerName}* ${customerPhone}\n`;
-      if (customerAddress) msg += `Адрес: ${customerAddress}\n`;
+      if (fullAddress) msg += `Адрес: ${fullAddress}\n`;
       if (customerComment) msg += `Комментарий: ${customerComment}\n`;
       msg += `\nСмотреть счёт:\n${invoiceUrl}`;
 
@@ -371,7 +389,12 @@ export default function StorefrontPage() {
       setCart([]);
       setCustomerName("");
       setCustomerPhone("");
-      setCustomerAddress("");
+      setAddressCity(store?.city || "");
+      setAddressStreet("");
+      setAddressApt("");
+      setAddressFloor("");
+      setAddressIntercom("");
+      setAddressComment("");
       setCustomerComment("");
       setDeliveryMethod(null);
       setAppliedDiscount(null);
@@ -1442,15 +1465,69 @@ export default function StorefrontPage() {
                 )}
 
                 {(settings?.checkoutAddressEnabled || deliveryMethod === "delivery") && (
-                  <div>
-                    <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес доставки</Label>
-                    <YandexAddressInput
-                      value={customerAddress}
-                      onChange={setCustomerAddress}
-                      placeholder="ул. Абая 1, кв 10"
-                      className="rounded-xl"
-                      data-testid="input-checkout-address"
-                    />
+                  <div className="space-y-2.5">
+                    <div>
+                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Город</Label>
+                      <Input
+                        value={addressCity}
+                        onChange={(e) => setAddressCity(e.target.value)}
+                        placeholder="Город"
+                        className="rounded-xl"
+                        data-testid="input-checkout-city"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес (улица, дом)</Label>
+                      <Input
+                        value={addressStreet}
+                        onChange={(e) => setAddressStreet(e.target.value)}
+                        placeholder="ул. Абая 1"
+                        className="rounded-xl"
+                        data-testid="input-checkout-street"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Кв/Офис</Label>
+                        <Input
+                          value={addressApt}
+                          onChange={(e) => setAddressApt(e.target.value)}
+                          placeholder="10"
+                          className="rounded-xl"
+                          data-testid="input-checkout-apt"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Этаж</Label>
+                        <Input
+                          value={addressFloor}
+                          onChange={(e) => setAddressFloor(e.target.value)}
+                          placeholder="3"
+                          className="rounded-xl"
+                          data-testid="input-checkout-floor"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Домофон</Label>
+                        <Input
+                          value={addressIntercom}
+                          onChange={(e) => setAddressIntercom(e.target.value)}
+                          placeholder="1234"
+                          className="rounded-xl"
+                          data-testid="input-checkout-intercom"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Комментарий к адресу</Label>
+                      <Input
+                        value={addressComment}
+                        onChange={(e) => setAddressComment(e.target.value)}
+                        placeholder="Подъезд, ориентир и т.д."
+                        className="rounded-xl"
+                        data-testid="input-checkout-address-comment"
+                      />
+                    </div>
                   </div>
                 )}
                 {settings?.checkoutCommentEnabled && (
