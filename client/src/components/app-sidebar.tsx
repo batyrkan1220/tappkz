@@ -39,6 +39,7 @@ import {
   Search,
   Activity,
   ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +75,7 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
   const mainItems: NavItem[] = [
     { title: "Панель", url: "/admin", icon: LayoutDashboard },
     { title: "Заказы", url: "/admin/orders", icon: ClipboardList, badge: pendingCount, badgeVariant: "count" },
+    { title: "Гайд по старту", url: "/admin/guide", icon: BookOpen },
   ];
 
   const catalogItems: NavItem[] = [

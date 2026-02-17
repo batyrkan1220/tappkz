@@ -29,6 +29,7 @@ const DeliveryPage = lazy(() => import("@/pages/admin/delivery"));
 const ProductFormPage = lazy(() => import("@/pages/admin/product-form"));
 const DiscountsPage = lazy(() => import("@/pages/admin/discounts"));
 const DiscountFormPage = lazy(() => import("@/pages/admin/discount-form"));
+const GuidePage = lazy(() => import("@/pages/admin/guide"));
 const SuperAdminDashboard = lazy(() => import("@/pages/superadmin/dashboard"));
 const SuperAdminStores = lazy(() => import("@/pages/superadmin/stores"));
 const SuperAdminStoreDetail = lazy(() => import("@/pages/superadmin/store-detail"));
@@ -110,6 +111,7 @@ function Router() {
       <Route path="/admin/delivery" component={() => <AdminRoute component={DeliveryPage} />} />
       <Route path="/admin/settings" component={() => <AdminRoute component={StoreSettingsPage} />} />
       <Route path="/admin/subscription" component={() => <AdminRoute component={SubscriptionPage} />} />
+      <Route path="/admin/guide" component={() => <AdminRoute component={GuidePage} />} />
       <Route path="/superadmin" component={() => <SuperAdminRoute component={SuperAdminDashboard} />} />
       <Route path="/superadmin/stores/:id" component={() => <SuperAdminRoute component={SuperAdminStoreDetail} />} />
       <Route path="/superadmin/stores" component={() => <SuperAdminRoute component={SuperAdminStores} />} />

@@ -3,13 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
-import { Eye, MousePointerClick, ShoppingCart, Package, FolderOpen, ExternalLink, Copy, ArrowRight, Check, CircleDot } from "lucide-react";
+import { Eye, MousePointerClick, ShoppingCart, Package, FolderOpen, ExternalLink, Copy, ArrowRight, Check, BookOpen, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useBusinessLabels } from "@/hooks/use-business-labels";
 import { UpgradeBanner } from "@/components/upgrade-banner";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import type { Store, Product, Category } from "@shared/schema";
+
+interface OnboardingStep {
+  key: string;
+  title: string;
+  description: string;
+  completed: boolean;
+  href: string;
+  buttonText: string;
+  disabled?: boolean;
+}
 
 export default function Dashboard() {
   useDocumentTitle("Панель управления");
@@ -38,7 +48,59 @@ export default function Dashboard() {
   const storeUrl = `${window.location.origin}/${store.slug}`;
   const hasCategories = (categories?.length ?? 0) > 0;
   const hasProducts = (products?.length ?? 0) > 0;
-  const isOnboarded = hasCategories && hasProducts;
+  const hasDelivery = store.deliveryEnabled || store.pickupEnabled;
+  const hasDesign = !!(store.logoUrl || store.bannerUrl || store.secondaryColor);
+
+  const steps: OnboardingStep[] = [
+    {
+      key: "categories",
+      title: `Шаг 1: Создайте ${labels.categoryLabel.toLowerCase()}`,
+      description: "Добавьте категории для организации товаров",
+      completed: hasCategories,
+      href: "/admin/categories",
+      buttonText: "Создать",
+    },
+    {
+      key: "products",
+      title: `Шаг 2: Добавьте ${labels.itemLabel}`,
+      description: "Добавьте товары с ценами и фото",
+      completed: hasProducts,
+      href: "/admin/products",
+      buttonText: "Добавить",
+      disabled: !hasCategories,
+    },
+    {
+      key: "delivery",
+      title: "Шаг 3: Настройте доставку",
+      description: "Укажите способы получения: самовывоз или курьер",
+      completed: hasDelivery,
+      href: "/admin/delivery",
+      buttonText: "Настроить",
+      disabled: !hasProducts,
+    },
+    {
+      key: "design",
+      title: "Шаг 4: Оформите магазин",
+      description: "Загрузите логотип, баннер и выберите цвета",
+      completed: hasDesign,
+      href: "/admin/branding",
+      buttonText: "Оформить",
+      disabled: !hasProducts,
+    },
+    {
+      key: "share",
+      title: "Шаг 5: Поделитесь ссылкой",
+      description: `Отправьте ссылку клиентам: ${storeUrl}`,
+      completed: (analytics?.visits ?? 0) > 0,
+      href: `/${store.slug}`,
+      buttonText: "Открыть",
+      disabled: !hasProducts,
+    },
+  ];
+
+  const completedSteps = steps.filter((s) => s.completed).length;
+  const isOnboarded = completedSteps >= 3 && hasCategories && hasProducts;
+  const progressPercent = Math.round((completedSteps / steps.length) * 100);
 
   const copyUrl = () => {
     navigator.clipboard.writeText(storeUrl);
@@ -60,12 +122,20 @@ export default function Dashboard() {
           <h1 className="text-2xl font-extrabold tracking-tight" data-testid="text-dashboard-title">Панель управления</h1>
           <p className="mt-1 text-sm text-muted-foreground" data-testid="text-dashboard-store">Магазин: {store.name}</p>
         </div>
-        <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" data-testid="link-view-store">
-          <Button variant="outline" className="rounded-full font-semibold" data-testid="button-view-store">
-            <ExternalLink className="mr-1.5 h-4 w-4" />
-            Открыть магазин
-          </Button>
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/admin/guide" data-testid="link-guide">
+            <Button variant="outline" className="rounded-full font-semibold" data-testid="button-guide">
+              <BookOpen className="mr-1.5 h-4 w-4" />
+              Гайд по старту
+            </Button>
+          </Link>
+          <a href={`/${store.slug}`} target="_blank" rel="noopener noreferrer" data-testid="link-view-store">
+            <Button variant="outline" className="rounded-full font-semibold" data-testid="button-view-store">
+              <ExternalLink className="mr-1.5 h-4 w-4" />
+              Открыть магазин
+            </Button>
+          </a>
+        </div>
       </div>
 
       <Card className="flex flex-wrap items-center gap-3 p-4" data-testid="card-store-url">
@@ -84,60 +154,82 @@ export default function Dashboard() {
 
       {!isOnboarded && (
         <Card className="p-5 border-primary/20 dark:border-primary/30 bg-primary/5 dark:bg-primary/5" data-testid="card-onboarding">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <ArrowRight className="h-4 w-4 text-white" />
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h2 className="font-extrabold tracking-tight" data-testid="text-onboarding-title">Запуск за 5 минут</h2>
+                <p className="text-xs text-muted-foreground">Выполните шаги, чтобы запустить магазин</p>
+              </div>
             </div>
-            <div>
-              <h2 className="font-extrabold tracking-tight" data-testid="text-onboarding-title">Быстрый старт</h2>
-              <p className="text-xs text-muted-foreground">Выполните шаги, чтобы запустить магазин</p>
+            <Badge variant="secondary" className="text-xs font-bold no-default-hover-elevate no-default-active-elevate" data-testid="badge-onboarding-progress">
+              {completedSteps}/{steps.length}
+            </Badge>
+          </div>
+
+          <div className="mb-4">
+            <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+                data-testid="progress-onboarding"
+              />
             </div>
           </div>
 
           <div className="space-y-3">
-            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasCategories ? "bg-background border-primary/30 dark:border-primary/40" : "bg-background border-border"}`} data-testid="onboarding-step-1">
-              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasCategories ? "bg-primary" : "bg-muted"}`}>
-                {hasCategories ? <Check className="h-4 w-4 text-white" /> : <CircleDot className="h-4 w-4 text-muted-foreground" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold ${hasCategories ? "line-through text-muted-foreground" : ""}`}>
-                  Шаг 1: Создайте {labels.categoryLabel.toLowerCase()}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Добавьте категории для организации товаров
-                </p>
-              </div>
-              {!hasCategories && (
-                <Link href="/admin/categories" data-testid="link-onboarding-categories">
-                  <Button className="rounded-full font-semibold" data-testid="button-onboarding-categories">
-                    Создать
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
-            </div>
+            {steps.map((step, idx) => {
+              const stepIcon = step.completed ? (
+                <Check className="h-4 w-4 text-white" />
+              ) : (
+                <span className="text-xs font-bold text-muted-foreground">{idx + 1}</span>
+              );
 
-            <div className={`flex items-center gap-3 rounded-md border px-4 py-3 ${hasProducts ? "bg-background border-primary/30 dark:border-primary/40" : !hasCategories ? "bg-muted/30 border-border opacity-60" : "bg-background border-border"}`} data-testid="onboarding-step-2">
-              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${hasProducts ? "bg-primary" : "bg-muted"}`}>
-                {hasProducts ? <Check className="h-4 w-4 text-white" /> : <CircleDot className="h-4 w-4 text-muted-foreground" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`text-sm font-semibold ${hasProducts ? "line-through text-muted-foreground" : ""}`}>
-                  Шаг 2: Добавьте {labels.itemLabel}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Добавьте товары с ценами и фото
-                </p>
-              </div>
-              {!hasProducts && hasCategories && (
-                <Link href="/admin/products" data-testid="link-onboarding-products">
-                  <Button className="rounded-full font-semibold" data-testid="button-onboarding-products">
-                    Добавить
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
-            </div>
+              return (
+                <div
+                  key={step.key}
+                  className={`flex items-center gap-3 rounded-md border px-4 py-3 ${
+                    step.completed
+                      ? "bg-background border-primary/30 dark:border-primary/40"
+                      : step.disabled
+                        ? "bg-muted/30 border-border opacity-60"
+                        : "bg-background border-border"
+                  }`}
+                  data-testid={`onboarding-step-${idx + 1}`}
+                >
+                  <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${step.completed ? "bg-primary" : "bg-muted"}`}>
+                    {stepIcon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold ${step.completed ? "line-through text-muted-foreground" : ""}`}>
+                      {step.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {step.description}
+                    </p>
+                  </div>
+                  {!step.completed && !step.disabled && (
+                    step.key === "share" ? (
+                      <div className="flex gap-2">
+                        <Button variant="outline" className="rounded-full font-semibold" onClick={copyUrl} data-testid="button-onboarding-copy">
+                          <Copy className="mr-1 h-3.5 w-3.5" />
+                          Копировать
+                        </Button>
+                      </div>
+                    ) : (
+                      <Link href={step.href} data-testid={`link-onboarding-${step.key}`}>
+                        <Button className="rounded-full font-semibold" data-testid={`button-onboarding-${step.key}`}>
+                          {step.buttonText}
+                          <ArrowRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )
+                  )}
+                </div>
+              );
+            })}
           </div>
         </Card>
       )}
