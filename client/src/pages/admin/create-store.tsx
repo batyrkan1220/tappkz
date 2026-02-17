@@ -12,6 +12,18 @@ import { TappLogo } from "@/components/tapp-logo";
 import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { BUSINESS_TYPES, type BusinessTypeKey } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const KAZAKHSTAN_CITIES = [
+  "Алматы", "Астана", "Шымкент", "Караганда", "Актобе", "Тараз", "Павлодар",
+  "Усть-Каменогорск", "Семей", "Атырау", "Костанай", "Кызылорда", "Уральск",
+  "Петропавловск", "Актау", "Темиртау", "Туркестан", "Кокшетау", "Талдыкорган",
+  "Экибастуз", "Рудный", "Жезказган", "Жанаозен", "Каскелен", "Сатпаев",
+  "Кентау", "Балхаш", "Риддер", "Капшагай", "Талгар", "Степногорск",
+  "Сарань", "Щучинск", "Аксу", "Шахтинск", "Арыс", "Есик", "Байконур",
+  "Хромтау", "Лисаковск", "Аксай", "Житикара", "Шу", "Сарыагаш",
+  "Жаркент", "Алтай", "Текели", "Форт-Шевченко", "Приозёрск", "Конаев"
+];
 import { UtensilsCrossed, ShoppingBasket, Shirt, Smartphone, Sparkles, Pill, Flower2, CakeSlice, Gem, PawPrint, Baby, Home, Car, Dumbbell, BookOpen, HardHat, MoreHorizontal } from "lucide-react";
 
 const BUSINESS_TYPE_ICONS: Record<string, any> = {
@@ -194,7 +206,16 @@ export default function CreateStorePage() {
             </div>
             <div>
               <Label className="font-semibold">Город</Label>
-              <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-create-store-city" />
+              <Select value={city} onValueChange={setCity}>
+                <SelectTrigger data-testid="input-create-store-city">
+                  <SelectValue placeholder="Выберите город" />
+                </SelectTrigger>
+                <SelectContent>
+                  {KAZAKHSTAN_CITIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label className="font-semibold">Описание</Label>

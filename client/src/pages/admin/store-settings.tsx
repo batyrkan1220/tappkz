@@ -16,6 +16,17 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BUSINESS_TYPES, type Store, type StoreSettings } from "@shared/schema";
 
+const KAZAKHSTAN_CITIES = [
+  "Алматы", "Астана", "Шымкент", "Караганда", "Актобе", "Тараз", "Павлодар",
+  "Усть-Каменогорск", "Семей", "Атырау", "Костанай", "Кызылорда", "Уральск",
+  "Петропавловск", "Актау", "Темиртау", "Туркестан", "Кокшетау", "Талдыкорган",
+  "Экибастуз", "Рудный", "Жезказган", "Жанаозен", "Каскелен", "Сатпаев",
+  "Кентау", "Балхаш", "Риддер", "Капшагай", "Талгар", "Степногорск",
+  "Сарань", "Щучинск", "Аксу", "Шахтинск", "Арыс", "Есик", "Байконур",
+  "Хромтау", "Лисаковск", "Аксай", "Житикара", "Шу", "Сарыагаш",
+  "Жаркент", "Алтай", "Текели", "Форт-Шевченко", "Приозёрск", "Конаев"
+];
+
 const sections = [
   { id: "profile", label: "Профиль", icon: StoreIcon },
   { id: "store-info", label: "Магазин", icon: StoreIcon },
@@ -326,7 +337,16 @@ export default function StoreSettingsPage() {
               </div>
               <div>
                 <Label className="font-semibold">Город</Label>
-                <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Алматы" data-testid="input-store-city" />
+                <Select value={city} onValueChange={setCity}>
+                  <SelectTrigger data-testid="input-store-city">
+                    <SelectValue placeholder="Выберите город" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {KAZAKHSTAN_CITIES.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="font-semibold">Описание</Label>
