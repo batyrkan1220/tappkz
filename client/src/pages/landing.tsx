@@ -43,10 +43,6 @@ import mockTiramisu from "@/assets/images/mock-tiramisu.png";
 import mockCinnamonRoll from "@/assets/images/mock-cinnamon-roll.png";
 import mockBanner from "@/assets/images/mock-confectionery-banner.png";
 import mockLogo from "@/assets/images/mock-sweetbaker-logo.png";
-import featureInstagram from "@assets/Снимок_экрана_2026-02-17_в_08.45.25_1771300402517.png";
-import featureSeo from "@assets/Снимок_экрана_2026-02-17_в_08.48.19_1771300402518.png";
-import featureCatalog from "@assets/Снимок_экрана_2026-02-17_в_08.48.33_1771300402518.png";
-import featureCheckout from "@assets/Снимок_экрана_2026-02-17_в_08.48.39_1771300402518.png";
 
 const MOCK_CATEGORIES = ["Все", "Торты", "Пирожные", "Выпечка", "Конфеты", "Десерты"];
 
@@ -963,43 +959,6 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-base font-extrabold tracking-tight">{item.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 md:py-28">
-        <div className="mx-auto max-w-6xl px-5">
-          <div className="text-center mb-14">
-            <Badge variant="secondary" className="mb-4 rounded-full font-semibold" data-testid="badge-capabilities-label">Возможности</Badge>
-            <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl" data-testid="text-capabilities-heading">
-              Всё для вашего онлайн-бизнеса
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-muted-foreground">
-              Инструменты, которые помогут вам продавать больше и работать эффективнее
-            </p>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { img: featureInstagram, title: "Ссылка в Instagram", desc: "Разместите ссылку на магазин в шапке профиля — подписчики переходят и заказывают" },
-              { img: featureSeo, title: "SEO-оптимизация", desc: "Ваш магазин виден в Google и Яндекс — клиенты находят вас через поиск" },
-              { img: featureCatalog, title: "Каталог товаров", desc: "Удобный каталог с категориями, ценами и скидками для любого бизнеса" },
-              { img: featureCheckout, title: "Оформление заказа", desc: "Гибкая форма заказа с выбором даты, времени и дополнительных опций" },
-            ].map((item, i) => (
-              <div key={i} className="group rounded-md border bg-card overflow-hidden" data-testid={`card-capability-${i}`}>
-                <div className="aspect-square overflow-hidden bg-muted/30">
-                  <img
-                    src={item.img}
-                    alt={item.title}
-                    className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-sm font-bold" data-testid={`text-capability-title-${i}`}>{item.title}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
               </div>
             ))}
           </div>
