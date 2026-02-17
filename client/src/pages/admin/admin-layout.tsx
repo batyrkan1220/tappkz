@@ -23,19 +23,19 @@ function PageBreadcrumb({ store }: { store: Store }) {
     "/admin/discounts": { title: "Скидки", group: "Каталог", icon: Percent },
     "/admin/customers": { title: "Клиенты", group: "Клиенты", icon: Users },
     "/admin/analytics": { title: "Аналитика", group: "Клиенты", icon: BarChart3 },
-    "/admin/branding": { title: "Оформление", group: "Настройки", icon: Palette },
+    "/admin/branding": { title: "Оформление", group: "Магазин", icon: Palette },
     "/admin/delivery": { title: "Доставка", group: "Настройки", icon: Truck },
     "/admin/subscription": { title: "Подписка", group: "Настройки", icon: Crown },
   };
 
-  const settingsTabs: Record<string, { title: string; icon: typeof LayoutDashboard }> = {
-    "store-info": { title: "Магазин", icon: StoreIcon },
-    "contacts": { title: "Контакты", icon: Globe },
-    "storefront": { title: "Витрина", icon: Eye },
-    "announcement": { title: "Объявление", icon: Megaphone },
-    "checkout": { title: "Оформление заказа", icon: ShoppingCart },
-    "seo": { title: "SEO", icon: Search },
-    "pixels": { title: "Пиксели", icon: Activity },
+  const settingsTabs: Record<string, { title: string; group: string; icon: typeof LayoutDashboard }> = {
+    "store-info": { title: "Общее", group: "Магазин", icon: StoreIcon },
+    "contacts": { title: "Контакты", group: "Настройки", icon: Globe },
+    "storefront": { title: "Витрина", group: "Магазин", icon: Eye },
+    "announcement": { title: "Объявление", group: "Магазин", icon: Megaphone },
+    "checkout": { title: "Оформление заказа", group: "Магазин", icon: ShoppingCart },
+    "seo": { title: "SEO", group: "Настройки", icon: Search },
+    "pixels": { title: "Пиксели", group: "Настройки", icon: Activity },
   };
 
   let page = pages[location];
@@ -47,7 +47,7 @@ function PageBreadcrumb({ store }: { store: Store }) {
   if (!page && location.startsWith("/admin/settings")) {
     const tab = new URLSearchParams(window.location.search).get("tab") || "store-info";
     const tabInfo = settingsTabs[tab] || settingsTabs["store-info"];
-    page = { title: tabInfo.title, group: "Настройки", icon: tabInfo.icon };
+    page = { title: tabInfo.title, group: tabInfo.group, icon: tabInfo.icon };
   }
 
   if (!page) return null;

@@ -7,10 +7,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   SidebarHeader,
   SidebarFooter,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +22,6 @@ import {
   Package,
   FolderOpen,
   Palette,
-  Settings,
   LogOut,
   ExternalLink,
   ClipboardList,
@@ -35,6 +38,7 @@ import {
   ShoppingCart,
   Search,
   Activity,
+  ChevronRight,
 } from "lucide-react";
 import { TappLogo } from "@/components/tapp-logo";
 import { Badge } from "@/components/ui/badge";
@@ -83,13 +87,16 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
     { title: "Аналитика", url: "/admin/analytics", icon: BarChart3 },
   ];
 
-  const storeItems: NavItem[] = [
-    { title: "Магазин", url: "/admin/settings?tab=store-info", icon: Store },
-    { title: "Контакты", url: "/admin/settings?tab=contacts", icon: Globe },
+  const storeSubItems: NavItem[] = [
+    { title: "Общее", url: "/admin/settings?tab=store-info", icon: Store },
     { title: "Витрина", url: "/admin/settings?tab=storefront", icon: Eye },
     { title: "Объявление", url: "/admin/settings?tab=announcement", icon: Megaphone },
     { title: "Оформление заказа", url: "/admin/settings?tab=checkout", icon: ShoppingCart },
     { title: "Оформление", url: "/admin/branding", icon: Palette },
+  ];
+
+  const settingsItems: NavItem[] = [
+    { title: "Контакты", url: "/admin/settings?tab=contacts", icon: Globe },
     { title: "Доставка", url: "/admin/delivery", icon: Truck },
     { title: "SEO", url: "/admin/settings?tab=seo", icon: Search },
     { title: "Пиксели", url: "/admin/settings?tab=pixels", icon: Activity },
@@ -111,6 +118,8 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
     }
     return location.startsWith(url);
   };
+
+  const isStoreSubActive = storeSubItems.some(item => isActive(item.url));
 
   const renderItem = (item: NavItem) => (
     <SidebarMenuItem key={item.title + item.url}>
@@ -198,7 +207,49 @@ export function AppSidebar({ store }: { store?: StoreType | null }) {
         {renderGroup("Главное", mainItems)}
         {renderGroup("Каталог", catalogItems)}
         {renderGroup("Клиенты", clientItems)}
-        {renderGroup("Настройки", storeItems)}
+
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            Настройки
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <Collapsible defaultOpen={isStoreSubActive} className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      isActive={isStoreSubActive}
+                      data-testid="link-sidebar-store-menu"
+                    >
+                      <Store className="h-4 w-4" />
+                      <span className="flex-1">Магазин</span>
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {storeSubItems.map((item) => (
+                        <SidebarMenuSubItem key={item.url}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={isActive(item.url)}
+                            data-testid={`link-sidebar-${item.url.replace("/admin/", "").replace("/admin", "dashboard").replace("?tab=", "-")}`}
+                          >
+                            <Link href={item.url}>
+                              <item.icon className="h-3.5 w-3.5" />
+                              <span>{item.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+              {settingsItems.map(renderItem)}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         {user?.isSuperAdmin && (
           <>
