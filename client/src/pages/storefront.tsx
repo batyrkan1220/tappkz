@@ -17,6 +17,7 @@ import { SiWhatsapp, SiInstagram, SiTelegram } from "react-icons/si";
 import { apiRequest } from "@/lib/queryClient";
 import { InternationalPhoneInput } from "@/components/international-phone-input";
 import { getBusinessLabels } from "@shared/schema";
+import { YandexAddressInput } from "@/components/yandex-address-input";
 import type { Store, Product, Category, StoreTheme, StoreSettings, ProductVariantGroup } from "@shared/schema";
 import { useStorefrontTitle } from "@/hooks/use-document-title";
 
@@ -1443,9 +1444,9 @@ export default function StorefrontPage() {
                 {(settings?.checkoutAddressEnabled || deliveryMethod === "delivery") && (
                   <div>
                     <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес доставки</Label>
-                    <Input
+                    <YandexAddressInput
                       value={customerAddress}
-                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      onChange={setCustomerAddress}
                       placeholder="ул. Абая 1, кв 10"
                       className="rounded-xl"
                       data-testid="input-checkout-address"

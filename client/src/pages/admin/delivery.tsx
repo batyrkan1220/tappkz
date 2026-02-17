@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Truck, MapPin, Loader2 } from "lucide-react";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { YandexAddressInput } from "@/components/yandex-address-input";
 
 interface DeliverySettings {
   deliveryEnabled: boolean;
@@ -19,6 +19,8 @@ interface DeliverySettings {
   deliveryFreeThreshold: number | null;
   pickupAddress: string | null;
   deliveryZone: string | null;
+  pickupLat: string | null;
+  pickupLon: string | null;
 }
 
 export default function DeliveryPage() {
@@ -35,6 +37,8 @@ export default function DeliveryPage() {
   const [deliveryFreeThreshold, setDeliveryFreeThreshold] = useState("");
   const [pickupAddress, setPickupAddress] = useState("");
   const [deliveryZone, setDeliveryZone] = useState("");
+  const [pickupLat, setPickupLat] = useState<string | null>(null);
+  const [pickupLon, setPickupLon] = useState<string | null>(null);
 
   useEffect(() => {
     if (data) {
@@ -44,6 +48,8 @@ export default function DeliveryPage() {
       setDeliveryFreeThreshold(data.deliveryFreeThreshold !== null ? String(data.deliveryFreeThreshold) : "");
       setPickupAddress(data.pickupAddress || "");
       setDeliveryZone(data.deliveryZone || "");
+      setPickupLat(data.pickupLat || null);
+      setPickupLon(data.pickupLon || null);
     }
   }, [data]);
 
@@ -56,6 +62,8 @@ export default function DeliveryPage() {
         deliveryFreeThreshold: deliveryFreeThreshold ? parseInt(deliveryFreeThreshold) : null,
         pickupAddress: pickupAddress || null,
         deliveryZone: deliveryZone || null,
+        pickupLat: pickupLat || null,
+        pickupLon: pickupLon || null,
       });
     },
     onSuccess: () => {
@@ -108,12 +116,30 @@ export default function DeliveryPage() {
           <div className="pl-[52px] space-y-3">
             <div>
               <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Адрес самовывоза</Label>
-              <Input
+              <YandexAddressInput
                 value={pickupAddress}
-                onChange={(e) => setPickupAddress(e.target.value)}
+                onChange={setPickupAddress}
+                onGeoResult={(result) => {
+                  if (result) {
+                    setPickupLat(result.lat);
+                    setPickupLon(result.lon);
+                  }
+                }}
                 placeholder="ул. Абая 1, Алматы"
                 data-testid="input-pickup-address"
               />
+              {pickupLat && pickupLon && (
+                <div className="mt-2 rounded-md overflow-hidden border" data-testid="map-pickup-preview">
+                  <iframe
+                    src={`https://yandex.ru/map-widget/v1/?ll=${pickupLon},${pickupLat}&z=16&pt=${pickupLon},${pickupLat},pm2rdm&size=400,200`}
+                    width="100%"
+                    height="200"
+                    frameBorder="0"
+                    style={{ display: "block" }}
+                    title="Карта"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -163,9 +189,9 @@ export default function DeliveryPage() {
             </div>
             <div>
               <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Зона доставки</Label>
-              <Input
+              <YandexAddressInput
                 value={deliveryZone}
-                onChange={(e) => setDeliveryZone(e.target.value)}
+                onChange={setDeliveryZone}
                 placeholder="Алматы и Алматинская область"
                 data-testid="input-delivery-zone"
               />

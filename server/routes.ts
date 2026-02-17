@@ -607,6 +607,14 @@ export async function registerRoutes(
     deliveryFreeThreshold: z.coerce.number().int().min(0).nullable().optional(),
     pickupAddress: z.string().max(500).nullable().optional(),
     deliveryZone: z.string().max(500).nullable().optional(),
+    pickupLat: z.string().max(30).nullable().optional().refine(
+      (v) => !v || !isNaN(parseFloat(v)),
+      { message: "pickupLat must be a valid number" }
+    ),
+    pickupLon: z.string().max(30).nullable().optional().refine(
+      (v) => !v || !isNaN(parseFloat(v)),
+      { message: "pickupLon must be a valid number" }
+    ),
   });
 
   app.get("/api/my-store/delivery", isAuthenticated, async (req: any, res) => {
@@ -622,6 +630,8 @@ export async function registerRoutes(
         deliveryFreeThreshold: settings?.deliveryFreeThreshold ?? null,
         pickupAddress: settings?.pickupAddress ?? null,
         deliveryZone: settings?.deliveryZone ?? null,
+        pickupLat: settings?.pickupLat ?? null,
+        pickupLon: settings?.pickupLon ?? null,
       });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
@@ -654,6 +664,8 @@ export async function registerRoutes(
         deliveryFreeThreshold: data.deliveryFreeThreshold !== undefined ? data.deliveryFreeThreshold : (existingSettings?.deliveryFreeThreshold ?? null),
         pickupAddress: data.pickupAddress !== undefined ? data.pickupAddress : (existingSettings?.pickupAddress ?? null),
         deliveryZone: data.deliveryZone !== undefined ? data.deliveryZone : (existingSettings?.deliveryZone ?? null),
+        pickupLat: data.pickupLat !== undefined ? data.pickupLat : (existingSettings?.pickupLat ?? null),
+        pickupLon: data.pickupLon !== undefined ? data.pickupLon : (existingSettings?.pickupLon ?? null),
       });
       res.json(settings);
     } catch (e: any) {
@@ -662,6 +674,12 @@ export async function registerRoutes(
       }
       res.status(500).json({ message: e.message });
     }
+  });
+
+  app.get("/api/yandex-maps-key", (req, res) => {
+    const apiKey = process.env.YANDEX_MAPS_API_KEY;
+    if (!apiKey) return res.status(500).json({ message: "Yandex Maps API key not configured" });
+    res.json({ apiKey });
   });
 
   app.put("/api/my-store/whatsapp", isAuthenticated, async (req: any, res) => {
