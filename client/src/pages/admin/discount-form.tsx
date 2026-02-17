@@ -52,6 +52,7 @@ export default function DiscountFormPage() {
     endDate: "",
   });
 
+  const [errors, setErrors] = useState<Record<string, string>>({});
   useDocumentTitle(isNew ? "Новая скидка — Tapp" : "Редактирование скидки — Tapp");
 
   const { data: discount, isLoading: loadingDiscount } = useQuery<Discount>({
@@ -172,25 +173,28 @@ export default function DiscountFormPage() {
           </div>
 
           <div>
-            <Label className="text-sm font-medium">Название *</Label>
+            <Label className={`text-sm font-medium ${errors.title ? "text-destructive" : ""}`}>Название *</Label>
             <Input
               value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={(e) => { setForm((f) => ({ ...f, title: e.target.value })); if (errors.title) setErrors((prev) => { const n = { ...prev }; delete n.title; return n; }); }}
               placeholder="Например: Скидка 10%"
+              className={errors.title ? "border-destructive" : ""}
               data-testid="input-discount-title"
             />
+            {errors.title && <p className="text-xs text-destructive mt-1" data-testid="error-title">{errors.title}</p>}
           </div>
 
           {showCode && (
             <div>
-              <Label className="text-sm font-medium">Промокод *</Label>
+              <Label className={`text-sm font-medium ${errors.code ? "text-destructive" : ""}`}>Промокод *</Label>
               <Input
                 value={form.code}
-                onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+                onChange={(e) => { setForm((f) => ({ ...f, code: e.target.value.toUpperCase() })); if (errors.code) setErrors((prev) => { const n = { ...prev }; delete n.code; return n; }); }}
                 placeholder="SALE10"
-                className="font-mono"
+                className={`font-mono ${errors.code ? "border-destructive" : ""}`}
                 data-testid="input-discount-code"
               />
+              {errors.code && <p className="text-xs text-destructive mt-1" data-testid="error-code">{errors.code}</p>}
             </div>
           )}
         </Card>
@@ -441,12 +445,12 @@ export default function DiscountFormPage() {
           </Link>
           <Button
             onClick={() => {
-              if (!form.title.trim()) {
-                toast({ title: "Введите название скидки", variant: "destructive" });
-                return;
-              }
-              if (form.type === "code" && !form.code.trim()) {
-                toast({ title: "Введите промокод", variant: "destructive" });
+              const errs: Record<string, string> = {};
+              if (!form.title.trim()) errs.title = "Обязательное поле";
+              if (form.type === "code" && !form.code.trim()) errs.code = "Обязательное поле";
+              setErrors(errs);
+              if (Object.keys(errs).length > 0) {
+                toast({ title: "Заполните обязательные поля", variant: "destructive" });
                 return;
               }
               saveMutation.mutate();

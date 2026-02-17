@@ -99,6 +99,7 @@ export default function ProductFormPage() {
   const [initialized, setInitialized] = useState(false);
   const [showMorePricing, setShowMorePricing] = useState(false);
   const [variantsOpen, setVariantsOpen] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -259,13 +260,19 @@ export default function ProductFormPage() {
     });
   };
 
+  const validateForm = (): Record<string, string> => {
+    const errs: Record<string, string> = {};
+    if (!form.name.trim()) errs.name = "Обязательное поле";
+    if (!form.price || isNaN(parseInt(form.price)) || parseInt(form.price) < 0) errs.price = "Введите корректную цену";
+    if (form.productType === "digital" && !form.downloadUrl.trim()) errs.downloadUrl = "Укажите ссылку для скачивания";
+    return errs;
+  };
+
   const handleSave = () => {
-    if (!form.name.trim()) {
-      toast({ title: "Введите название", variant: "destructive" });
-      return;
-    }
-    if (!form.price || isNaN(parseInt(form.price)) || parseInt(form.price) < 0) {
-      toast({ title: "Введите корректную цену", variant: "destructive" });
+    const errs = validateForm();
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      toast({ title: "Заполните обязательные поля", variant: "destructive" });
       return;
     }
     saveMutation.mutate();
@@ -328,13 +335,15 @@ export default function ProductFormPage() {
         <div className="space-y-6 lg:col-span-2">
           <div className="space-y-4">
             <div>
-              <Label data-testid="label-name">Имя</Label>
+              <Label data-testid="label-name" className={errors.name ? "text-destructive" : ""}>Имя *</Label>
               <Input
                 placeholder="Название продукта"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => { setForm({ ...form, name: e.target.value }); if (errors.name) setErrors((prev) => { const n = { ...prev }; delete n.name; return n; }); }}
+                className={errors.name ? "border-destructive" : ""}
                 data-testid="input-product-name"
               />
+              {errors.name && <p className="text-xs text-destructive mt-1" data-testid="error-name">{errors.name}</p>}
             </div>
 
             <div>
@@ -355,17 +364,18 @@ export default function ProductFormPage() {
             </div>
 
             {form.productType === "digital" && (
-              <div className="rounded-lg border p-4 space-y-3">
+              <div className={`rounded-lg border p-4 space-y-3 ${errors.downloadUrl ? "border-destructive" : ""}`}>
                 <Label className="text-sm font-semibold" data-testid="label-digital-section">Цифровой товар</Label>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Ссылка для скачивания</Label>
+                  <Label className={`text-xs ${errors.downloadUrl ? "text-destructive" : "text-muted-foreground"}`}>Ссылка для скачивания *</Label>
                   <Input
                     placeholder="https://example.com/file.zip"
                     value={form.downloadUrl}
-                    onChange={(e) => setForm({ ...form, downloadUrl: e.target.value })}
+                    onChange={(e) => { setForm({ ...form, downloadUrl: e.target.value }); if (errors.downloadUrl) setErrors((prev) => { const n = { ...prev }; delete n.downloadUrl; return n; }); }}
+                    className={errors.downloadUrl ? "border-destructive" : ""}
                     data-testid="input-download-url"
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Покупатель получит эту ссылку после оплаты</p>
+                  {errors.downloadUrl ? <p className="text-xs text-destructive mt-1" data-testid="error-download-url">{errors.downloadUrl}</p> : <p className="text-xs text-muted-foreground mt-1">Покупатель получит эту ссылку после оплаты</p>}
                 </div>
               </div>
             )}
@@ -415,14 +425,16 @@ export default function ProductFormPage() {
             <Label className="text-sm font-semibold" data-testid="label-pricing-section">Ценообразование</Label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs text-muted-foreground">Цена</Label>
+                <Label className={`text-xs ${errors.price ? "text-destructive" : "text-muted-foreground"}`}>Цена *</Label>
                 <Input
                   type="number"
                   placeholder="0"
                   value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  onChange={(e) => { setForm({ ...form, price: e.target.value }); if (errors.price) setErrors((prev) => { const n = { ...prev }; delete n.price; return n; }); }}
+                  className={errors.price ? "border-destructive" : ""}
                   data-testid="input-price"
                 />
+                {errors.price && <p className="text-xs text-destructive mt-1" data-testid="error-price">{errors.price}</p>}
               </div>
               {showMorePricing && (
                 <div>

@@ -390,10 +390,11 @@ function CustomerForm({
   const [phone, setPhone] = useState(initialData?.phone || "");
   const [email, setEmail] = useState(initialData?.email || "");
   const [notes, setNotes] = useState(initialData?.notes || "");
+  const [nameError, setNameError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) { setNameError(true); return; }
     onSubmit({
       name: name.trim(),
       phone: phone.trim() || undefined,
@@ -405,14 +406,16 @@ function CustomerForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label>Имя *</Label>
+        <Label className={nameError ? "text-destructive" : ""}>Имя *</Label>
         <Input
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => { setName(e.target.value); if (nameError) setNameError(false); }}
           placeholder="Имя клиента"
+          className={nameError ? "border-destructive" : ""}
           required
           data-testid="input-customer-name"
         />
+        {nameError && <p className="text-xs text-destructive" data-testid="error-customer-name">Обязательное поле</p>}
       </div>
       <div className="space-y-2">
         <Label>Телефон</Label>
