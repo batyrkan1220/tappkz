@@ -269,7 +269,7 @@ export default function StoreSettingsPage() {
               </div>
               <div>
                 <Label className="font-semibold">WhatsApp номер</Label>
-                <p className="text-xs text-muted-foreground mb-1">Для уведомлений о заказах и рассылок</p>
+                <p className="text-xs text-muted-foreground mb-1">Клиенты будут отправлять заказы на этот номер</p>
                 <InternationalPhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-whatsapp-phone" />
               </div>
               <div>

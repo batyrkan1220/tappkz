@@ -202,6 +202,7 @@ export default function CreateStorePage() {
             </div>
             <div>
               <Label className="font-semibold">Номер WhatsApp *</Label>
+              <p className="text-xs text-muted-foreground mb-1">Клиенты будут отправлять заказы на этот номер</p>
               <InternationalPhoneInput value={whatsappPhone} onValueChange={setWhatsappPhone} data-testid="input-create-store-phone" />
             </div>
             <div>
